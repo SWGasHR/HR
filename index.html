@@ -1,0 +1,1663 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>INSERT TITLE HERE</title>
+  <link rel="icon" type="image/png" href="department.png">
+  <style>
+    body, html {
+      margin: 0;
+      padding: 0;
+      height: 100%;
+      overflow: hidden;
+      font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+    }
+
+    body {
+      display: flex;
+      flex-direction: column;
+    }
+
+    /* --- BLUE NAV BAR --- */
+    .top-nav {
+      background-color: #252763;
+      color: white;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      padding: 0 16px;
+      height: 56px;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.15);
+      position: relative;
+      z-index: 20;
+      flex-shrink: 0;
+    }
+
+    .nav-home {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      width: 42px;
+      height: 42px;
+      border-radius: 8px;
+      text-decoration: none;
+      transition: background-color 0.2s ease;
+      flex-shrink: 0;
+    }
+
+    .nav-home:hover,
+    .nav-home.active {
+      background-color: rgba(255,255,255,0.22);
+    }
+
+    .nav-home svg {
+      width: 32px;
+      height: 32px;
+      fill: white;
+      display: block;
+    }
+
+    .nav-item,
+    .dropdown-toggle {
+      color: white;
+      text-decoration: none;
+      font-size: 14px;
+      font-weight: 600;
+      padding: 10px 14px;
+      border-radius: 6px;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      cursor: pointer;
+      white-space: nowrap;
+      transition: background-color 0.2s ease;
+      height: 40px;
+      box-sizing: border-box;
+    }
+
+    .nav-item:hover,
+    .dropdown-toggle:hover,
+    .nav-item.active,
+    .dropdown-toggle.active {
+      background-color: rgba(255,255,255,0.22);
+    }
+
+    .dropdown {
+      position: relative;
+      display: flex;
+      align-items: center;
+      height: 100%;
+    }
+
+    .dropdown-menu {
+      display: none;
+      position: absolute;
+      top: 100%;
+      left: 0;
+      min-width: 280px;
+      background: white;
+      color: #333;
+      border-radius: 0 0 10px 10px;
+      box-shadow: 0 10px 24px rgba(0,0,0,0.18);
+      padding: 10px 0;
+      z-index: 999;
+      max-height: 70vh;
+      overflow-y: auto;
+    }
+
+    .dropdown:hover .dropdown-menu,
+    .dropdown:focus-within .dropdown-menu {
+      display: block;
+    }
+
+    .dropdown-menu a {
+      display: block;
+      padding: 10px 16px;
+      font-size: 14px;
+      color: #333;
+      text-decoration: none;
+    }
+
+    .dropdown-menu a:hover {
+      background-color: #f3f4f6;
+    }
+
+    .dropdown-menu a.active {
+      background-color: #e8e9fb;
+      color: #252763;
+      font-weight: 700;
+    }
+
+    .dropdown-header {
+      padding: 10px 16px 6px 16px;
+      font-size: 12px;
+      font-weight: 700;
+      color: #8a8a8a;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    .dropdown-divider {
+      height: 1px;
+      background: #e9e9e9;
+      margin: 8px 0;
+    }
+
+    .caret {
+      font-size: 11px;
+      line-height: 1;
+    }
+
+    .nav-spacer {
+      flex: 1;
+      min-width: 230px;
+      padding: 0 14px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    /* --- NAV MESSAGE POP-UP --- */
+    .dashboard-refresh-popup {
+      position: relative;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      width: min(470px, 100%);
+      min-height: 34px;
+      box-sizing: border-box;
+      padding: 8px 34px 8px 18px;
+      background: linear-gradient(135deg, #f7f9ff 0%, #eef3ff 100%);
+      color: #252763;
+      border: 1px solid rgba(194, 205, 255, 0.95);
+      border-radius: 999px;
+      box-shadow: 0 5px 16px rgba(0,0,0,0.18);
+      text-align: center;
+      font-size: 12.5px;
+      font-weight: 700;
+      line-height: 1.25;
+      letter-spacing: 0.01em;
+    }
+
+    .dashboard-refresh-popup.hidden {
+      display: none;
+    }
+
+    .refresh-popup-text {
+      display: block;
+      width: 100%;
+      text-align: center;
+    }
+
+    .refresh-popup-close {
+      position: absolute;
+      top: -7px;
+      right: -7px;
+      width: 22px;
+      height: 22px;
+      border-radius: 50%;
+      border: 2px solid #252763;
+      background: #5b75d6;
+      color: white;
+      cursor: pointer;
+      font-size: 15px;
+      font-weight: 800;
+      line-height: 1;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 0;
+      font-family: inherit;
+      box-shadow: 0 3px 8px rgba(0,0,0,0.22);
+      transition: background-color 0.2s ease, transform 0.2s ease;
+    }
+
+    .refresh-popup-close:hover {
+      background: #7891ec;
+      transform: translateY(-1px);
+    }
+
+    .refresh-popup-close:focus-visible {
+      outline: 2px solid white;
+      outline-offset: 2px;
+    }
+
+    .swgas-logo-link {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      height: 50px;
+      padding: 4px 10px;
+      border-radius: 8px;
+      transition: background-color 0.2s ease;
+      flex-shrink: 0;
+    }
+
+    .swgas-logo-link:hover {
+      background-color: rgba(255,255,255,0.14);
+    }
+
+    .swgas-logo {
+      height: 60px;
+      width: auto;
+      display: block;
+    }
+
+    /* --- PROJECT SEARCH --- */
+    .project-search-wrap {
+      padding: 8px 12px 10px 12px;
+      position: sticky;
+      top: 0;
+      background: white;
+      z-index: 2;
+      border-bottom: 1px solid #eeeeee;
+    }
+
+    .project-search {
+      width: 100%;
+      box-sizing: border-box;
+      border: 1px solid #d6d6d6;
+      border-radius: 8px;
+      padding: 9px 10px;
+      font-size: 14px;
+      outline: none;
+      font-family: inherit;
+    }
+
+    .project-search:focus {
+      border-color: #252763;
+      box-shadow: 0 0 0 2px rgba(37, 39, 99, 0.12);
+    }
+
+    .no-project-results {
+      display: none;
+      padding: 12px 16px;
+      color: #777;
+      font-size: 14px;
+      font-style: italic;
+    }
+
+    /* --- RED WARNING BAR --- */
+    .header-bar {
+      background-color: #d9534f;
+      color: white;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 16px;
+      padding: 12px 20px;
+      box-shadow: 0 4px 6px rgba(0,0,0,0.15);
+      position: relative;
+      z-index: 10;
+      flex-shrink: 0;
+      overflow: hidden;
+      transition: padding 0.2s ease;
+    }
+
+    .header-bar.hidden {
+      display: none;
+    }
+
+    .header-left {
+      display: flex;
+      align-items: center;
+      gap: 15px;
+      min-width: 0;
+    }
+
+    .arrow-down {
+      font-size: 24px;
+      animation: bounce 2s infinite;
+      flex-shrink: 0;
+    }
+
+    @keyframes bounce {
+      0%, 20%, 50%, 80%, 100% { transform: translateY(0); }
+      40% { transform: translateY(5px); }
+      60% { transform: translateY(3px); }
+    }
+
+    .header-text {
+      font-size: 15px;
+      line-height: 1.4;
+      white-space: normal;
+    }
+
+    .header-text strong {
+      font-weight: 700;
+    }
+
+    .header-extra {
+      display: inline;
+    }
+
+    .header-toggle {
+      background: rgba(255,255,255,0.18);
+      color: white;
+      border: 1px solid rgba(255,255,255,0.35);
+      border-radius: 6px;
+      width: 34px;
+      height: 34px;
+      cursor: pointer;
+      font-size: 16px;
+      font-weight: 700;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+      transition: background-color 0.2s ease, width 0.2s ease, height 0.2s ease, font-size 0.2s ease;
+    }
+
+    .header-toggle:hover {
+      background: rgba(255,255,255,0.28);
+    }
+
+    .header-bar.collapsed {
+      padding: 2px 8px;
+      justify-content: flex-end;
+      gap: 0;
+    }
+
+    .header-bar.collapsed .header-left {
+      display: none;
+    }
+
+    .header-bar.collapsed .header-toggle {
+      width: 22px;
+      height: 16px;
+      font-size: 11px;
+      border-radius: 4px;
+      padding: 0;
+    }
+
+    /* --- VIEW ONLY NOTE --- */
+    .view-only-note {
+      background: #f7f7fb;
+      color: #252763;
+      border-bottom: 1px solid #dedff1;
+      padding: 9px 18px;
+      font-size: 13px;
+      line-height: 1.4;
+      flex-shrink: 0;
+      z-index: 7;
+    }
+
+    .view-only-note.hidden {
+      display: none;
+    }
+
+    .view-only-note strong {
+      font-weight: 700;
+    }
+
+    /* --- IFRAME AREA --- */
+    .iframe-wrap {
+      position: relative;
+      flex: 1;
+      min-height: 0;
+    }
+
+    iframe {
+      width: 100%;
+      height: 100%;
+      border: none;
+      display: block;
+    }
+
+    /* --- SMARTER LOADING MESSAGE --- */
+    .loading-message {
+      position: absolute;
+      inset: 0;
+      background: #2849c8;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 8;
+      color: #252763;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.32s ease;
+    }
+
+    .loading-message.hidden {
+      display: none;
+    }
+
+    .loading-message.visible {
+      opacity: 1;
+      pointer-events: auto;
+    }
+
+    .loading-message.fading {
+      opacity: 0;
+      pointer-events: none;
+    }
+
+    .loading-content {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 14px;
+      background: white;
+      border-radius: 14px;
+      padding: 18px 28px;
+      box-shadow: 0 10px 28px rgba(0,0,0,0.15);
+      font-size: 21px;
+      font-weight: 700;
+      letter-spacing: 0.1px;
+    }
+
+    .loading-icon {
+      width: 36px;
+      height: 36px;
+      animation: spin 1s linear infinite;
+      flex-shrink: 0;
+    }
+
+    .loading-icon circle {
+      fill: none;
+      stroke: #252763;
+      stroke-width: 3.5;
+      stroke-linecap: round;
+      stroke-dasharray: 70;
+      stroke-dashoffset: 22;
+    }
+
+    @keyframes spin {
+      to { transform: rotate(360deg); }
+    }
+
+    /* --- PLACEHOLDER / BROKEN LINK MESSAGE --- */
+    .placeholder-message {
+      position: absolute;
+      inset: 0;
+      background: rgba(255,255,255,0.92);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 9;
+      text-align: center;
+      padding: 30px;
+      color: #252763;
+    }
+
+    .placeholder-message.hidden {
+      display: none;
+    }
+
+    .placeholder-box {
+      background: white;
+      border-radius: 14px;
+      box-shadow: 0 12px 32px rgba(0,0,0,0.16);
+      padding: 26px 30px;
+      max-width: 460px;
+    }
+
+    .placeholder-box h2 {
+      margin: 0 0 10px 0;
+      font-size: 22px;
+    }
+
+    .placeholder-box p {
+      margin: 0;
+      color: #444;
+      font-size: 15px;
+      line-height: 1.45;
+    }
+
+    .placeholder-box a {
+      color: #252763;
+      font-weight: 700;
+      text-decoration: underline;
+    }
+
+    .placeholder-box a:hover {
+      color: #1d1f50;
+    }
+
+    /* --- CUSTOM SAVE MODAL --- */
+    .save-modal-overlay {
+      position: fixed;
+      inset: 0;
+      background: rgba(0, 0, 0, 0.45);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 5000;
+    }
+
+    .save-modal-overlay.hidden {
+      display: none;
+    }
+
+    .save-modal {
+      background: white;
+      color: #222;
+      width: 420px;
+      max-width: calc(100% - 40px);
+      border-radius: 14px;
+      box-shadow: 0 18px 45px rgba(0,0,0,0.28);
+      padding: 26px 28px;
+      text-align: center;
+    }
+
+    .save-modal-icon {
+      width: 42px;
+      height: 42px;
+      margin: 0 auto 10px auto;
+    }
+
+    .save-modal-icon svg {
+      width: 42px;
+      height: 42px;
+      fill: #252763;
+      display: block;
+    }
+
+    .save-modal h2 {
+      margin: 0 0 10px 0;
+      font-size: 22px;
+      color: #252763;
+    }
+
+    .save-modal p {
+      margin: 0 0 22px 0;
+      font-size: 15px;
+      line-height: 1.45;
+      color: #444;
+    }
+
+    .save-modal-actions {
+      display: flex;
+      justify-content: center;
+      gap: 12px;
+    }
+
+    .save-modal-button {
+      border: none;
+      border-radius: 8px;
+      padding: 10px 22px;
+      font-size: 14px;
+      font-weight: 700;
+      cursor: pointer;
+      min-width: 130px;
+      font-family: inherit;
+    }
+
+    .save-modal-button.no {
+      background: #e9e9e9;
+      color: #333;
+    }
+
+    .save-modal-button.no:hover {
+      background: #dcdcdc;
+    }
+
+    .save-modal-button.yes {
+      background: #252763;
+      color: white;
+    }
+
+    .save-modal-button.yes:hover {
+      background: #1d1f50;
+    }
+
+    @media (max-width: 980px) {
+      .dashboard-refresh-popup {
+        min-height: 30px;
+        padding: 7px 30px 7px 14px;
+        font-size: 11.5px;
+      }
+
+      .nav-spacer {
+        min-width: 190px;
+        padding: 0 8px;
+      }
+    }
+  </style>
+</head>
+<body>
+
+  <div class="top-nav">
+
+    <a class="nav-home portal-view-link active"
+       href="#home"
+       data-view-id="home"
+       title="Home">
+      <svg viewBox="0 0 24 24" aria-hidden="true">
+        <path d="M12 3.2 3 10.4v10.4c0 .6.4 1 1 1h5.5c.6 0 1-.4 1-1v-5.2h3v5.2c0 .6.4 1 1 1H20c.6 0 1-.4 1-1V10.4l-9-7.2z"/>
+      </svg>
+    </a>
+
+    <a class="nav-item portal-view-link"
+       href="#mainInitiatives"
+       data-view-id="mainInitiatives">
+      Main Initiatives
+    </a>
+
+    <a class="nav-item portal-view-link"
+       href="#allDepartmentProjects"
+       data-view-id="allDepartmentProjects">
+      All Projects View Only
+    </a>
+
+    <a class="nav-item portal-view-link"
+       href="#allHrPersonalTasks"
+       data-view-id="allHrPersonalTasks">
+      All HR Personal Tasks
+    </a>
+
+    <div class="dropdown">
+      <div class="dropdown-toggle" id="projectDropdownToggle" tabindex="0">
+        <span id="projectDropdownLabel">Projects</span> <span class="caret">▼</span>
+      </div>
+
+      <div class="dropdown-menu">
+        <div class="project-search-wrap">
+          <input
+            class="project-search"
+            id="projectSearch"
+            type="text"
+            placeholder="Search projects..."
+            aria-label="Search projects">
+        </div>
+
+        <div id="projectLinksContainer"></div>
+
+        <div class="no-project-results" id="noProjectResults">
+          No matching projects found.
+        </div>
+      </div>
+    </div>
+
+    <div class="dropdown">
+      <div class="dropdown-toggle" tabindex="0">
+        Navigation <span class="caret">▼</span>
+      </div>
+      <div class="dropdown-menu">
+        <div class="dropdown-header">HRLT</div>
+        <a href="https://swgashr.github.io/HRCM/HR">Albert Taylor</a>
+        <a href="https://swgashr.github.io/HR-Operations">Gail Carmona</a>
+        <a href="https://swgashr.github.io/HR-Compensation-Benefits-HRS">Mike Bryant</a>
+        <a href="https://swgashr.github.io/HR-EX-DEI-TA">Courtney Moore</a>
+
+        <div class="dropdown-divider"></div>
+
+        <div class="dropdown-header">Departments</div>
+        <a href="https://swgashr.github.io/Benefits">Benefits</a>
+        <a href="https://swgashr.github.io/Compensation">Compensation</a>
+        <a href="https://swgashr.github.io/DEI">DE&I</a>
+        <a href="https://swgashr.github.io/ELO">ELO</a>
+        <a href="https://swgashr.github.io/Employee-Experience">Employee Experience</a>
+        <a href="https://swgashr.github.io/HRBP">HRBP</a>
+        <a href="https://swgashr.github.io/HRCM">HRCM</a>
+        <a href="https://swgashr.github.io/HRS">HRS</a>
+        <a href="https://swgashr.github.io/HRSS">HRSS</a>
+        <a href="https://swgashr.github.io/Labor-Relations">Labor Relations</a>
+        <a href="https://swgashr.github.io/Talent-Acquisition">Talent Acquisition</a>
+        <a href="https://swgashr.github.io/Talent-Development">Talent Development</a>
+
+        <div class="dropdown-divider"></div>
+
+        <div class="dropdown-header">Raid Log</div>
+        <a href="https://swgashr.github.io/Raid-Log">Raid Log</a>
+
+        <div class="dropdown-divider"></div>
+
+        <div class="dropdown-header">KPIs</div>
+        <a href="https://swgashr.github.io/KPIS">KPI Dashboard</a>
+      </div>
+    </div>
+
+    <div class="dropdown">
+      <div class="dropdown-toggle" tabindex="0">
+        Support <span class="caret">▼</span>
+      </div>
+      <div class="dropdown-menu">
+        <a href="https://app.smartsheet.com/b/form/019a16dd2b3d7e2d96db9a9e8c1aedc7" target="_blank" rel="noopener noreferrer">
+          Smartsheet Project Creation Request
+        </a>
+
+        <a href="https://app.smartsheet.com/b/form/019a16e297d77bd2b18acb36bc27e593" target="_blank" rel="noopener noreferrer">
+          Smartsheet Support
+        </a>
+
+        <a href="INSERT_SUPPORT_LINK_3_HERE">Job Aid (MGR)</a>
+        <a href="INSERT_SUPPORT_LINK_4_HERE">Job Aid (DIR)</a>
+      </div>
+    </div>
+
+    <div class="nav-spacer">
+      <div class="dashboard-refresh-popup hidden" id="refreshPopup" role="status" aria-live="polite">
+        <span class="refresh-popup-text">This Dashboard updates every 24 hours.</span>
+        <button class="refresh-popup-close" id="refreshPopupClose" type="button" aria-label="Dismiss dashboard update reminder">×</button>
+      </div>
+    </div>
+
+    <a class="swgas-logo-link"
+       href="INSERT_SHAREPOINT_LINK_HERE"
+       target="_blank"
+       rel="noopener noreferrer"
+       title="Southwest Gas SharePoint">
+      <img src="swgas.png" alt="Southwest Gas" class="swgas-logo">
+    </a>
+  </div>
+
+  <div class="header-bar hidden" id="warningBar">
+    <div class="header-left">
+      <div class="arrow-down">⬇️</div>
+      <div class="header-text">
+        <strong>Don't lose your work!</strong>
+        <span class="header-extra"> Click the Save icon just below the project title on the far left before leaving this sheet.</span>
+      </div>
+    </div>
+
+    <button class="header-toggle"
+            id="warningToggle"
+            type="button"
+            aria-expanded="true"
+            aria-label="Collapse warning bar"
+            onclick="toggleWarningBar()">
+      ▲
+    </button>
+  </div>
+
+  <div class="view-only-note hidden" id="viewOnlyNote">
+    <strong>View-only page.</strong>
+    To make updates, open the specific project sheet from the Projects menu.
+  </div>
+
+  <div class="iframe-wrap">
+    <iframe id="contentFrame"
+            src=""
+            allowfullscreen>
+    </iframe>
+
+    <div class="loading-message hidden" id="loadingMessage">
+      <div class="loading-content">
+        <svg class="loading-icon" viewBox="0 0 32 32" aria-hidden="true">
+          <circle cx="16" cy="16" r="11"></circle>
+        </svg>
+        <span>Loading Smartsheet view...</span>
+      </div>
+    </div>
+
+    <div class="placeholder-message hidden" id="placeholderMessage">
+      <div class="placeholder-box">
+        <h2>Link not added yet</h2>
+        <p>
+          Please reach out to
+          <a class="placeholder-action-link"
+             href="mailto:Benjamin.Bell@swgas.com?subject=Smartsheet%20Portal%20Link%20Issue">
+            Benjamin.Bell@swgas.com
+          </a>
+          to fix this link, or use the
+          <a class="placeholder-action-link"
+             href="https://app.smartsheet.com/b/form/019a16dd2b3d7e2d96db9a9e8c1aedc7"
+             target="_blank"
+             rel="noopener noreferrer">
+            Project Creation Request Form
+          </a>
+          to create a new project.
+        </p>
+      </div>
+    </div>
+  </div>
+
+  <div class="save-modal-overlay hidden"
+       id="saveModal"
+       role="dialog"
+       aria-modal="true"
+       aria-labelledby="saveModalTitle"
+       aria-describedby="saveModalDescription">
+    <div class="save-modal">
+      <div class="save-modal-icon" aria-hidden="true">
+        <svg viewBox="0 0 24 24">
+          <path d="M17 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V7l-4-4zM12 19c-1.7 0-3-1.3-3-3s1.3-3 3-3 3 1.3 3 3-1.3 3-3 3zm3-10H5V5h10v4z"/>
+        </svg>
+      </div>
+
+      <h2 id="saveModalTitle">Did you save?</h2>
+
+      <p id="saveModalDescription">
+        You are currently viewing a project sheet. Please confirm that you saved your work before leaving this project.
+      </p>
+
+      <div class="save-modal-actions">
+        <button class="save-modal-button no" id="saveNoButton" type="button">
+          No, return to project
+        </button>
+
+        <button class="save-modal-button yes" id="saveYesButton" type="button">
+          Yes, I saved
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    /* ==========================================================
+       EDIT THIS SECTION ONLY FOR TITLES, MAIN LINKS, AND PROJECTS
+       ========================================================== */
+
+    const PORTAL_CONFIG = {
+      portalTitle: "INSERT TITLE HERE",
+
+      departmentName: "(Department Name)",
+
+      defaultViewId: "home",
+
+      views: {
+        home: {
+          label: "Home",
+          embedSrc: "INSERT_HOME_EMBED_LINK_HERE",
+          viewOnlyNote: false,
+          refreshReminder: true
+        },
+
+        mainInitiatives: {
+          label: "(Department Name) Main Initiatives",
+          embedSrc: "INSERT_MAIN_INITIATIVES_EMBED_LINK_HERE",
+          viewOnlyNote: false,
+          refreshReminder: true
+        },
+
+        allDepartmentProjects: {
+          label: "All (Department Name) Projects (View Only)",
+          embedSrc: "INSERT_ALL_DEPARTMENT_PROJECTS_VIEW_EMBED_LINK_HERE",
+          viewOnlyNote: true,
+          refreshReminder: false
+        },
+
+        allHrPersonalTasks: {
+          label: "All HR Personal Tasks (View Only)",
+          embedSrc: "https://app.smartsheet.com/b/publish?EQBCT=411b8b11b68440d29c2d27c40b0397ed",
+          viewOnlyNote: true,
+          refreshReminder: false
+        }
+      },
+
+      projects: [
+        {
+          id: "project1",
+          label: "Project Link 1",
+          embedSrc: "INSERT_DEPARTMENT_PROJECT_EMBED_LINK_1_HERE"
+        },
+        {
+          id: "project2",
+          label: "Project Link 2",
+          embedSrc: "INSERT_DEPARTMENT_PROJECT_EMBED_LINK_2_HERE"
+        },
+        {
+          id: "project3",
+          label: "Project Link 3",
+          embedSrc: "INSERT_DEPARTMENT_PROJECT_EMBED_LINK_3_HERE"
+        },
+        {
+          id: "main hr initiative",
+          label: "Main HR Initiative #1 (Placeholder)",
+          embedSrc: "INSERT_DEPARTMENT_INITIATIVE_LINK_HERE"
+        }
+      ]
+    };
+
+    /* ==========================================================
+       MAIN PORTAL SCRIPT
+       You should not need to edit below this line.
+       ========================================================== */
+
+    const contentFrame = document.getElementById("contentFrame");
+    const warningBar = document.getElementById("warningBar");
+    const warningToggle = document.getElementById("warningToggle");
+    const saveModal = document.getElementById("saveModal");
+    const saveNoButton = document.getElementById("saveNoButton");
+    const saveYesButton = document.getElementById("saveYesButton");
+    const loadingMessage = document.getElementById("loadingMessage");
+    const placeholderMessage = document.getElementById("placeholderMessage");
+    const viewOnlyNote = document.getElementById("viewOnlyNote");
+    const refreshPopup = document.getElementById("refreshPopup");
+    const refreshPopupText = refreshPopup ? refreshPopup.querySelector(".refresh-popup-text") : null;
+    const refreshPopupClose = document.getElementById("refreshPopupClose");
+    const projectLinksContainer = document.getElementById("projectLinksContainer");
+    const projectSearch = document.getElementById("projectSearch");
+    const noProjectResults = document.getElementById("noProjectResults");
+    const projectDropdownToggle = document.getElementById("projectDropdownToggle");
+    const projectDropdownLabel = document.getElementById("projectDropdownLabel");
+
+    let projectModeActive = false;
+    let pendingNavigationAction = null;
+    let projectWarningCollapsedByUser = false;
+    let currentViewKey = null;
+    let currentRouteHash = "";
+    let suppressHashChange = false;
+    let lastFocusedElementBeforeModal = null;
+    let navPopupDismissedRouteKey = null;
+
+    let loadingShowTimer = null;
+    let loadingHideTimer = null;
+    let loadingFadeTimer = null;
+    let loadingVisibleAt = 0;
+
+    const LOADER_SHOW_DELAY_MS = 350;
+    const LOADER_HIDE_AFTER_IFRAME_LOAD_MS = 650;
+    const LOADER_FADE_MS = 320;
+    const LOADER_MIN_VISIBLE_MS = 900;
+
+    function isPlaceholderLink(link) {
+      if (!link) {
+        return true;
+      }
+
+      const trimmedLink = link.trim();
+
+      return (
+        trimmedLink === "" ||
+        trimmedLink === "#" ||
+        trimmedLink.includes("INSERT_") ||
+        trimmedLink.includes("_HERE")
+      );
+    }
+
+    function replaceDepartmentName(text) {
+      if (!text) {
+        return "";
+      }
+
+      return text.split("(Department Name)").join(PORTAL_CONFIG.departmentName);
+    }
+
+    function routeKey(route) {
+      if (!route) {
+        return "";
+      }
+
+      return route.type + ":" + route.id;
+    }
+
+    function routeHash(route) {
+      if (!route) {
+        return "#home";
+      }
+
+      if (route.type === "project") {
+        return "#project-" + encodeURIComponent(route.id);
+      }
+
+      return "#" + encodeURIComponent(route.id);
+    }
+
+    function defaultRoute() {
+      return {
+        type: "view",
+        id: PORTAL_CONFIG.defaultViewId || "home"
+      };
+    }
+
+    function parseHashRoute() {
+      let hashValue = window.location.hash || "";
+
+      if (!hashValue) {
+        return defaultRoute();
+      }
+
+      hashValue = decodeURIComponent(hashValue.replace(/^#/, ""));
+
+      if (!hashValue) {
+        return defaultRoute();
+      }
+
+      if (PORTAL_CONFIG.views[hashValue]) {
+        return {
+          type: "view",
+          id: hashValue
+        };
+      }
+
+      if (hashValue.startsWith("view-")) {
+        const viewId = hashValue.replace(/^view-/, "");
+
+        if (PORTAL_CONFIG.views[viewId]) {
+          return {
+            type: "view",
+            id: viewId
+          };
+        }
+      }
+
+      if (hashValue.startsWith("project-")) {
+        const projectId = hashValue.replace(/^project-/, "");
+
+        if (getProjectById(projectId)) {
+          return {
+            type: "project",
+            id: projectId
+          };
+        }
+      }
+
+      if (getProjectById(hashValue)) {
+        return {
+          type: "project",
+          id: hashValue
+        };
+      }
+
+      return null;
+    }
+
+    function updateRouteHash(route) {
+      const newHash = routeHash(route);
+      currentRouteHash = newHash;
+
+      if (window.location.hash !== newHash) {
+        suppressHashChange = true;
+        window.location.hash = newHash;
+
+        setTimeout(function() {
+          suppressHashChange = false;
+        }, 100);
+      }
+    }
+
+    function showLoadingMessage() {
+      clearTimeout(loadingShowTimer);
+      clearTimeout(loadingHideTimer);
+      clearTimeout(loadingFadeTimer);
+
+      placeholderMessage.classList.add("hidden");
+
+      loadingMessage.classList.add("hidden");
+      loadingMessage.classList.remove("visible");
+      loadingMessage.classList.remove("fading");
+      loadingVisibleAt = 0;
+
+      loadingShowTimer = setTimeout(function() {
+        loadingMessage.classList.remove("hidden");
+
+        requestAnimationFrame(function() {
+          loadingVisibleAt = Date.now();
+          loadingMessage.classList.add("visible");
+          loadingMessage.classList.remove("fading");
+        });
+      }, LOADER_SHOW_DELAY_MS);
+    }
+
+    function hideLoadingMessage() {
+      clearTimeout(loadingShowTimer);
+      clearTimeout(loadingHideTimer);
+      clearTimeout(loadingFadeTimer);
+
+      if (loadingMessage.classList.contains("hidden")) {
+        return;
+      }
+
+      const visibleFor = loadingVisibleAt ? Date.now() - loadingVisibleAt : 0;
+      const remainingVisibleTime = Math.max(LOADER_MIN_VISIBLE_MS - visibleFor, 0);
+
+      loadingFadeTimer = setTimeout(function() {
+        loadingMessage.classList.remove("visible");
+        loadingMessage.classList.add("fading");
+
+        loadingFadeTimer = setTimeout(function() {
+          loadingMessage.classList.add("hidden");
+          loadingMessage.classList.remove("fading");
+          loadingVisibleAt = 0;
+        }, LOADER_FADE_MS);
+      }, remainingVisibleTime);
+    }
+
+    function scheduleLoadingMessageHide() {
+      clearTimeout(loadingHideTimer);
+
+      loadingHideTimer = setTimeout(function() {
+        hideLoadingMessage();
+      }, LOADER_HIDE_AFTER_IFRAME_LOAD_MS);
+    }
+
+    function showPlaceholderMessage() {
+      hideLoadingMessage();
+      placeholderMessage.classList.remove("hidden");
+    }
+
+    function hidePlaceholderMessage() {
+      placeholderMessage.classList.add("hidden");
+    }
+
+    placeholderMessage.addEventListener("click", function(event) {
+      if (event.target === placeholderMessage) {
+        hidePlaceholderMessage();
+      }
+    });
+
+    function setViewOnlyNote(shouldShow) {
+      viewOnlyNote.classList.add("hidden");
+    }
+
+    function setNavPopup(shouldShow, message) {
+      if (!refreshPopup) {
+        return;
+      }
+
+      if (message && refreshPopupText) {
+        refreshPopupText.textContent = message;
+      }
+
+      if (shouldShow && navPopupDismissedRouteKey !== currentViewKey) {
+        refreshPopup.classList.remove("hidden");
+      } else {
+        refreshPopup.classList.add("hidden");
+      }
+    }
+
+    function setRefreshReminder(shouldShow) {
+      setNavPopup(shouldShow, "This Dashboard updates every 24 hours.");
+    }
+
+    function setViewOnlyReminder(shouldShow) {
+      setNavPopup(shouldShow, "View-only: Open the project sheet inside the Projects dropdown to make updates.");
+    }
+
+    function setActiveLink(activeLink, isProject) {
+      document.querySelectorAll(".portal-view-link, .project-view-link").forEach(function(link) {
+        link.classList.remove("active");
+      });
+
+      if (activeLink) {
+        activeLink.classList.add("active");
+      }
+
+      if (isProject) {
+        projectDropdownToggle.classList.add("active");
+      } else {
+        projectDropdownToggle.classList.remove("active");
+      }
+    }
+
+    function updateWarningToggleButton(isCollapsed) {
+      if (isCollapsed) {
+        warningToggle.textContent = "▼";
+        warningToggle.setAttribute("aria-expanded", "false");
+        warningToggle.setAttribute("aria-label", "Expand warning bar");
+      } else {
+        warningToggle.textContent = "▲";
+        warningToggle.setAttribute("aria-expanded", "true");
+        warningToggle.setAttribute("aria-label", "Collapse warning bar");
+      }
+    }
+
+    function showWarningBar() {
+      projectModeActive = true;
+      warningBar.classList.remove("hidden");
+
+      if (projectWarningCollapsedByUser) {
+        warningBar.classList.add("collapsed");
+        updateWarningToggleButton(true);
+      } else {
+        warningBar.classList.remove("collapsed");
+        updateWarningToggleButton(false);
+      }
+    }
+
+    function hideWarningBar() {
+      projectModeActive = false;
+      warningBar.classList.add("hidden");
+      warningBar.classList.remove("collapsed");
+      updateWarningToggleButton(false);
+    }
+
+    function toggleWarningBar() {
+      const isCollapsed = warningBar.classList.toggle("collapsed");
+      projectWarningCollapsedByUser = isCollapsed;
+      updateWarningToggleButton(isCollapsed);
+    }
+
+    function loadEmbeddedLink(options) {
+      const newEmbedLink = options.embedSrc;
+      const shouldShowProjectWarning = options.isProject;
+      const clickedLink = options.clickedLink;
+      const viewKey = options.viewKey;
+      const shouldShowViewOnlyNote = options.viewOnlyNote;
+      const shouldShowRefreshReminder = options.refreshReminder;
+
+      if (isPlaceholderLink(newEmbedLink)) {
+        showPlaceholderMessage();
+        return false;
+      }
+
+      hidePlaceholderMessage();
+      showLoadingMessage();
+
+      contentFrame.src = newEmbedLink;
+      currentViewKey = viewKey;
+
+      if (shouldShowProjectWarning) {
+        showWarningBar();
+        setViewOnlyNote(false);
+        setNavPopup(false);
+      } else {
+        hideWarningBar();
+        setViewOnlyNote(false);
+
+        if (shouldShowViewOnlyNote) {
+          setViewOnlyReminder(true);
+        } else {
+          setRefreshReminder(shouldShowRefreshReminder);
+        }
+      }
+
+      setActiveLink(clickedLink, shouldShowProjectWarning);
+      return true;
+    }
+
+    function getFocusableModalElements() {
+      return Array.from(
+        saveModal.querySelectorAll(
+          'button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])'
+        )
+      ).filter(function(element) {
+        return !element.disabled && element.offsetParent !== null;
+      });
+    }
+
+    function showSaveModal(actionToRunAfterYes) {
+      pendingNavigationAction = actionToRunAfterYes;
+      lastFocusedElementBeforeModal = document.activeElement;
+
+      saveModal.classList.remove("hidden");
+      saveNoButton.focus();
+    }
+
+    function closeSaveModal() {
+      saveModal.classList.add("hidden");
+      pendingNavigationAction = null;
+
+      if (lastFocusedElementBeforeModal && typeof lastFocusedElementBeforeModal.focus === "function") {
+        lastFocusedElementBeforeModal.focus();
+      }
+
+      lastFocusedElementBeforeModal = null;
+    }
+
+    function runWithSaveCheck(actionToRunAfterYes) {
+      if (projectModeActive) {
+        showSaveModal(actionToRunAfterYes);
+      } else {
+        actionToRunAfterYes();
+      }
+    }
+
+    function getProjectById(projectId) {
+      return PORTAL_CONFIG.projects.find(function(project) {
+        return project.id === projectId;
+      });
+    }
+
+    function getLinkForRoute(route) {
+      if (!route) {
+        return null;
+      }
+
+      if (route.type === "project") {
+        return document.querySelector('.project-view-link[data-project-id="' + route.id + '"]');
+      }
+
+      return document.querySelector('.portal-view-link[data-view-id="' + route.id + '"]');
+    }
+
+    function loadRoute(route, shouldUpdateHash) {
+      if (!route) {
+        showPlaceholderMessage();
+        return false;
+      }
+
+      let success = false;
+
+      if (route.type === "project") {
+        const project = getProjectById(route.id);
+        const clickedLink = getLinkForRoute(route);
+
+        if (!project) {
+          showPlaceholderMessage();
+          return false;
+        }
+
+        success = loadEmbeddedLink({
+          embedSrc: project.embedSrc,
+          isProject: true,
+          clickedLink: clickedLink,
+          viewKey: routeKey(route),
+          viewOnlyNote: false,
+          refreshReminder: false
+        });
+      } else {
+        const view = PORTAL_CONFIG.views[route.id];
+        const clickedLink = getLinkForRoute(route);
+
+        if (!view) {
+          showPlaceholderMessage();
+          return false;
+        }
+
+        success = loadEmbeddedLink({
+          embedSrc: view.embedSrc,
+          isProject: false,
+          clickedLink: clickedLink,
+          viewKey: routeKey(route),
+          viewOnlyNote: view.viewOnlyNote,
+          refreshReminder: view.refreshReminder
+        });
+      }
+
+      if (success && shouldUpdateHash) {
+        updateRouteHash(route);
+      }
+
+      if (success && !shouldUpdateHash) {
+        currentRouteHash = window.location.hash || routeHash(route);
+      }
+
+      return success;
+    }
+
+    function handlePortalViewClick(clickedLink) {
+      const viewId = clickedLink.getAttribute("data-view-id");
+      const route = {
+        type: "view",
+        id: viewId
+      };
+
+      if (!PORTAL_CONFIG.views[viewId]) {
+        showPlaceholderMessage();
+        return;
+      }
+
+      if (currentViewKey === routeKey(route)) {
+        updateRouteHash(route);
+        return;
+      }
+
+      runWithSaveCheck(function() {
+        loadRoute(route, true);
+      });
+    }
+
+    function handleProjectViewClick(clickedLink) {
+      const projectId = clickedLink.getAttribute("data-project-id");
+      const route = {
+        type: "project",
+        id: projectId
+      };
+
+      if (!getProjectById(projectId)) {
+        showPlaceholderMessage();
+        return;
+      }
+
+      if (currentViewKey === routeKey(route)) {
+        updateRouteHash(route);
+        return;
+      }
+
+      runWithSaveCheck(function() {
+        loadRoute(route, true);
+      });
+    }
+
+    function renderProjectLinks() {
+      projectLinksContainer.innerHTML = "";
+
+      PORTAL_CONFIG.projects.forEach(function(project) {
+        const projectLink = document.createElement("a");
+
+        projectLink.className = "project-view-link";
+        projectLink.href = routeHash({
+          type: "project",
+          id: project.id
+        });
+        projectLink.setAttribute("data-project-id", project.id);
+        projectLink.textContent = project.label;
+
+        projectLinksContainer.appendChild(projectLink);
+      });
+    }
+
+    function filterProjectLinks() {
+      const searchTerm = projectSearch.value.trim().toLowerCase();
+      const projectLinks = Array.from(projectLinksContainer.querySelectorAll(".project-view-link"));
+
+      let visibleCount = 0;
+
+      projectLinks.forEach(function(link) {
+        const projectName = link.textContent.toLowerCase();
+        const shouldShow = projectName.includes(searchTerm);
+
+        link.style.display = shouldShow ? "block" : "none";
+
+        if (shouldShow) {
+          visibleCount += 1;
+        }
+      });
+
+      noProjectResults.style.display = visibleCount === 0 ? "block" : "none";
+    }
+
+    function applyConfigToNavigation() {
+      if (PORTAL_CONFIG.portalTitle && PORTAL_CONFIG.portalTitle.trim() !== "") {
+        document.title = PORTAL_CONFIG.portalTitle;
+      }
+
+      projectDropdownLabel.textContent = PORTAL_CONFIG.departmentName + " Projects";
+
+      document.querySelectorAll(".portal-view-link").forEach(function(link) {
+        const viewId = link.getAttribute("data-view-id");
+        const view = PORTAL_CONFIG.views[viewId];
+
+        if (!view) {
+          return;
+        }
+
+        if (viewId !== "home") {
+          link.textContent = replaceDepartmentName(view.label);
+        }
+
+        link.setAttribute("aria-label", replaceDepartmentName(view.label));
+        link.href = routeHash({
+          type: "view",
+          id: viewId
+        });
+      });
+    }
+
+    function loadInitialRoute() {
+      const route = parseHashRoute();
+
+      if (!route) {
+        showPlaceholderMessage();
+        return;
+      }
+
+      loadRoute(route, false);
+      currentRouteHash = window.location.hash || routeHash(route);
+    }
+
+    function handleHashChange() {
+      if (suppressHashChange) {
+        currentRouteHash = window.location.hash || currentRouteHash;
+        return;
+      }
+
+      const route = parseHashRoute();
+
+      if (!route) {
+        showPlaceholderMessage();
+        return;
+      }
+
+      const requestedHash = routeHash(route);
+
+      if (currentViewKey === routeKey(route)) {
+        currentRouteHash = requestedHash;
+        return;
+      }
+
+      if (projectModeActive) {
+        const hashToRestore = currentRouteHash || routeHash(defaultRoute());
+
+        suppressHashChange = true;
+        window.location.hash = hashToRestore;
+
+        setTimeout(function() {
+          suppressHashChange = false;
+        }, 100);
+
+        showSaveModal(function() {
+          loadRoute(route, true);
+        });
+
+        return;
+      }
+
+      loadRoute(route, false);
+      currentRouteHash = requestedHash;
+    }
+
+    contentFrame.addEventListener("load", function() {
+      scheduleLoadingMessageHide();
+    });
+
+    saveNoButton.addEventListener("click", function() {
+      closeSaveModal();
+    });
+
+    saveYesButton.addEventListener("click", function() {
+      const actionToRun = pendingNavigationAction;
+      closeSaveModal();
+
+      if (typeof actionToRun === "function") {
+        actionToRun();
+      }
+    });
+
+    saveModal.addEventListener("click", function(event) {
+      if (event.target === saveModal) {
+        event.preventDefault();
+      }
+    });
+
+    if (refreshPopupClose) {
+      refreshPopupClose.addEventListener("click", function(event) {
+        event.preventDefault();
+        event.stopPropagation();
+        navPopupDismissedRouteKey = currentViewKey;
+        setNavPopup(false);
+      });
+    }
+
+    document.addEventListener("keydown", function(event) {
+      const modalIsOpen = !saveModal.classList.contains("hidden");
+
+      if (!modalIsOpen) {
+        return;
+      }
+
+      if (event.key === "Escape") {
+        event.preventDefault();
+        closeSaveModal();
+        return;
+      }
+
+      if (event.key === "Tab") {
+        const focusableElements = getFocusableModalElements();
+
+        if (focusableElements.length === 0) {
+          event.preventDefault();
+          return;
+        }
+
+        const firstElement = focusableElements[0];
+        const lastElement = focusableElements[focusableElements.length - 1];
+
+        if (event.shiftKey && document.activeElement === firstElement) {
+          event.preventDefault();
+          lastElement.focus();
+        } else if (!event.shiftKey && document.activeElement === lastElement) {
+          event.preventDefault();
+          firstElement.focus();
+        }
+      }
+    });
+
+    projectSearch.addEventListener("input", filterProjectLinks);
+    window.addEventListener("hashchange", handleHashChange);
+
+    document.addEventListener("click", function(event) {
+      const clickedLink = event.target.closest("a");
+
+      if (!clickedLink) {
+        return;
+      }
+
+      const isPortalViewLink = clickedLink.classList.contains("portal-view-link");
+      const isProjectViewLink = clickedLink.classList.contains("project-view-link");
+      const isPlaceholderActionLink = clickedLink.classList.contains("placeholder-action-link");
+      const href = clickedLink.getAttribute("href");
+
+      if (isPlaceholderActionLink) {
+        return;
+      }
+
+      if (isPortalViewLink) {
+        event.preventDefault();
+        handlePortalViewClick(clickedLink);
+        return;
+      }
+
+      if (isProjectViewLink) {
+        event.preventDefault();
+        handleProjectViewClick(clickedLink);
+        return;
+      }
+
+      if (projectModeActive && href && href !== "#" && !href.startsWith("javascript:")) {
+        event.preventDefault();
+
+        const target = clickedLink.getAttribute("target");
+
+        runWithSaveCheck(function() {
+          if (isPlaceholderLink(href)) {
+            showPlaceholderMessage();
+            return;
+          }
+
+          if (target === "_blank") {
+            window.open(href, "_blank", "noopener,noreferrer");
+          } else {
+            projectModeActive = false;
+            window.location.href = href;
+          }
+        });
+
+        return;
+      }
+
+      if (isPlaceholderLink(href)) {
+        event.preventDefault();
+        showPlaceholderMessage();
+        return;
+      }
+    });
+
+    window.addEventListener("beforeunload", function(e) {
+      if (projectModeActive) {
+        e.preventDefault();
+        e.returnValue = "";
+      }
+    });
+
+    applyConfigToNavigation();
+    renderProjectLinks();
+    loadInitialRoute();
+  </script>
+
+</body>
+</html>
