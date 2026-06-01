@@ -4,6 +4,8 @@
   <meta charset="UTF-8">
   <title>VP: HR Projects</title>
   <link rel="icon" type="image/png" href="department.png">
+  <link rel="preconnect" href="https://workapps.smartsheet.com">
+  <link rel="dns-prefetch" href="https://workapps.smartsheet.com">
   <style>
     body, html {
       margin: 0;
@@ -172,7 +174,7 @@
     }
 
     .nav-scroll-shell.no-scroll {
-      overflow: visible;
+      overflow: hidden;
     }
 
     .nav-scroll-shell.no-scroll::before,
@@ -187,6 +189,14 @@
       padding-right: 0;
       overflow-x: hidden;
       scrollbar-gutter: auto;
+    }
+
+    /* Used only for instant, no-flicker overflow measurement in JavaScript. */
+    .nav-scroll-shell.nav-scroll-measuring .nav-scroll-region,
+    .nav-scroll-shell.nav-scroll-measuring .nav-scroll-button,
+    .nav-scroll-shell.nav-scroll-measuring::before,
+    .nav-scroll-shell.nav-scroll-measuring::after {
+      transition: none !important;
     }
 
     .nav-home {
@@ -236,6 +246,14 @@
       user-select: none;
       pointer-events: none;
       text-shadow: 0 1px 2px rgba(0,0,0,0.25);
+    }
+
+    /* Keep top-level navigation labels from shrinking into partial words.
+       If the nav cannot fit, the scroll controls will appear instead. */
+    .nav-scroll-region > .nav-item,
+    .nav-scroll-region > .dropdown,
+    .nav-scroll-region > .nav-separator {
+      flex: 0 0 auto;
     }
 
     .nav-item,
@@ -322,6 +340,101 @@
       height: 1px;
       background: #e9e9e9;
       margin: 8px 0;
+    }
+
+    /* --- SUPPORT REQUEST ACCESS BUTTON --- */
+    .dropdown-menu a.request-access-button {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 7px;
+      margin: 10px 12px 4px 12px;
+      padding: 10px 12px;
+      min-height: 46px;
+      border-radius: 12px;
+      background: linear-gradient(135deg, #252763 0%, #1d1f50 100%);
+      color: #ffffff;
+      font-weight: 800;
+      line-height: 1;
+      letter-spacing: 0.1px;
+      box-shadow: 0 7px 16px rgba(37, 39, 99, 0.24);
+      border: 1px solid rgba(255,255,255,0.18);
+      box-sizing: border-box;
+      transition: transform 0.18s ease, box-shadow 0.18s ease, background 0.18s ease;
+    }
+
+    .dropdown-menu a.request-access-button:hover,
+    .dropdown-menu a.request-access-button:focus {
+      background: linear-gradient(135deg, #303381 0%, #252763 100%);
+      color: #ffffff;
+      transform: translateY(-1px);
+      box-shadow: 0 10px 22px rgba(37, 39, 99, 0.30);
+      outline: none;
+    }
+
+    .request-access-left {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+      min-width: 0;
+    }
+
+    .request-access-left > span:last-child {
+      line-height: 1;
+      text-align: center;
+      min-width: 0;
+    }
+
+    .request-access-icon {
+      width: 22px;
+      height: 22px;
+      border-radius: 999px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      background: rgba(255,255,255,0.16);
+      flex: 0 0 auto;
+    }
+
+    .request-access-icon svg {
+      width: 13px;
+      height: 13px;
+      display: block;
+      fill: none;
+      stroke: currentColor;
+      stroke-width: 2.1;
+      stroke-linecap: round;
+      stroke-linejoin: round;
+    }
+
+    .request-access-arrow {
+      width: 24px;
+      height: 24px;
+      border-radius: 999px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      background: rgba(255,255,255,0.16);
+      flex: 0 0 auto;
+      transition: transform 0.18s ease, background 0.18s ease;
+    }
+
+    .request-access-arrow svg {
+      width: 14px;
+      height: 14px;
+      display: block;
+      fill: none;
+      stroke: currentColor;
+      stroke-width: 2.3;
+      stroke-linecap: round;
+      stroke-linejoin: round;
+    }
+
+    .dropdown-menu a.request-access-button:hover .request-access-arrow,
+    .dropdown-menu a.request-access-button:focus .request-access-arrow {
+      transform: translateX(2px);
+      background: rgba(255,255,255,0.24);
     }
 
     .caret {
@@ -477,13 +590,14 @@
 
     /* --- CENTER REMINDER BETWEEN SUPPORT AND LOGO --- */
     .top-nav.reminder-visible .nav-scroll-shell.no-scroll {
-      flex: 0 1 auto;
-      max-width: 100%;
+      flex: 1 1 auto;
+      min-width: 0;
+      max-width: none;
     }
 
     .top-nav.reminder-visible .nav-scroll-shell.no-scroll .nav-scroll-region {
-      flex: 0 0 auto;
-      width: auto;
+      flex: 1 1 auto;
+      width: 100%;
       max-width: 100%;
     }
 
@@ -760,7 +874,6 @@
       font-weight: 700;
     }
 
-
     /* --- SMARTSHEET AUTH REFRESH BANNER --- */
     .auth-refresh-banner {
       background: linear-gradient(135deg, #ffffff 0%, #eef4ff 100%);
@@ -851,20 +964,29 @@
       height: 100%;
       border: none;
       display: block;
+      visibility: hidden;
       opacity: 0;
       pointer-events: none;
       z-index: 0;
       background: white;
-      transition: opacity 0.34s ease;
+      will-change: opacity;
+      transition:
+        opacity 0.34s ease-in-out,
+        visibility 0s linear 0.34s;
     }
 
     .content-frame.active {
+      visibility: visible;
       opacity: 1;
       pointer-events: auto;
       z-index: 2;
+      transition:
+        opacity 0.34s ease-in-out,
+        visibility 0s linear 0s;
     }
 
     .content-frame.fading-out {
+      visibility: visible;
       opacity: 0;
       pointer-events: none;
       z-index: 1;
@@ -1217,8 +1339,34 @@
               Smartsheet Support
             </a>
 
+            <div class="dropdown-divider"></div>
+
             <a id="jobAidMgrLink" href="INSERT_JOB_AID_MGR_LINK_HERE">Job Aid (MGR)</a>
             <a id="jobAidDirLink" href="INSERT_JOB_AID_DIR_LINK_HERE">Job Aid (DIR)</a>
+
+            <div class="dropdown-divider"></div>
+
+            <a id="requestAccessLink"
+               class="request-access-button"
+               href="#"
+               onclick="openAccessRequestEmail(event)"
+               aria-label="Request access by email">
+              <span class="request-access-left">
+                <span class="request-access-icon" aria-hidden="true">
+                  <svg viewBox="0 0 24 24" focusable="false">
+                    <rect x="4" y="6" width="16" height="12" rx="2"></rect>
+                    <path d="M4.5 7.5 12 13l7.5-5.5"></path>
+                  </svg>
+                </span>
+                <span>Request Access</span>
+              </span>
+              <span class="request-access-arrow" aria-hidden="true">
+                <svg viewBox="0 0 24 24" focusable="false">
+                  <path d="M5 12h12"></path>
+                  <path d="m13 7 5 5-5 5"></path>
+                </svg>
+              </span>
+            </a>
           </div>
         </div>
       </div>
@@ -1308,11 +1456,13 @@
         <p>
           Please reach out to
           <a class="placeholder-action-link"
+             id="placeholderEmailLink"
              href="mailto:Benjamin.Bell@swgas.com?subject=Smartsheet%20Portal%20Link%20Issue">
             Benjamin.Bell@swgas.com
           </a>
           to fix this link, or use the
           <a class="placeholder-action-link"
+             id="placeholderProjectCreationLink"
              href="https://app.smartsheet.com/b/form/019a16dd2b3d7e2d96db9a9e8c1aedc7"
              target="_blank"
              rel="noopener noreferrer">
@@ -1496,6 +1646,16 @@
     const navScrollLeft = document.getElementById("navScrollLeft");
     const navScrollRight = document.getElementById("navScrollRight");
     const navReminderSlot = document.getElementById("navReminderSlot");
+    const allHrPersonalTasksLink = document.getElementById("allHrPersonalTasksLink");
+    const departmentSharePointLink = document.getElementById("departmentSharePointLink");
+    const departmentLogo = document.getElementById("departmentLogo");
+    const projectCreationRequestLink = document.getElementById("projectCreationRequestLink");
+    const smartsheetSupportLink = document.getElementById("smartsheetSupportLink");
+    const jobAidMgrLink = document.getElementById("jobAidMgrLink");
+    const jobAidDirLink = document.getElementById("jobAidDirLink");
+    const requestAccessLink = document.getElementById("requestAccessLink");
+    const placeholderEmailLink = document.getElementById("placeholderEmailLink");
+    const placeholderProjectCreationLink = document.getElementById("placeholderProjectCreationLink");
     const authRefreshBanner = document.getElementById("authRefreshBanner");
     const authRefreshButton = document.getElementById("authRefreshButton");
     const authRefreshDismiss = document.getElementById("authRefreshDismiss");
@@ -1510,6 +1670,7 @@
     let navPopupDismissedRouteKey = null;
     let iframeRegistry = {};
     let preloadStarted = false;
+    let suppressUnsavedBeforeUnload = false;
     let fadeCleanupTimer = null;
 
     let loadingShowTimer = null;
@@ -1528,9 +1689,9 @@
       Smartsheet sign-in recovery.
       Because the Smartsheet sign-in button lives inside a cross-domain iframe,
       this portal cannot reliably detect the exact sign-in click. To avoid random
-      full-page refreshes, the portal now shows a safe refresh banner after a
-      likely sign-in return. The user can refresh only the embedded Smartsheet
-      views without reloading the entire portal.
+      full-page refreshes, the portal shows a safe refresh banner after a likely
+      sign-in return. The user can refresh only the embedded Smartsheet views
+      without reloading the entire portal.
     */
     const AUTH_STORAGE_PREFIX = String(PORTAL_CONFIG.departmentName || "department")
       .replace(/[^a-z0-9]/gi, "")
@@ -2596,12 +2757,80 @@
       noProjectResults.style.display = visibleCount === 0 ? "block" : "none";
     }
 
+    function buildMailtoLink(emailAddress) {
+      const cleanEmail = (emailAddress || "").trim();
+
+      if (!cleanEmail || isPlaceholderLink(cleanEmail)) {
+        return "INSERT_CONTACT_EMAIL_HERE";
+      }
+
+      return "mailto:" + cleanEmail + "?subject=Smartsheet%20Portal%20Link%20Issue";
+    }
+
+    function getPortalContactEmail() {
+      return "Benjamin.Bell@swgas.com";
+    }
+
+    function openAccessRequestEmail(event) {
+      if (event) {
+        event.preventDefault();
+        event.stopPropagation();
+      }
+
+      const contactEmail = getPortalContactEmail();
+
+      if (!contactEmail || isPlaceholderLink(contactEmail)) {
+        alert("The portal contact email has not been configured yet.");
+        return;
+      }
+
+      const route = parseHashRoute() || defaultRoute();
+      const embedData = getEmbedDataForRoute(route);
+      const portalTitle = replaceDepartmentName(PORTAL_CONFIG.portalTitle || document.title || "Smartsheet Project Portal");
+      const departmentName = replaceDepartmentName(PORTAL_CONFIG.departmentName || "Unknown Department");
+      const currentPage = embedData && embedData.label
+        ? replaceDepartmentName(embedData.label)
+        : "Unknown Page/View";
+      const currentUrl = window.location.href;
+      const submittedAt = new Date().toLocaleString();
+      const subject = encodeURIComponent("Access Request - " + portalTitle);
+      const body = encodeURIComponent(
+        "Hello Ben,\n\n" +
+        "I am requesting access to the Smartsheet portal page listed below.\n\n" +
+        "Portal: " + portalTitle + "\n" +
+        "Department: " + departmentName + "\n" +
+        "Current Page/View: " + currentPage + "\n" +
+        "Page URL: " + currentUrl + "\n" +
+        "Request Date/Time: " + submittedAt + "\n\n" +
+        "Reason for access, optional:\n" +
+        "[Please type reason here]\n\n" +
+        "Thank you!"
+      );
+
+      suppressUnsavedBeforeUnload = true;
+      window.location.href = "mailto:" + contactEmail + "?subject=" + subject + "&body=" + body;
+
+      setTimeout(function() {
+        suppressUnsavedBeforeUnload = false;
+      }, 1500);
+    }
+
     function applyConfigToNavigation() {
       if (PORTAL_CONFIG.portalTitle && PORTAL_CONFIG.portalTitle.trim() !== "") {
         document.title = PORTAL_CONFIG.portalTitle;
       }
 
       projectDropdownLabel.textContent = PORTAL_CONFIG.departmentName + " Projects";
+
+      if (departmentSharePointLink) {
+        departmentSharePointLink.title = PORTAL_CONFIG.departmentName + " SharePoint";
+      }
+
+      if (placeholderEmailLink) {
+        const contactEmail = getPortalContactEmail();
+        placeholderEmailLink.href = buildMailtoLink(contactEmail);
+        placeholderEmailLink.textContent = contactEmail || "INSERT_CONTACT_EMAIL_HERE";
+      }
 
       document.querySelectorAll(".portal-view-link").forEach(function(link) {
         const viewId = link.getAttribute("data-view-id");
@@ -2738,6 +2967,24 @@
       }
     });
 
+
+    projectSearch.addEventListener("input", filterProjectLinks);
+    window.addEventListener("hashchange", handleHashChange);
+
+    if (authRefreshButton) {
+      authRefreshButton.addEventListener("click", function() {
+        refreshSmartsheetIframes();
+      });
+    }
+
+    if (authRefreshDismiss) {
+      authRefreshDismiss.addEventListener("click", function() {
+        sessionStorage.setItem(AUTH_RETURN_BANNER_DISMISSED_KEY, String(Date.now()));
+        clearPossibleSmartsheetAuthReturn();
+        hideAuthRefreshBanner();
+      });
+    }
+
     window.addEventListener("blur", function() {
       const activeElement = document.activeElement;
 
@@ -2763,23 +3010,6 @@
       }
     });
 
-    if (authRefreshButton) {
-      authRefreshButton.addEventListener("click", function() {
-        refreshSmartsheetIframes();
-      });
-    }
-
-    if (authRefreshDismiss) {
-      authRefreshDismiss.addEventListener("click", function() {
-        sessionStorage.setItem(AUTH_RETURN_BANNER_DISMISSED_KEY, String(Date.now()));
-        clearPossibleSmartsheetAuthReturn();
-        hideAuthRefreshBanner();
-      });
-    }
-
-    projectSearch.addEventListener("input", filterProjectLinks);
-    window.addEventListener("hashchange", handleHashChange);
-
     document.addEventListener("click", function(event) {
       const clickedLink = event.target.closest("a");
 
@@ -2790,7 +3020,14 @@
       const isPortalViewLink = clickedLink.classList.contains("portal-view-link");
       const isProjectViewLink = clickedLink.classList.contains("project-view-link");
       const isPlaceholderActionLink = clickedLink.classList.contains("placeholder-action-link");
+      const isRequestAccessLink = clickedLink.id === "requestAccessLink";
       const href = clickedLink.getAttribute("href");
+
+      if (isRequestAccessLink) {
+        event.preventDefault();
+        openAccessRequestEmail(event);
+        return;
+      }
 
       if (isPlaceholderActionLink) {
         return;
@@ -2838,7 +3075,7 @@
     });
 
     window.addEventListener("beforeunload", function(e) {
-      if (projectModeActive) {
+      if (projectModeActive && !suppressUnsavedBeforeUnload) {
         e.preventDefault();
         e.returnValue = "";
       }
