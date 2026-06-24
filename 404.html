@@ -1,0 +1,158 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="robots" content="noindex">
+  <title>Opening HR Project Portal…</title>
+  <link rel="icon" type="image/png" href="/HR/department.png">
+  <style>
+    html, body {
+      height: 100%;
+      margin: 0;
+      font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+      background: #252763;
+      color: #ffffff;
+    }
+
+    body {
+      display: grid;
+      place-items: center;
+    }
+
+    .route-message {
+      text-align: center;
+      padding: 28px;
+    }
+
+    .route-message strong {
+      display: block;
+      margin-bottom: 7px;
+      font-size: 20px;
+    }
+
+    .route-message span {
+      color: rgba(255,255,255,0.78);
+      font-size: 14px;
+    }
+  </style>
+  <script>
+    (function () {
+      "use strict";
+
+      var SITE_BASE_PATH = "/HR/";
+      var DEFAULT_PORTAL_KEY = "albert-taylor";
+      var PORTAL_KEYS = new Set([
+        "albert-taylor",
+        "gail-carmona",
+        "mike-bryant",
+        "courtney-moore",
+        "benefits",
+        "compensation",
+        "dei",
+        "employee-experience",
+        "hrbp",
+        "hrcm",
+        "hrs",
+        "hrss",
+        "labor-relations",
+        "talent-acquisition",
+        "talent-development"
+      ]);
+
+      var PORTAL_ALIASES = {
+        albert: "albert-taylor",
+        alberttaylor: "albert-taylor",
+        gail: "gail-carmona",
+        gailcarmona: "gail-carmona",
+        mike: "mike-bryant",
+        mikebryant: "mike-bryant",
+        courtney: "courtney-moore",
+        courtneymoore: "courtney-moore",
+        ex: "employee-experience",
+        employeeexperience: "employee-experience",
+        cm: "hrcm",
+        "hr-change-management": "hrcm",
+        lr: "labor-relations",
+        ta: "talent-acquisition",
+        td: "talent-development"
+      };
+
+      function normalizePortalKey(value) {
+        return String(value || "")
+          .trim()
+          .toLowerCase()
+          .replace(/&/g, "and")
+          .replace(/[^a-z0-9]+/g, "-")
+          .replace(/^-+|-+$/g, "");
+      }
+
+      function resolvePortalKey(value) {
+        var normalized = normalizePortalKey(value);
+        var compact = normalized.replace(/-/g, "");
+        var resolved = PORTAL_ALIASES[normalized] || PORTAL_ALIASES[compact] || normalized;
+
+        return PORTAL_KEYS.has(resolved) ? resolved : "";
+      }
+
+      function getRequestedPortalKey() {
+        var pathname = window.location.pathname || "/";
+        var lowerPathname = pathname.toLowerCase();
+        var lowerBasePath = SITE_BASE_PATH.toLowerCase();
+        var relativePath = "";
+
+        try {
+          pathname = decodeURIComponent(pathname);
+          lowerPathname = pathname.toLowerCase();
+        } catch (error) {
+          /* Continue with the original path. */
+        }
+
+        if (lowerPathname.indexOf(lowerBasePath) === 0) {
+          relativePath = pathname.slice(SITE_BASE_PATH.length);
+        }
+
+        relativePath = relativePath
+          .replace(/^\/+|\/+$/g, "")
+          .replace(/\/index\.html?$/i, "");
+
+        return resolvePortalKey(relativePath.split("/")[0]);
+      }
+
+      function buildRootPortalUrl(portalKey) {
+        var resolvedKey = resolvePortalKey(portalKey) || DEFAULT_PORTAL_KEY;
+        var target = SITE_BASE_PATH;
+        var existingSearch = (window.location.search || "").replace(/^\?/, "");
+        var hash = window.location.hash || "#home";
+        var queryParts = [];
+
+        if (resolvedKey !== DEFAULT_PORTAL_KEY) {
+          queryParts.push("department=" + encodeURIComponent(resolvedKey));
+        }
+
+        if (existingSearch) {
+          queryParts.push(existingSearch);
+        }
+
+        if (queryParts.length > 0) {
+          target += "?" + queryParts.join("&");
+        }
+
+        return target + hash;
+      }
+
+      var requestedPortalKey = getRequestedPortalKey();
+      window.location.replace(buildRootPortalUrl(requestedPortalKey));
+    })();
+  </script>
+</head>
+<body>
+  <div class="route-message" role="status" aria-live="polite">
+    <strong>Opening the HR Project Portal</strong>
+    <span>You will be redirected automatically.</span>
+  </div>
+  <noscript>
+    <p><a href="/HR/">Continue to the HR Project Portal</a></p>
+  </noscript>
+</body>
+</html>
