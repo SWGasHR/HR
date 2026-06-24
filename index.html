@@ -3,7 +3,8 @@ permalink: /index.html
 ---
 {% capture portal %}{% include_relative portal-source.html %}{% endcapture %}
 
-{% assign portal = portal | replace: 'swgas-', 'images/swgas-' %}
+{% assign portal = portal | replace: 'logoFileName: "swgas-', 'logoFileName: "images/swgas-' %}
+{% assign portal = portal | replace: 'src="swgas-', 'src="images/swgas-' %}
 {% assign portal = portal | replace: 'embedSrc: "INSERT_LINK_HERE", visible: true', 'embedSrc: "INSERT_LINK_HERE", visible: false' %}
 
 {% capture old_preload_settings %}    /*
