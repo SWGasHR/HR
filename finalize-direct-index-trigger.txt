@@ -1,2 +1,0 @@
-Generate the direct self-contained HR portal index.
-Trigger through a merged pull request.
