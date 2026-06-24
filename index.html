@@ -12,82 +12,24 @@
     html, body {
       height: 100%;
       margin: 0;
+      background: #f7f8fc;
     }
 
-    body {
-      background: #f7f8fc;
+    .portal-error {
+      display: none;
+      min-height: 100%;
+      place-items: center;
+      padding: 28px;
+      box-sizing: border-box;
       color: #252763;
       font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
-      overflow: hidden;
-    }
-
-    .portal-loading {
-      position: fixed;
-      top: 10px;
-      left: 50%;
-      z-index: 99999;
-      display: inline-flex;
-      align-items: center;
-      gap: 9px;
-      min-height: 34px;
-      padding: 5px 13px 5px 9px;
-      border: 1px solid rgba(37,39,99,0.12);
-      border-radius: 999px;
-      background: rgba(255,255,255,0.96);
-      color: #252763;
-      box-shadow: 0 7px 22px rgba(37,39,99,0.16);
-      transform: translate(-50%, -10px);
-      opacity: 0;
-      transition: opacity 0.18s ease, transform 0.18s ease;
-      animation: portalLoadingEnter 0.2s ease forwards;
-      white-space: nowrap;
-    }
-
-    .portal-loading.is-leaving {
-      opacity: 0;
-      transform: translate(-50%, -10px);
-    }
-
-    .portal-loading-dot {
-      width: 8px;
-      height: 8px;
-      flex: 0 0 8px;
-      border-radius: 50%;
-      background: #4f7fd8;
-      box-shadow: 0 0 0 0 rgba(79,127,216,0.30);
-      animation: portalLoadingPulse 1.05s ease-in-out infinite;
-    }
-
-    .portal-loading-text {
-      font-size: 12px;
-      line-height: 1;
-      font-weight: 700;
-      letter-spacing: 0.05px;
-    }
-
-    @keyframes portalLoadingEnter {
-      to {
-        opacity: 1;
-        transform: translate(-50%, 0);
-      }
-    }
-
-    @keyframes portalLoadingPulse {
-      0%, 100% {
-        transform: scale(0.82);
-        box-shadow: 0 0 0 0 rgba(79,127,216,0.30);
-      }
-      50% {
-        transform: scale(1);
-        box-shadow: 0 0 0 5px rgba(79,127,216,0);
-      }
+      text-align: center;
     }
   </style>
 </head>
 <body>
-  <div class="portal-loading" id="portalLoadingMessage" role="status" aria-live="polite">
-    <span class="portal-loading-dot" aria-hidden="true"></span>
-    <span class="portal-loading-text">Opening HR Project Portal</span>
+  <div class="portal-error" id="portalError" role="alert">
+    The portal could not be opened. Please refresh the page.
   </div>
 
   <script>
@@ -111,7 +53,7 @@
             margin-right: -2px !important;
             border-radius: 10px !important;
             box-sizing: border-box !important;
-            overflow: visible !important;
+            overflow: hidden !important;
             background: transparent !important;
             isolation: isolate;
           }
@@ -120,11 +62,11 @@
             content: "";
             position: absolute;
             z-index: 0;
-            inset: 1px 0;
-            border-radius: 9px;
+            inset: 2px 0;
+            border-radius: 8px;
             background: rgba(255,255,255,0.14);
             opacity: 0;
-            transition: opacity 0.18s ease, background-color 0.18s ease;
+            transition: opacity 0.18s ease;
             pointer-events: none;
           }
 
@@ -143,11 +85,10 @@
             position: relative;
             z-index: 1;
             width: auto !important;
-            height: 52px !important;
+            height: 50px !important;
             max-width: 250px !important;
-            max-height: 52px !important;
+            max-height: 50px !important;
             object-fit: contain !important;
-            transform-origin: center right;
           }
 
           #departmentLogo[src$="swgas-ex.png"],
@@ -158,7 +99,8 @@
           #departmentLogo[src$="swgas-labor-relations.png"],
           #departmentLogo[src$="swgas-ta.png"],
           #departmentLogo[src$="swgas-td.png"] {
-            transform: scale(1.08);
+            height: 53px !important;
+            max-height: 53px !important;
           }
 
           .nav-reminder-slot,
@@ -173,9 +115,9 @@
             width: auto !important;
             max-width: 100% !important;
             min-width: 0 !important;
-            min-height: 36px !important;
+            min-height: 38px !important;
             height: auto !important;
-            padding: 7px 28px 7px 15px !important;
+            padding: 8px 30px 8px 16px !important;
             flex: 0 0 auto !important;
             white-space: nowrap !important;
           }
@@ -189,9 +131,9 @@
             width: auto !important;
             max-width: 100% !important;
             min-width: 0 !important;
-            min-height: 38px !important;
+            min-height: 40px !important;
             height: auto !important;
-            padding: 7px 34px 7px 11px !important;
+            padding: 8px 36px 8px 12px !important;
             gap: 8px !important;
             flex: 0 0 auto !important;
           }
@@ -202,74 +144,33 @@
           }
 
           .nav-project-action-icon {
-            width: 28px !important;
-            height: 28px !important;
-            flex: 0 0 28px !important;
+            width: 29px !important;
+            height: 29px !important;
+            flex: 0 0 29px !important;
             border-radius: 8px !important;
           }
 
           .nav-project-action-arrow {
-            right: 9px !important;
+            right: 10px !important;
             width: 17px !important;
             height: 17px !important;
-          }
-
-          .portal-route-transition {
-            position: fixed;
-            top: 10px;
-            left: 50%;
-            z-index: 100000;
-            display: inline-flex;
-            align-items: center;
-            gap: 9px;
-            min-height: 34px;
-            padding: 5px 13px 5px 9px;
-            border: 1px solid rgba(37,39,99,0.12);
-            border-radius: 999px;
-            background: rgba(255,255,255,0.97);
-            color: #252763;
-            box-shadow: 0 7px 22px rgba(37,39,99,0.16);
-            transform: translate(-50%, -10px);
-            opacity: 0;
-            pointer-events: none;
-            transition: opacity 0.18s ease, transform 0.18s ease;
-            white-space: nowrap;
-          }
-
-          .portal-route-transition.is-visible {
-            opacity: 1;
-            transform: translate(-50%, 0);
-          }
-
-          .portal-route-transition-dot {
-            width: 8px;
-            height: 8px;
-            flex: 0 0 8px;
-            border-radius: 50%;
-            background: #4f7fd8;
-          }
-
-          .portal-route-transition-text {
-            font-size: 12px;
-            line-height: 1;
-            font-weight: 700;
           }
         </style>`;
 
       const portalEnhancementScript = `
-        <script id="portal-navigation-polish">
+        <script id="portal-navigation-alignment">
           (function () {
             "use strict";
 
-            const topNav = document.querySelector(".top-nav");
-            const reminderSlot = document.getElementById("navReminderSlot");
-            const logoLink = document.getElementById("departmentSharePointLink");
-            const supportDropdown = Array.from(document.querySelectorAll(".dropdown")).find(function(dropdown) {
-              const toggle = dropdown.querySelector(".dropdown-toggle");
-              return toggle && toggle.textContent.trim().startsWith("Support");
-            });
-
             function alignReminderSlot() {
+              const topNav = document.querySelector(".top-nav");
+              const reminderSlot = document.getElementById("navReminderSlot");
+              const logoLink = document.getElementById("departmentSharePointLink");
+              const supportDropdown = Array.from(document.querySelectorAll(".dropdown")).find(function(dropdown) {
+                const toggle = dropdown.querySelector(".dropdown-toggle");
+                return toggle && toggle.textContent.trim().startsWith("Support");
+              });
+
               if (!topNav || !reminderSlot || !logoLink || !supportDropdown) {
                 return;
               }
@@ -279,12 +180,9 @@
               const logoRect = logoLink.getBoundingClientRect();
               const gap = 6;
 
-              const left = Math.max(0, supportRect.right - navRect.left + gap);
-              const right = Math.max(0, navRect.right - logoRect.left + gap);
-
               reminderSlot.style.position = "absolute";
-              reminderSlot.style.left = left + "px";
-              reminderSlot.style.right = right + "px";
+              reminderSlot.style.left = Math.max(0, supportRect.right - navRect.left + gap) + "px";
+              reminderSlot.style.right = Math.max(0, navRect.right - logoRect.left + gap) + "px";
               reminderSlot.style.width = "auto";
               reminderSlot.style.padding = "0";
               reminderSlot.style.margin = "0";
@@ -294,60 +192,7 @@
               reminderSlot.style.display = reminderSlot.classList.contains("collapsed") ? "none" : "grid";
             }
 
-            function createRouteTransition() {
-              let transition = document.getElementById("portalRouteTransition");
-
-              if (transition) {
-                return transition;
-              }
-
-              transition = document.createElement("div");
-              transition.id = "portalRouteTransition";
-              transition.className = "portal-route-transition";
-              transition.setAttribute("role", "status");
-              transition.setAttribute("aria-live", "polite");
-              transition.innerHTML =
-                '<span class="portal-route-transition-dot" aria-hidden="true"></span>' +
-                '<span class="portal-route-transition-text">Opening HR Project Portal</span>';
-              document.body.appendChild(transition);
-
-              return transition;
-            }
-
-            document.addEventListener("click", function (event) {
-              const link = event.target.closest("a[data-department-key]");
-
-              if (
-                !link ||
-                event.defaultPrevented ||
-                event.button !== 0 ||
-                event.metaKey ||
-                event.ctrlKey ||
-                event.shiftKey ||
-                event.altKey ||
-                link.target === "_blank"
-              ) {
-                return;
-              }
-
-              const destination = link.href;
-
-              if (!destination || destination === window.location.href) {
-                return;
-              }
-
-              event.preventDefault();
-
-              const transition = createRouteTransition();
-              requestAnimationFrame(function () {
-                transition.classList.add("is-visible");
-              });
-
-              setTimeout(function () {
-                window.location.href = destination;
-              }, 150);
-            });
-
+            const reminderSlot = document.getElementById("navReminderSlot");
             if (reminderSlot) {
               new MutationObserver(alignReminderSlot).observe(reminderSlot, {
                 attributes: true,
@@ -363,6 +208,33 @@
             setTimeout(alignReminderSlot, 500);
           })();
         <\/script>`;
+
+      const immediateNavigationCode = `    let portalSwitchInProgress = false;
+
+    function navigateToPortalWithFade(href) {
+      if (!href || portalSwitchInProgress) {
+        return;
+      }
+
+      portalSwitchInProgress = true;
+      suppressUnsavedBeforeUnload = true;
+      window.location.assign(href);
+    }
+
+    function finishPortalArrival() {
+      portalSwitchInProgress = false;
+      suppressUnsavedBeforeUnload = false;
+    }
+
+    window.addEventListener("pageshow", finishPortalArrival);
+
+    if (document.readyState === "loading") {
+      document.addEventListener("DOMContentLoaded", finishPortalArrival, { once: true });
+    } else {
+      finishPortalArrival();
+    }
+
+    function applyDepartmentNavigationLinks() {`;
 
       const improvedPreloadFunction = `    function startPreloadingEmbeddedLinks(activeRoute) {
       if (preloadStarted) {
@@ -424,7 +296,7 @@
 `;
 
       try {
-        const response = await fetch("/HR/images/portal.html?v=20260624-5", { cache: "no-store" });
+        const response = await fetch("/HR/portal.html?v=20260624-7", { cache: "no-store" });
 
         if (!response.ok) {
           throw new Error("The portal content could not be loaded.");
@@ -436,10 +308,26 @@
         html = html.replaceAll('src="swgas-', 'src="images/swgas-');
         html = html.replaceAll('embedSrc: "INSERT_LINK_HERE", visible: true', 'embedSrc: "INSERT_LINK_HERE", visible: false');
         html = html.replaceAll("HR Change Management", "HRCM");
+        html = html.replaceAll("link.href = buildDepartmentPortalHref(configuredKey);", "link.href = buildDepartmentPortalLoadHref(configuredKey);");
 
         html = html.replace(
           'const PRELOAD_START_DELAY_MS = 900;\n    const PRELOAD_STAGGER_MS = 250;',
           'const PRELOAD_START_DELAY_MS = 650;\n    const PRELOAD_ACTIVE_VIEW_FALLBACK_MS = 10000;\n    const PRELOAD_STAGGER_MS = 1200;'
+        );
+
+        html = html.replace(
+          /\/\* --- SINGLE-REPOSITORY PORTAL SWITCH TRANSITION --- \*\/[\s\S]*?<\/style>/,
+          '.portal-nav-hidden, .portal-nav-separator-hidden { display: none !important; }\n  </style>'
+        );
+
+        html = html.replace(
+          /\n  <script>\n    \/\* Apply the fallback arrival state before the portal chrome is parsed\. \*\/[\s\S]*?<\/script>\n/,
+          '\n'
+        );
+
+        html = html.replace(
+          /    const PORTAL_SWITCH_FALLBACK_MS = 175;[\s\S]*?    function applyDepartmentNavigationLinks\(\) \{/,
+          immediateNavigationCode
         );
 
         html = html.replace(
@@ -453,18 +341,11 @@
         if (
           !html.includes('images/swgas-benefits.png') ||
           !html.includes('departmentName: "HRCM"') ||
-          !html.includes("portal-navigation-polish")
+          !html.includes("portal-navigation-alignment") ||
+          html.includes("portal-switching") ||
+          html.includes("@view-transition")
         ) {
           throw new Error("The portal content did not initialize correctly.");
-        }
-
-        const loadingMessage = document.getElementById("portalLoadingMessage");
-
-        if (loadingMessage) {
-          loadingMessage.classList.add("is-leaving");
-          await new Promise(function (resolve) {
-            setTimeout(resolve, 150);
-          });
         }
 
         document.open();
@@ -472,11 +353,10 @@
         document.close();
       } catch (error) {
         console.error(error);
-        document.body.innerHTML =
-          '<div class="portal-loading" style="opacity:1;transform:translate(-50%,0)">' +
-          '<span class="portal-loading-dot" aria-hidden="true"></span>' +
-          '<span class="portal-loading-text">The portal could not be opened. Please refresh the page.</span>' +
-          "</div>";
+        const errorMessage = document.getElementById("portalError");
+        if (errorMessage) {
+          errorMessage.style.display = "grid";
+        }
       }
     })();
   </script>
