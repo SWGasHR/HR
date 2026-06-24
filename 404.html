@@ -3,156 +3,146 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <meta name="robots" content="noindex">
+  <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+  <meta http-equiv="Pragma" content="no-cache">
+  <meta http-equiv="Expires" content="0">
   <title>Opening HR Project Portal…</title>
   <link rel="icon" type="image/png" href="/HR/department.png">
   <style>
-    html, body {
-      height: 100%;
-      margin: 0;
-      font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
-      background: #252763;
-      color: #ffffff;
-    }
-
-    body {
-      display: grid;
-      place-items: center;
-    }
-
-    .route-message {
-      text-align: center;
-      padding: 28px;
-    }
-
-    .route-message strong {
-      display: block;
-      margin-bottom: 7px;
-      font-size: 20px;
-    }
-
-    .route-message span {
-      color: rgba(255,255,255,0.78);
-      font-size: 14px;
-    }
+    html, body { height: 100%; margin: 0; }
+    body { display: grid; place-items: center; background: #252763; color: #fff; font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif; }
+    .portal-loading { text-align: center; padding: 28px; }
+    .portal-loading strong { display: block; margin-bottom: 7px; font-size: 20px; }
+    .portal-loading span { color: rgba(255,255,255,.78); font-size: 14px; }
   </style>
-  <script>
-    (function () {
-      "use strict";
-
-      var SITE_BASE_PATH = "/HR/";
-      var DEFAULT_PORTAL_KEY = "albert-taylor";
-      var PORTAL_KEYS = new Set([
-        "albert-taylor",
-        "gail-carmona",
-        "mike-bryant",
-        "courtney-moore",
-        "benefits",
-        "compensation",
-        "dei",
-        "employee-experience",
-        "hrbp",
-        "hrcm",
-        "hrs",
-        "hrss",
-        "labor-relations",
-        "talent-acquisition",
-        "talent-development"
-      ]);
-
-      var PORTAL_ALIASES = {
-        albert: "albert-taylor",
-        alberttaylor: "albert-taylor",
-        gail: "gail-carmona",
-        gailcarmona: "gail-carmona",
-        mike: "mike-bryant",
-        mikebryant: "mike-bryant",
-        courtney: "courtney-moore",
-        courtneymoore: "courtney-moore",
-        ex: "employee-experience",
-        employeeexperience: "employee-experience",
-        cm: "hrcm",
-        "hr-change-management": "hrcm",
-        lr: "labor-relations",
-        ta: "talent-acquisition",
-        td: "talent-development"
-      };
-
-      function normalizePortalKey(value) {
-        return String(value || "")
-          .trim()
-          .toLowerCase()
-          .replace(/&/g, "and")
-          .replace(/[^a-z0-9]+/g, "-")
-          .replace(/^-+|-+$/g, "");
-      }
-
-      function resolvePortalKey(value) {
-        var normalized = normalizePortalKey(value);
-        var compact = normalized.replace(/-/g, "");
-        var resolved = PORTAL_ALIASES[normalized] || PORTAL_ALIASES[compact] || normalized;
-
-        return PORTAL_KEYS.has(resolved) ? resolved : "";
-      }
-
-      function getRequestedPortalKey() {
-        var pathname = window.location.pathname || "/";
-        var lowerPathname = pathname.toLowerCase();
-        var lowerBasePath = SITE_BASE_PATH.toLowerCase();
-        var relativePath = "";
-
-        try {
-          pathname = decodeURIComponent(pathname);
-          lowerPathname = pathname.toLowerCase();
-        } catch (error) {
-          /* Continue with the original path. */
-        }
-
-        if (lowerPathname.indexOf(lowerBasePath) === 0) {
-          relativePath = pathname.slice(SITE_BASE_PATH.length);
-        }
-
-        relativePath = relativePath
-          .replace(/^\/+|\/+$/g, "")
-          .replace(/\/index\.html?$/i, "");
-
-        return resolvePortalKey(relativePath.split("/")[0]);
-      }
-
-      function buildRootPortalUrl(portalKey) {
-        var resolvedKey = resolvePortalKey(portalKey) || DEFAULT_PORTAL_KEY;
-        var target = SITE_BASE_PATH;
-        var existingSearch = (window.location.search || "").replace(/^\?/, "");
-        var hash = window.location.hash || "#home";
-        var queryParts = [];
-
-        if (resolvedKey !== DEFAULT_PORTAL_KEY) {
-          queryParts.push("department=" + encodeURIComponent(resolvedKey));
-        }
-
-        if (existingSearch) {
-          queryParts.push(existingSearch);
-        }
-
-        if (queryParts.length > 0) {
-          target += "?" + queryParts.join("&");
-        }
-
-        return target + hash;
-      }
-
-      var requestedPortalKey = getRequestedPortalKey();
-      window.location.replace(buildRootPortalUrl(requestedPortalKey));
-    })();
-  </script>
 </head>
 <body>
-  <div class="route-message" role="status" aria-live="polite">
+  <div class="portal-loading" role="status" aria-live="polite">
     <strong>Opening the HR Project Portal</strong>
-    <span>You will be redirected automatically.</span>
+    <span>Loading the portal…</span>
   </div>
-  <noscript>
-    <p><a href="/HR/">Continue to the HR Project Portal</a></p>
-  </noscript>
+  <script>
+    (async function () {
+      "use strict";
+
+      const laterLogoCss = `
+        <style id="portal-logo-size-fix">
+          #departmentLogo {
+            width: auto !important;
+            height: 60px !important;
+            max-width: 250px !important;
+            max-height: 60px !important;
+            object-fit: contain !important;
+            transform-origin: center right;
+          }
+          #departmentLogo[src$="swgas-ex.png"],
+          #departmentLogo[src$="swgas-hrbp.png"],
+          #departmentLogo[src$="swgas-hrcm.png"],
+          #departmentLogo[src$="swgas-hrs.png"],
+          #departmentLogo[src$="swgas-hrss.png"],
+          #departmentLogo[src$="swgas-labor-relations.png"],
+          #departmentLogo[src$="swgas-ta.png"],
+          #departmentLogo[src$="swgas-td.png"] {
+            transform: scale(1.14);
+          }
+        </style>`;
+
+      const improvedPreloadFunction = `    function startPreloadingEmbeddedLinks(activeRoute) {
+      if (preloadStarted) {
+        return;
+      }
+
+      preloadStarted = true;
+
+      const activeKey = activeRoute ? routeKey(activeRoute) : "";
+      const activeIframeRecord = activeKey ? iframeRegistry[activeKey] : null;
+      const routesToPreload = getAllEmbeddableRoutes().filter(function(route) {
+        const embedData = getEmbedDataForRoute(route);
+
+        return (
+          routeKey(route) !== activeKey &&
+          embedData &&
+          !isPlaceholderLink(embedData.embedSrc)
+        );
+      });
+
+      let routeIndex = 0;
+      let preloadQueueStarted = false;
+      let activeViewFallbackTimer = null;
+
+      function preloadNextRoute() {
+        if (routeIndex >= routesToPreload.length) {
+          return;
+        }
+
+        getOrCreateIframeForRoute(routesToPreload[routeIndex]);
+        routeIndex += 1;
+        setTimeout(preloadNextRoute, PRELOAD_STAGGER_MS);
+      }
+
+      function beginPreloadQueue() {
+        if (preloadQueueStarted) {
+          return;
+        }
+
+        preloadQueueStarted = true;
+
+        if (activeViewFallbackTimer) {
+          clearTimeout(activeViewFallbackTimer);
+          activeViewFallbackTimer = null;
+        }
+
+        setTimeout(preloadNextRoute, PRELOAD_START_DELAY_MS);
+      }
+
+      if (!activeIframeRecord || activeIframeRecord.isLoaded) {
+        beginPreloadQueue();
+        return;
+      }
+
+      activeIframeRecord.frame.addEventListener("load", beginPreloadQueue, { once: true });
+      activeViewFallbackTimer = setTimeout(beginPreloadQueue, PRELOAD_ACTIVE_VIEW_FALLBACK_MS);
+    }
+
+`;
+
+      try {
+        const response = await fetch("/HR/images/portal.html?v=20260624-3", { cache: "no-store" });
+        if (!response.ok) {
+          throw new Error("The portal content could not be loaded.");
+        }
+
+        let html = await response.text();
+
+        html = html.replaceAll('logoFileName: "swgas-', 'logoFileName: "images/swgas-');
+        html = html.replaceAll('src="swgas-', 'src="images/swgas-');
+        html = html.replaceAll('embedSrc: "INSERT_LINK_HERE", visible: true', 'embedSrc: "INSERT_LINK_HERE", visible: false');
+        html = html.replaceAll('HR Change Management', 'HRCM');
+
+        html = html.replace(
+          'const PRELOAD_START_DELAY_MS = 900;\n    const PRELOAD_STAGGER_MS = 250;',
+          'const PRELOAD_START_DELAY_MS = 650;\n    const PRELOAD_ACTIVE_VIEW_FALLBACK_MS = 10000;\n    const PRELOAD_STAGGER_MS = 1200;'
+        );
+
+        html = html.replace(
+          /    function startPreloadingEmbeddedLinks\(activeRoute\) \{[\s\S]*?\n    \}\n\n    function notePossibleIframeInteraction/,
+          improvedPreloadFunction + '    function notePossibleIframeInteraction'
+        );
+
+        html = html.replace('</head>', laterLogoCss + '\n</head>');
+
+        if (!html.includes('images/swgas-benefits.png') || !html.includes('departmentName: "HRCM"')) {
+          throw new Error("The portal content did not initialize correctly.");
+        }
+
+        document.open();
+        document.write(html);
+        document.close();
+      } catch (error) {
+        console.error(error);
+        document.body.innerHTML = '<div class="portal-loading"><strong>The portal could not be opened.</strong><span>Please refresh the page or contact the portal owner.</span></div>';
+      }
+    })();
+  </script>
 </body>
 </html>

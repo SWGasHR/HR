@@ -10,13 +10,7 @@
   <link rel="icon" type="image/png" href="/HR/department.png">
   <style>
     html, body { height: 100%; margin: 0; }
-    body {
-      display: grid;
-      place-items: center;
-      background: #252763;
-      color: #ffffff;
-      font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
-    }
+    body { display: grid; place-items: center; background: #252763; color: #fff; font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif; }
     .portal-loading { text-align: center; padding: 28px; }
     .portal-loading strong { display: block; margin-bottom: 7px; font-size: 20px; }
     .portal-loading span { color: rgba(255,255,255,.78); font-size: 14px; }
@@ -27,43 +21,119 @@
     <strong>Opening the HR Project Portal</strong>
     <span>Loading the portal…</span>
   </div>
-
-  <script src="/HR/assets/portal-data-01.js"></script>
-  <script src="/HR/assets/portal-data-02.js"></script>
-  <script src="/HR/assets/portal-data-03.js"></script>
-  <script src="/HR/assets/portal-data-04.js"></script>
-  <script src="/HR/assets/portal-data-05.js"></script>
-  <script src="/HR/assets/portal-data-06.js"></script>
   <script>
     (async function () {
       "use strict";
 
+      const laterLogoCss = `
+        <style id="portal-logo-size-fix">
+          #departmentLogo {
+            width: auto !important;
+            height: 60px !important;
+            max-width: 250px !important;
+            max-height: 60px !important;
+            object-fit: contain !important;
+            transform-origin: center right;
+          }
+          #departmentLogo[src$="swgas-ex.png"],
+          #departmentLogo[src$="swgas-hrbp.png"],
+          #departmentLogo[src$="swgas-hrcm.png"],
+          #departmentLogo[src$="swgas-hrs.png"],
+          #departmentLogo[src$="swgas-hrss.png"],
+          #departmentLogo[src$="swgas-labor-relations.png"],
+          #departmentLogo[src$="swgas-ta.png"],
+          #departmentLogo[src$="swgas-td.png"] {
+            transform: scale(1.14);
+          }
+        </style>`;
+
+      const improvedPreloadFunction = `    function startPreloadingEmbeddedLinks(activeRoute) {
+      if (preloadStarted) {
+        return;
+      }
+
+      preloadStarted = true;
+
+      const activeKey = activeRoute ? routeKey(activeRoute) : "";
+      const activeIframeRecord = activeKey ? iframeRegistry[activeKey] : null;
+      const routesToPreload = getAllEmbeddableRoutes().filter(function(route) {
+        const embedData = getEmbedDataForRoute(route);
+
+        return (
+          routeKey(route) !== activeKey &&
+          embedData &&
+          !isPlaceholderLink(embedData.embedSrc)
+        );
+      });
+
+      let routeIndex = 0;
+      let preloadQueueStarted = false;
+      let activeViewFallbackTimer = null;
+
+      function preloadNextRoute() {
+        if (routeIndex >= routesToPreload.length) {
+          return;
+        }
+
+        getOrCreateIframeForRoute(routesToPreload[routeIndex]);
+        routeIndex += 1;
+        setTimeout(preloadNextRoute, PRELOAD_STAGGER_MS);
+      }
+
+      function beginPreloadQueue() {
+        if (preloadQueueStarted) {
+          return;
+        }
+
+        preloadQueueStarted = true;
+
+        if (activeViewFallbackTimer) {
+          clearTimeout(activeViewFallbackTimer);
+          activeViewFallbackTimer = null;
+        }
+
+        setTimeout(preloadNextRoute, PRELOAD_START_DELAY_MS);
+      }
+
+      if (!activeIframeRecord || activeIframeRecord.isLoaded) {
+        beginPreloadQueue();
+        return;
+      }
+
+      activeIframeRecord.frame.addEventListener("load", beginPreloadQueue, { once: true });
+      activeViewFallbackTimer = setTimeout(beginPreloadQueue, PRELOAD_ACTIVE_VIEW_FALLBACK_MS);
+    }
+
+`;
+
       try {
-        const chunks = window.__HR_PORTAL_GZIP_CHUNKS__ || [];
-        if (chunks.length !== 6) {
-          throw new Error("The portal data did not load completely.");
-        }
-        if (typeof DecompressionStream !== "function") {
-          throw new Error("This browser does not support portal decompression.");
+        const response = await fetch("/HR/images/portal.html?v=20260624-3", { cache: "no-store" });
+        if (!response.ok) {
+          throw new Error("The portal content could not be loaded.");
         }
 
-        const compressedPortal = chunks.join("");
-        const binary = atob(compressedPortal);
-        const bytes = new Uint8Array(binary.length);
+        let html = await response.text();
 
-        for (let index = 0; index < binary.length; index += 1) {
-          bytes[index] = binary.charCodeAt(index);
+        html = html.replaceAll('logoFileName: "swgas-', 'logoFileName: "images/swgas-');
+        html = html.replaceAll('src="swgas-', 'src="images/swgas-');
+        html = html.replaceAll('embedSrc: "INSERT_LINK_HERE", visible: true', 'embedSrc: "INSERT_LINK_HERE", visible: false');
+        html = html.replaceAll('HR Change Management', 'HRCM');
+
+        html = html.replace(
+          'const PRELOAD_START_DELAY_MS = 900;\n    const PRELOAD_STAGGER_MS = 250;',
+          'const PRELOAD_START_DELAY_MS = 650;\n    const PRELOAD_ACTIVE_VIEW_FALLBACK_MS = 10000;\n    const PRELOAD_STAGGER_MS = 1200;'
+        );
+
+        html = html.replace(
+          /    function startPreloadingEmbeddedLinks\(activeRoute\) \{[\s\S]*?\n    \}\n\n    function notePossibleIframeInteraction/,
+          improvedPreloadFunction + '    function notePossibleIframeInteraction'
+        );
+
+        html = html.replace('</head>', laterLogoCss + '\n</head>');
+
+        if (!html.includes('images/swgas-benefits.png') || !html.includes('departmentName: "HRCM"')) {
+          throw new Error("The portal content did not initialize correctly.");
         }
-
-        const stream = new Blob([bytes])
-          .stream()
-          .pipeThrough(new DecompressionStream("gzip"));
-
-        let html = await new Response(stream).text();
-
-        // Keep the friendly HRCM name everywhere, including the All Projects group.
-        html = html.replaceAll('"HR Change Management",', '"HRCM",');
-        html = html.replaceAll('>HR Change Management</a>', '>HRCM</a>');
 
         document.open();
         document.write(html);
