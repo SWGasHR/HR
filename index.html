@@ -155,6 +155,56 @@
             width: 17px !important;
             height: 17px !important;
           }
+
+          .top-nav .nav-home,
+          .top-nav .nav-scroll-shell,
+          .top-nav .nav-reminder-slot,
+          .top-nav .swgas-logo-link {
+            opacity: 1;
+            transform: translateY(0);
+            transition:
+              opacity 0.17s ease,
+              transform 0.20s cubic-bezier(0.22, 1, 0.36, 1);
+            will-change: opacity, transform;
+          }
+
+          .top-nav .nav-scroll-shell {
+            transition-delay: 0.015s;
+          }
+
+          .top-nav .nav-reminder-slot {
+            transition-delay: 0.03s;
+          }
+
+          .top-nav .swgas-logo-link {
+            transition-delay: 0.045s;
+          }
+
+          body.portal-topbar-arriving .top-nav .nav-home,
+          body.portal-topbar-arriving .top-nav .nav-scroll-shell,
+          body.portal-topbar-arriving .top-nav .nav-reminder-slot,
+          body.portal-topbar-arriving .top-nav .swgas-logo-link {
+            opacity: 0;
+            transform: translateY(-7px);
+          }
+
+          body.portal-topbar-leaving .top-nav .nav-home,
+          body.portal-topbar-leaving .top-nav .nav-scroll-shell,
+          body.portal-topbar-leaving .top-nav .nav-reminder-slot,
+          body.portal-topbar-leaving .top-nav .swgas-logo-link {
+            opacity: 0;
+            transform: translateY(-7px);
+            transition-delay: 0s !important;
+          }
+
+          @media (prefers-reduced-motion: reduce) {
+            .top-nav .nav-home,
+            .top-nav .nav-scroll-shell,
+            .top-nav .nav-reminder-slot,
+            .top-nav .swgas-logo-link {
+              transition: none !important;
+            }
+          }
         </style>`;
 
       const portalEnhancementScript = `
@@ -192,6 +242,14 @@
               reminderSlot.style.display = reminderSlot.classList.contains("collapsed") ? "none" : "grid";
             }
 
+            function revealTopBar() {
+              requestAnimationFrame(function () {
+                requestAnimationFrame(function () {
+                  document.body.classList.remove("portal-topbar-arriving");
+                });
+              });
+            }
+
             const reminderSlot = document.getElementById("navReminderSlot");
             if (reminderSlot) {
               new MutationObserver(alignReminderSlot).observe(reminderSlot, {
@@ -203,6 +261,7 @@
 
             window.addEventListener("resize", alignReminderSlot);
             window.addEventListener("load", alignReminderSlot);
+            revealTopBar();
             requestAnimationFrame(alignReminderSlot);
             setTimeout(alignReminderSlot, 100);
             setTimeout(alignReminderSlot, 500);
@@ -210,6 +269,7 @@
         <\/script>`;
 
       const immediateNavigationCode = `    let portalSwitchInProgress = false;
+    const PORTAL_TOPBAR_TRANSITION_MS = 190;
 
     function navigateToPortalWithFade(href) {
       if (!href || portalSwitchInProgress) {
@@ -218,12 +278,27 @@
 
       portalSwitchInProgress = true;
       suppressUnsavedBeforeUnload = true;
-      window.location.assign(href);
+
+      const reduceMotion = window.matchMedia &&
+        window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+
+      if (reduceMotion) {
+        window.location.assign(href);
+        return;
+      }
+
+      document.body.classList.remove("portal-topbar-arriving");
+      document.body.classList.add("portal-topbar-leaving");
+
+      setTimeout(function () {
+        window.location.assign(href);
+      }, PORTAL_TOPBAR_TRANSITION_MS);
     }
 
     function finishPortalArrival() {
       portalSwitchInProgress = false;
       suppressUnsavedBeforeUnload = false;
+      document.body.classList.remove("portal-topbar-leaving");
     }
 
     window.addEventListener("pageshow", finishPortalArrival);
@@ -336,6 +411,15 @@
         );
 
         html = html.replace("</head>", portalPolishCss + "\n</head>");
+        html = html.replace(/<body([^>]*)>/i, function(match, attributes) {
+          const normalizedAttributes = String(attributes || "");
+          if (/\bclass=/i.test(normalizedAttributes)) {
+            return match.replace(/class=(['"])(.*?)\1/i, function(classMatch, quote, classNames) {
+              return "class=" + quote + classNames + " portal-topbar-arriving" + quote;
+            });
+          }
+          return "<body" + normalizedAttributes + ' class="portal-topbar-arriving">';
+        });
         html = html.replace("</body>", portalEnhancementScript + "\n</body>");
 
         if (
@@ -343,7 +427,9 @@
           !html.includes('departmentName: "HRCM"') ||
           !html.includes("portal-navigation-alignment") ||
           html.includes("portal-switching") ||
-          html.includes("@view-transition")
+          html.includes("@view-transition") ||
+          !html.includes("portal-topbar-arriving") ||
+          !html.includes("portal-topbar-leaving")
         ) {
           throw new Error("The portal content did not initialize correctly.");
         }
