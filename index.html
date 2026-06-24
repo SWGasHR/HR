@@ -7,6 +7,37 @@ permalink: /index.html
 {% assign portal = portal | replace: 'src="swgas-', 'src="images/swgas-' %}
 {% assign portal = portal | replace: 'embedSrc: "INSERT_LINK_HERE", visible: true', 'embedSrc: "INSERT_LINK_HERE", visible: false' %}
 
+{% capture old_logo_css %}    .swgas-logo {
+      height: 60px;
+      width: auto;
+      display: block;
+    }{% endcapture %}
+{% capture new_logo_css %}    .swgas-logo {
+      display: block;
+      width: auto;
+      height: 42px;
+      max-width: 220px;
+      max-height: 42px;
+      object-fit: contain;
+      flex: 0 1 auto;
+    }
+
+    #departmentLogo {
+      display: block !important;
+      width: auto !important;
+      height: 42px !important;
+      max-width: 220px !important;
+      max-height: 42px !important;
+      object-fit: contain !important;
+    }
+
+    .swgas-logo-link {
+      max-width: 240px;
+      overflow: hidden;
+      box-sizing: border-box;
+    }{% endcapture %}
+{% assign portal = portal | replace: old_logo_css, new_logo_css %}
+
 {% capture old_preload_settings %}    /*
       These settings preload the remaining Smartsheet embeds shortly after
       the first view opens. The small stagger prevents the browser from trying
