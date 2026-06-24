@@ -1,0 +1,125 @@
+name: Apply HR leader portal links
+
+on:
+  push:
+    paths:
+      - .github/workflows/apply-leader-links.yml
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  apply-links:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Add VP and director links
+        shell: python
+        run: |
+          from pathlib import Path
+          import re
+
+          path = Path("index.html")
+          text = path.read_text(encoding="utf-8")
+          hr_sharepoint = "https://swgas.sharepoint.com/sites/HR"
+
+          simple_replacements = {
+              "INSERT_ALBERT_TAYLOR_SHAREPOINT_URL_HERE": hr_sharepoint,
+              "INSERT_ALBERT_TAYLOR_ALL_PROJECTS_PUBLISHED_LINK_HERE": "https://app.smartsheet.com/b/publish?EQBCT=a8c8d9416f8a45079c62e3aefe2d73e4",
+
+              "INSERT_GAIL_CARMONA_SHAREPOINT_URL_HERE": hr_sharepoint,
+              "INSERT_GAIL_CARMONA_HOME_DASHBOARD_PUBLISHED_LINK_HERE": "https://app.smartsheet.com/b/publish?EQBCT=89905a5832ba4935b09e46adb96e5842",
+              "INSERT_GAIL_CARMONA_MAIN_INITIATIVES_PUBLISHED_LINK_HERE": "https://app.smartsheet.com/b/publish?EQBCT=e9aa2f05ffe34f69925a84b306922fc3",
+              "INSERT_GAIL_CARMONA_ALL_PROJECTS_PUBLISHED_LINK_HERE": "https://app.smartsheet.com/b/publish?EQBCT=8dfe65d12d204a36b2380172a8cc9c7b",
+
+              "INSERT_MIKE_BRYANT_SHAREPOINT_URL_HERE": hr_sharepoint,
+              "INSERT_MIKE_BRYANT_HOME_DASHBOARD_PUBLISHED_LINK_HERE": "https://app.smartsheet.com/b/publish?EQBCT=7c519e87f82b480ab66ec680ab74068c",
+              "INSERT_MIKE_BRYANT_MAIN_INITIATIVES_PUBLISHED_LINK_HERE": "https://app.smartsheet.com/b/publish?EQBCT=7c62e92983d04df4b556b375116110a7",
+              "INSERT_MIKE_BRYANT_ALL_PROJECTS_PUBLISHED_LINK_HERE": "https://app.smartsheet.com/b/publish?EQBCT=b475dcf41ebc4fa6a330e982f1d0fdeb",
+
+              "INSERT_COURTNEY_MOORE_SHAREPOINT_URL_HERE": hr_sharepoint,
+              "INSERT_COURTNEY_MOORE_HOME_DASHBOARD_PUBLISHED_LINK_HERE": "https://app.smartsheet.com/b/publish?EQBCT=3a13a5699eeb4bc69171db1144cd3ebb",
+              "INSERT_COURTNEY_MOORE_MAIN_INITIATIVES_PUBLISHED_LINK_HERE": "https://app.smartsheet.com/b/publish?EQBCT=efbcd2919ddf49038b9a653e124ffba8",
+              "INSERT_COURTNEY_MOORE_ALL_PROJECTS_PUBLISHED_LINK_HERE": "https://app.smartsheet.com/b/publish?EQBCT=bf3834f629ec49d99eb373e5d016138a",
+          }
+
+          for old, new in simple_replacements.items():
+              if old in text:
+                  text = text.replace(old, new)
+              elif new not in text:
+                  raise RuntimeError(f"Expected placeholder or replacement was not found: {old}")
+
+          albert_start = text.index('      "albert-taylor": {')
+          albert_end = text.index('      "gail-carmona": {', albert_start)
+          albert_block = text[albert_start:albert_end]
+
+          albert_views_pattern = re.compile(
+              r'        views: \{.*?\n        \}\n      \},\n\n',
+              re.DOTALL
+          )
+          albert_views = '''        views: {
+          home: {
+            label: "Home",
+            embedSrc: "https://app.smartsheet.com/b/publish?EQBCT=7d9f27cd03244d95b758b8093f3a90dd",
+            viewOnlyNote: false,
+            refreshNote: true,
+            preload: true
+          },
+          mainInitiatives: {
+            label: "All HR Projects Dashboard",
+            embedSrc: "https://app.smartsheet.com/b/publish?EQBCT=51b6077469244ea4b04fc5ba07e52876",
+            viewOnlyNote: false,
+            refreshNote: true,
+            preload: true
+          },
+          allDepartmentProjects: {
+            label: "All HR Projects (View Only)",
+            embedSrc: "https://app.smartsheet.com/b/publish?EQBCT=a8c8d9416f8a45079c62e3aefe2d73e4",
+            viewOnlyNote: true,
+            refreshNote: false,
+            preload: true
+          }
+        }
+      },
+
+'''
+
+          updated_albert, count = albert_views_pattern.subn(albert_views, albert_block, count=1)
+          if count != 1:
+              raise RuntimeError("Could not replace Albert Taylor's views configuration.")
+
+          text = text[:albert_start] + updated_albert + text[albert_end:]
+
+          required_values = [
+              "7d9f27cd03244d95b758b8093f3a90dd",
+              "51b6077469244ea4b04fc5ba07e52876",
+              "a8c8d9416f8a45079c62e3aefe2d73e4",
+              "89905a5832ba4935b09e46adb96e5842",
+              "e9aa2f05ffe34f69925a84b306922fc3",
+              "8dfe65d12d204a36b2380172a8cc9c7b",
+              "7c519e87f82b480ab66ec680ab74068c",
+              "7c62e92983d04df4b556b375116110a7",
+              "b475dcf41ebc4fa6a330e982f1d0fdeb",
+              "3a13a5699eeb4bc69171db1144cd3ebb",
+              "efbcd2919ddf49038b9a653e124ffba8",
+              "bf3834f629ec49d99eb373e5d016138a",
+          ]
+          for value in required_values:
+              if value not in text:
+                  raise RuntimeError(f"Missing required Smartsheet link token: {value}")
+
+          path.write_text(text, encoding="utf-8")
+
+      - name: Commit leader links
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add index.html
+          if git diff --cached --quiet; then
+            echo "Leader links are already current."
+            exit 0
+          fi
+          git commit -m "Add VP and director Smartsheet links"
+          git push
