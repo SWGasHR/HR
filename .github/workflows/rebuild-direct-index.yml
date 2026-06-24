@@ -1,0 +1,86 @@
+name: Rebuild Direct Portal
+
+on:
+  push:
+    paths:
+      - rebuild-direct-index.trigger
+
+permissions:
+  contents: write
+
+jobs:
+  rebuild:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Rebuild the complete portal into index.html
+        shell: python
+        run: |
+          from pathlib import Path
+          import base64
+          import gzip
+          import re
+          import shutil
+
+          chunks = []
+          for number in range(1, 7):
+              path = Path(f"assets/portal-data-{number:02d}.js")
+              text = path.read_text(encoding="utf-8")
+              match = re.search(r'\.push\("([A-Za-z0-9+/=]+)"\);', text)
+              if not match:
+                  raise RuntimeError(f"Could not read portal payload from {path}")
+              chunks.append(match.group(1))
+
+          html = gzip.decompress(base64.b64decode("".join(chunks))).decode("utf-8")
+
+          # Use HRCM consistently in Navigation, the portal views, leader assignments,
+          # and the All Projects department group.
+          html = html.replace('"HR Change Management"', '"HRCM"')
+          html = html.replace('>HR Change Management</a>', '>HRCM</a>')
+
+          required = [
+              '<!DOCTYPE html>',
+              'defaultDepartmentKey: "albert-taylor"',
+              'siteBasePath: "/HR/"',
+              'departmentName: "HRCM"',
+              'label: "HRCM"',
+              'view.preload = view.preload === true;',
+              'PRELOAD_ACTIVE_VIEW_FALLBACK_MS',
+              'images/swgas-benefits.png',
+              'images/swgas-ex.png'
+          ]
+          for value in required:
+              if value not in html:
+                  raise RuntimeError(f"Required portal content is missing: {value}")
+
+          forbidden = [
+              'DecompressionStream',
+              'portal-source.html',
+              'portal-data-01.js',
+              '{%'
+          ]
+          for value in forbidden:
+              if value in html:
+                  raise RuntimeError(f"The rebuilt index still contains: {value}")
+
+          Path("index.html").write_text(html, encoding="utf-8")
+
+          # Remove everything except the exact requested public structure.
+          keep = {"index.html", "404.html", "department.png", "images", ".git"}
+          for item in Path(".").iterdir():
+              if item.name in keep:
+                  continue
+              if item.is_dir():
+                  shutil.rmtree(item)
+              else:
+                  item.unlink()
+
+      - name: Commit the simplified repository
+        shell: bash
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add -A
+          git commit -m "Rebuild portal as one direct index file"
+          git push
