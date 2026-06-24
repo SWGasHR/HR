@@ -1,8 +1,37 @@
 <!DOCTYPE html>
+<!--
+  HR PROJECT PORTAL — SINGLE REPOSITORY VERSION
+
+  HOW PORTAL SWITCHING WORKS:
+  • One index.html serves every department and HR leader.
+  • The active portal is selected by the URL:
+      ?department=benefits#home
+      ?department=talent-development#home
+      ?department=albert-taylor#home
+  • Navigation links point back to this same file and use a polished cross-slide transition.
+  • The active portal automatically controls:
+      - Browser/page title
+      - Department or leader top-right logo
+      - One permanent department.png favicon for every portal
+      - SharePoint destination
+      - Home, Main Initiatives, and All Projects views
+      - Department portals: their project group opens and preloads automatically
+      - HR leader portals: all project groups stay collapsed and load only when clicked
+      - Request Access email wording and storage keys
+  • Albert Taylor's Home view is his Main Initiatives view. His duplicate
+    Main Initiatives text link is hidden, so All Projects appears immediately next.
+
+  REQUIRED BEFORE PUBLISHING:
+  1. In DEPARTMENT_PORTALS, replace each INSERT_... SharePoint/view link.
+  2. Upload each department and leader logo using the configured file name.
+  3. Change defaultDepartmentKey in SHARED_PORTAL_SETTINGS if desired.
+  4. Open each portal URL and confirm
+     window.PORTAL_CONFIG_VALIDATION.valid is true.
+-->
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <title>VP: HR Projects</title>
+  <title>HR Project Portal</title>
   <link rel="icon" type="image/png" href="department.png">
   <link rel="preconnect" href="https://workapps.smartsheet.com">
   <link rel="dns-prefetch" href="https://workapps.smartsheet.com">
@@ -342,99 +371,143 @@
       margin: 8px 0;
     }
 
-    /* --- SUPPORT REQUEST ACCESS BUTTON --- */
-    .dropdown-menu a.request-access-button {
+    /* --- SUPPORT MENU ACTION BUTTONS --- */
+    .dropdown-menu .support-action-button {
+      width: calc(100% - 24px);
+      min-height: 48px;
+      margin: 8px 12px 0 12px;
+      padding: 9px 12px;
       display: flex;
       align-items: center;
-      justify-content: center;
-      gap: 7px;
-      margin: 10px 12px 4px 12px;
-      padding: 10px 12px;
-      min-height: 46px;
-      border-radius: 12px;
-      background: linear-gradient(135deg, #252763 0%, #1d1f50 100%);
-      color: #ffffff;
-      font-weight: 800;
-      line-height: 1;
-      letter-spacing: 0.1px;
-      box-shadow: 0 7px 16px rgba(37, 39, 99, 0.24);
-      border: 1px solid rgba(255,255,255,0.18);
+      gap: 10px;
       box-sizing: border-box;
-      transition: transform 0.18s ease, box-shadow 0.18s ease, background 0.18s ease;
+      border-radius: 12px;
+      font-family: inherit;
+      font-size: 13.5px;
+      line-height: 1.2;
+      font-weight: 800;
+      text-align: left;
+      text-decoration: none;
+      cursor: pointer;
+      appearance: none;
+      -webkit-appearance: none;
+      transition:
+        transform 0.18s ease,
+        box-shadow 0.18s ease,
+        border-color 0.18s ease,
+        background 0.18s ease;
     }
 
-    .dropdown-menu a.request-access-button:hover,
-    .dropdown-menu a.request-access-button:focus {
-      background: linear-gradient(135deg, #303381 0%, #252763 100%);
-      color: #ffffff;
+    .dropdown-menu .support-action-button:hover,
+    .dropdown-menu .support-action-button:focus {
       transform: translateY(-1px);
-      box-shadow: 0 10px 22px rgba(37, 39, 99, 0.30);
       outline: none;
     }
 
-    .request-access-left {
+    .support-faq-button {
+      border: 1px solid #d8dcef;
+      background: linear-gradient(135deg, #ffffff 0%, #f3f5ff 100%);
+      color: #252763;
+      box-shadow: 0 5px 14px rgba(37,39,99,0.10);
+    }
+
+    .support-faq-button:hover,
+    .support-faq-button:focus {
+      border-color: #b9c1e5;
+      background: linear-gradient(135deg, #ffffff 0%, #e9edff 100%);
+      box-shadow: 0 8px 18px rgba(37,39,99,0.15);
+    }
+
+    .dropdown-menu a.support-request-access-button {
+      border: 1px solid rgba(255,255,255,0.22);
+      background: linear-gradient(135deg, #252763 0%, #35388a 100%);
+      color: #ffffff;
+      box-shadow: 0 7px 17px rgba(37,39,99,0.24);
+    }
+
+    .dropdown-menu a.support-request-access-button:hover,
+    .dropdown-menu a.support-request-access-button:focus {
+      background: linear-gradient(135deg, #303381 0%, #252763 100%);
+      color: #ffffff;
+      box-shadow: 0 10px 22px rgba(37,39,99,0.30);
+    }
+
+    .support-action-icon {
+      width: 31px;
+      height: 31px;
+      flex: 0 0 31px;
       display: inline-flex;
       align-items: center;
       justify-content: center;
-      gap: 6px;
-      min-width: 0;
+      border-radius: 9px;
     }
 
-    .request-access-left > span:last-child {
-      line-height: 1;
-      text-align: center;
-      min-width: 0;
+    .support-faq-button .support-action-icon {
+      background: #e8ecff;
+      color: #252763;
     }
 
-    .request-access-icon {
-      width: 22px;
-      height: 22px;
-      border-radius: 999px;
-      display: inline-flex;
-      align-items: center;
-      justify-content: center;
+    .support-request-access-button .support-action-icon {
       background: rgba(255,255,255,0.16);
-      flex: 0 0 auto;
+      color: #ffffff;
     }
 
-    .request-access-icon svg {
-      width: 13px;
-      height: 13px;
+    .support-action-icon svg {
+      width: 17px;
+      height: 17px;
       display: block;
       fill: none;
       stroke: currentColor;
-      stroke-width: 2.1;
+      stroke-width: 2;
       stroke-linecap: round;
       stroke-linejoin: round;
     }
 
-    .request-access-arrow {
-      width: 24px;
-      height: 24px;
-      border-radius: 999px;
+    .support-action-copy {
+      min-width: 0;
+      flex: 1 1 auto;
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
+    }
+
+    .support-action-title {
+      color: inherit;
+      font-size: 13.5px;
+      font-weight: 800;
+    }
+
+    .support-action-subtitle {
+      color: inherit;
+      opacity: 0.72;
+      font-size: 10.5px;
+      font-weight: 600;
+    }
+
+    .support-action-chevron {
+      width: 18px;
+      height: 18px;
+      flex: 0 0 18px;
       display: inline-flex;
       align-items: center;
       justify-content: center;
-      background: rgba(255,255,255,0.16);
-      flex: 0 0 auto;
-      transition: transform 0.18s ease, background 0.18s ease;
+      opacity: 0.72;
+      transition: transform 0.18s ease;
     }
 
-    .request-access-arrow svg {
+    .support-action-button:hover .support-action-chevron,
+    .support-action-button:focus .support-action-chevron {
+      transform: translateX(2px);
+    }
+
+    .support-action-chevron svg {
       width: 14px;
       height: 14px;
-      display: block;
       fill: none;
       stroke: currentColor;
-      stroke-width: 2.3;
+      stroke-width: 2.2;
       stroke-linecap: round;
       stroke-linejoin: round;
-    }
-
-    .dropdown-menu a.request-access-button:hover .request-access-arrow,
-    .dropdown-menu a.request-access-button:focus .request-access-arrow {
-      transform: translateX(2px);
-      background: rgba(255,255,255,0.24);
     }
 
     .caret {
@@ -442,19 +515,16 @@
       line-height: 1;
     }
 
-    .nav-spacer {
-      flex: 1;
-    }
-
-    /* --- TOP NAV MESSAGE POP-UP --- */
     .nav-reminder-slot {
       flex: 0 1 clamp(245px, 28vw, 390px);
       min-width: 245px;
       max-width: 390px;
       height: 100%;
-      display: flex;
+      display: grid;
+      grid-template-areas: "nav-message";
       align-items: center;
-      justify-content: center;
+      justify-items: center;
+      position: relative;
       padding: 0 16px 0 8px;
       box-sizing: border-box;
       overflow: visible;
@@ -499,8 +569,149 @@
       overflow: visible;
     }
 
-    .nav-refresh-popover.hidden {
-      display: none;
+    /* Smoothly animated top-navigation messages. */
+    .nav-refresh-popover,
+    .nav-project-action {
+      grid-area: nav-message;
+      justify-self: center;
+      opacity: 0;
+      visibility: hidden;
+      pointer-events: none;
+      transform: translateY(7px) scale(0.985);
+      transition:
+        opacity 0.42s ease,
+        transform 0.42s ease,
+        visibility 0s linear 0.42s;
+    }
+
+    .nav-refresh-popover.is-visible,
+    .nav-project-action.is-visible {
+      opacity: 1;
+      visibility: visible;
+      pointer-events: auto;
+      transform: translateY(0) scale(1);
+      transition-delay: 0s;
+    }
+
+    .nav-refresh-popover.hidden,
+    .nav-project-action.hidden {
+      display: flex;
+    }
+
+    .nav-project-action {
+      position: relative;
+      align-items: center;
+      justify-content: flex-start;
+      gap: 10px;
+      width: min(390px, 100%);
+      max-width: 390px;
+      min-height: 40px;
+      max-height: 48px;
+      box-sizing: border-box;
+      border-radius: 13px;
+      padding: 8px 38px 8px 10px;
+      font-family: inherit;
+      font-size: clamp(10.5px, 0.72vw, 12.5px);
+      line-height: 1.1;
+      font-weight: 800;
+      letter-spacing: 0.1px;
+      text-align: left;
+      cursor: pointer;
+      text-decoration: none;
+      overflow: visible;
+      backdrop-filter: blur(10px);
+      -webkit-backdrop-filter: blur(10px);
+    }
+
+    .nav-project-action-copy {
+      min-width: 0;
+      flex: 1 1 auto;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
+    .nav-request-access-action {
+      border: 1px solid rgba(255,255,255,0.92);
+      background: linear-gradient(135deg, #ffffff 0%, #f3f5ff 100%);
+      color: #252763;
+      box-shadow: 0 7px 18px rgba(0,0,0,0.20);
+    }
+
+    .nav-request-access-action:hover,
+    .nav-request-access-action:focus {
+      border-color: #ffffff;
+      background: linear-gradient(135deg, #ffffff 0%, #e7ebff 100%);
+      color: #252763;
+      outline: none;
+      transform: translateY(-1px) scale(1);
+      box-shadow: 0 10px 24px rgba(0,0,0,0.25);
+    }
+
+    .nav-faq-action {
+      border: 1px solid rgba(255,255,255,0.52);
+      background: linear-gradient(135deg, rgba(255,255,255,0.22) 0%, rgba(255,255,255,0.10) 100%);
+      color: #ffffff;
+      box-shadow: 0 7px 18px rgba(0,0,0,0.18);
+    }
+
+    .nav-faq-action:hover,
+    .nav-faq-action:focus {
+      border-color: rgba(255,255,255,0.78);
+      background: linear-gradient(135deg, rgba(255,255,255,0.31) 0%, rgba(255,255,255,0.17) 100%);
+      color: #ffffff;
+      outline: none;
+      transform: translateY(-1px) scale(1);
+      box-shadow: 0 10px 24px rgba(0,0,0,0.23);
+    }
+
+    .nav-project-action-icon {
+      width: 29px;
+      height: 29px;
+      flex: 0 0 29px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      border-radius: 9px;
+    }
+
+    .nav-request-access-action .nav-project-action-icon {
+      background: #e6eaff;
+      color: #252763;
+    }
+
+    .nav-faq-action .nav-project-action-icon {
+      background: rgba(255,255,255,0.18);
+      color: #ffffff;
+    }
+
+    .nav-project-action-arrow {
+      position: absolute;
+      right: 11px;
+      width: 18px;
+      height: 18px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      opacity: 0.72;
+      transition: transform 0.18s ease, opacity 0.18s ease;
+    }
+
+    .nav-project-action:hover .nav-project-action-arrow,
+    .nav-project-action:focus .nav-project-action-arrow {
+      transform: translateX(2px);
+      opacity: 1;
+    }
+
+    .nav-project-action svg {
+      width: 15px;
+      height: 15px;
+      display: block;
+      fill: none;
+      stroke: currentColor;
+      stroke-width: 2;
+      stroke-linecap: round;
+      stroke-linejoin: round;
     }
 
     .nav-refresh-text {
@@ -511,10 +722,6 @@
       overflow: visible;
       text-overflow: clip;
       white-space: normal;
-    }
-
-    .nav-refresh-popover strong {
-      font-weight: 800;
     }
 
     .nav-refresh-close {
@@ -551,7 +758,6 @@
       outline: none;
     }
 
-
     .nav-refresh-close svg {
       width: 9px;
       height: 9px;
@@ -585,8 +791,6 @@
       width: auto;
       display: block;
     }
-
-
 
     /* --- CENTER REMINDER BETWEEN SUPPORT AND LOGO --- */
     .top-nav.reminder-visible .nav-scroll-shell.no-scroll {
@@ -631,10 +835,6 @@
     }
 
     @media (max-width: 980px) {
-      .nav-reminder-slot {
-        display: none;
-      }
-
       .top-nav {
         padding: 0 10px;
       }
@@ -673,8 +873,6 @@
       font-size: 14px;
       font-style: italic;
     }
-
-
 
     /* --- COLLAPSIBLE PROJECT GROUPS --- */
     .project-group-toggle,
@@ -759,6 +957,383 @@
 
     .project-group-content > .project-view-link {
       padding-left: 24px;
+    }
+
+
+    /* --- ARCHIVE SUB-DROPDOWN INSIDE EACH DEPARTMENT --- */
+    .archive-section {
+      margin: 7px 12px 11px 18px;
+      border: 1px solid #dedff0;
+      border-radius: 9px;
+      background: #fbfbfe;
+      overflow: hidden;
+      box-shadow: 0 1px 3px rgba(37, 39, 99, 0.06);
+    }
+
+    .archive-divider {
+      display: none !important;
+    }
+
+    .archive-toggle {
+      width: 100%;
+      border: none;
+      background: #f4f5fb;
+      color: #4f5278;
+      cursor: pointer;
+      font-family: inherit;
+      text-align: left;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      box-sizing: border-box;
+      padding: 9px 12px;
+      font-size: 13px;
+      font-weight: 700;
+      letter-spacing: 0.1px;
+      transition: background-color 0.2s ease, color 0.2s ease;
+    }
+
+    .archive-toggle-label {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      min-width: 0;
+    }
+
+    .archive-icon {
+      width: 17px;
+      height: 17px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      flex: 0 0 17px;
+      color: #6c6f94;
+    }
+
+    .archive-icon svg {
+      width: 16px;
+      height: 16px;
+      display: block;
+      fill: none;
+      stroke: currentColor;
+      stroke-width: 1.9;
+      stroke-linecap: round;
+      stroke-linejoin: round;
+    }
+
+    .archive-toggle:hover,
+    .archive-toggle:focus,
+    .archive-toggle[aria-expanded="true"] {
+      background: #e9eafa;
+      color: #252763;
+      outline: none;
+    }
+
+    .archive-caret {
+      font-size: 10px;
+      line-height: 1;
+      margin-left: 10px;
+      color: inherit;
+    }
+
+    .archive-content {
+      display: none;
+      border-top: 1px solid #e6e7f2;
+      background: #ffffff;
+    }
+
+    .archive-content.open {
+      display: block;
+    }
+
+    .archive-content .project-view-link {
+      padding: 9px 12px 9px 36px;
+      color: #555875;
+      font-size: 13.5px;
+      border-bottom: 1px solid #f0f0f6;
+    }
+
+    .archive-content .project-view-link:last-child {
+      border-bottom: none;
+    }
+
+    .archive-content .project-view-link:hover {
+      color: #252763;
+      background: #f5f5fb;
+    }
+
+    .archive-empty-message {
+      padding: 9px 12px 10px 36px;
+      color: #85879b;
+      font-size: 12.5px;
+      font-style: italic;
+      cursor: default;
+      user-select: none;
+      background: #ffffff;
+    }
+
+    /* --- SMARTSHEET FAQ SLIDE-IN PANEL --- */
+    .faq-panel-backdrop {
+      position: fixed;
+      inset: 56px 0 0 0;
+      z-index: 1490;
+      background: rgba(18, 22, 45, 0.28);
+      opacity: 0;
+      visibility: hidden;
+      pointer-events: none;
+      transition: opacity 0.34s ease, visibility 0s linear 0.34s;
+    }
+
+    .faq-panel-backdrop.open {
+      opacity: 1;
+      visibility: visible;
+      pointer-events: auto;
+      transition-delay: 0s;
+    }
+
+    .faq-panel {
+      position: fixed;
+      top: 56px;
+      right: 0;
+      bottom: 0;
+      width: min(460px, 94vw);
+      z-index: 1500;
+      display: flex;
+      flex-direction: column;
+      background: #ffffff;
+      color: #222;
+      box-shadow: -14px 0 38px rgba(0,0,0,0.24);
+      transform: translateX(105%);
+      visibility: hidden;
+      transition:
+        transform 0.38s cubic-bezier(0.22, 1, 0.36, 1),
+        visibility 0s linear 0.38s;
+    }
+
+    .faq-panel.open {
+      transform: translateX(0);
+      visibility: visible;
+      transition-delay: 0s;
+    }
+
+    .faq-panel-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 16px;
+      padding: 20px 22px 17px 22px;
+      border-bottom: 1px solid #e5e6ef;
+      background: linear-gradient(135deg, #252763 0%, #303381 100%);
+      color: #ffffff;
+    }
+
+    .faq-panel-heading-wrap {
+      min-width: 0;
+    }
+
+    .faq-panel-title {
+      margin: 0;
+      font-size: 21px;
+      line-height: 1.2;
+      font-weight: 800;
+    }
+
+    .faq-panel-subtitle {
+      margin: 5px 0 0 0;
+      font-size: 12.5px;
+      line-height: 1.35;
+      color: rgba(255,255,255,0.80);
+    }
+
+    .faq-panel-close {
+      width: 34px;
+      height: 34px;
+      flex: 0 0 34px;
+      display: grid;
+      place-items: center;
+      border: 1px solid rgba(255,255,255,0.36);
+      border-radius: 999px;
+      background: rgba(255,255,255,0.12);
+      color: #ffffff;
+      cursor: pointer;
+      transition: background-color 0.18s ease, transform 0.18s ease;
+    }
+
+    .faq-panel-close:hover,
+    .faq-panel-close:focus {
+      background: rgba(255,255,255,0.24);
+      transform: rotate(2deg);
+      outline: none;
+    }
+
+    .faq-panel-close svg {
+      width: 15px;
+      height: 15px;
+      fill: none;
+      stroke: currentColor;
+      stroke-width: 2.4;
+      stroke-linecap: round;
+    }
+
+    .faq-panel-body {
+      flex: 1;
+      min-height: 0;
+      overflow-y: auto;
+      padding: 18px;
+      background: #f7f8fc;
+    }
+
+    .faq-empty-state {
+      padding: 30px 22px;
+      border: 1px dashed #cfd2e6;
+      border-radius: 14px;
+      background: #ffffff;
+      color: #666b86;
+      font-size: 14px;
+      line-height: 1.5;
+      text-align: center;
+    }
+
+    .faq-empty-state.hidden {
+      display: none;
+    }
+
+    .faq-item {
+      margin-bottom: 9px;
+      overflow: hidden;
+      border: 1px solid #dedff0;
+      border-radius: 12px;
+      background: #ffffff;
+      box-shadow: 0 2px 8px rgba(37,39,99,0.06);
+    }
+
+    .faq-item:last-child {
+      margin-bottom: 0;
+    }
+
+    .faq-question {
+      width: 100%;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 14px;
+      box-sizing: border-box;
+      padding: 14px 15px;
+      border: none;
+      background: #ffffff;
+      color: #252763;
+      font-family: inherit;
+      font-size: 14px;
+      line-height: 1.35;
+      font-weight: 750;
+      text-align: left;
+      cursor: pointer;
+      transition: background-color 0.18s ease, color 0.18s ease;
+    }
+
+    .faq-question:hover,
+    .faq-question:focus,
+    .faq-question[aria-expanded="true"] {
+      background: #f0f2ff;
+      outline: none;
+    }
+
+    .faq-question-caret {
+      flex: 0 0 auto;
+      font-size: 11px;
+      transition: transform 0.22s ease;
+    }
+
+    .faq-question[aria-expanded="true"] .faq-question-caret {
+      transform: rotate(90deg);
+    }
+
+    .faq-answer {
+      display: grid;
+      grid-template-rows: 0fr;
+      transition: grid-template-rows 0.28s ease;
+    }
+
+    .faq-answer.open {
+      grid-template-rows: 1fr;
+    }
+
+    .faq-answer-inner {
+      min-height: 0;
+      overflow: hidden;
+    }
+
+    .faq-answer-content {
+      padding: 0 15px 15px 15px;
+      color: #45485d;
+      font-size: 13.5px;
+      line-height: 1.55;
+    }
+
+    .faq-answer-content p:first-child {
+      margin-top: 0;
+    }
+
+    .faq-answer-content p:last-child {
+      margin-bottom: 0;
+    }
+
+    .faq-answer-placeholder {
+      margin: 0;
+      color: #777b91;
+      font-style: italic;
+    }
+
+    .faq-video-wrap {
+      margin-top: 13px;
+      padding: 8px;
+      border: 1px solid #e1e3ef;
+      border-radius: 12px;
+      background: #f7f8fc;
+    }
+
+    .faq-video {
+      width: 100%;
+      border-radius: 9px;
+      background: #111;
+      display: block;
+    }
+
+    .faq-video-note {
+      margin: 7px 3px 0 3px;
+      color: #73778d;
+      font-size: 11px;
+      line-height: 1.35;
+    }
+
+    @media (max-width: 980px) {
+      .nav-reminder-slot {
+        position: fixed;
+        top: 64px;
+        right: 12px;
+        width: min(390px, calc(100vw - 24px));
+        min-width: 0;
+        max-width: 390px;
+        height: 48px;
+        padding: 0;
+        z-index: 1450;
+      }
+
+      .nav-reminder-slot.collapsed {
+        display: none;
+      }
+
+      .top-nav.reminder-visible .nav-reminder-slot {
+        width: min(390px, calc(100vw - 24px));
+        min-width: 0;
+        max-width: 390px;
+        padding: 0;
+      }
+
+      .faq-panel {
+        top: 56px;
+        width: min(440px, 100vw);
+      }
     }
 
     /* --- RED WARNING BAR --- */
@@ -979,17 +1554,10 @@
       visibility: visible;
       opacity: 1;
       pointer-events: auto;
-      z-index: 2;
+      z-index: 1;
       transition:
         opacity 0.34s ease-in-out,
         visibility 0s linear 0s;
-    }
-
-    .content-frame.fading-out {
-      visibility: visible;
-      opacity: 0;
-      pointer-events: none;
-      z-index: 1;
     }
 
     /* --- SMARTER LOADING MESSAGE --- */
@@ -1190,21 +1758,584 @@
       background: #1d1f50;
     }
 
+
+    /* --- FINAL TOP-ACTION AND FAQ SEARCH REDESIGN --- */
+    .nav-reminder-slot {
+      flex-basis: clamp(290px, 30vw, 380px);
+      min-width: 290px;
+      max-width: 380px;
+      padding-left: 12px;
+      padding-right: 12px;
+    }
+
+    .top-nav.reminder-visible .nav-reminder-slot {
+      flex-basis: clamp(290px, 30vw, 380px);
+      min-width: 290px;
+      max-width: 380px;
+      padding-left: 12px;
+      padding-right: 12px;
+    }
+
+    .nav-project-action {
+      display: flex;
+      width: min(354px, 100%);
+      max-width: 354px;
+      min-height: 46px;
+      max-height: 46px;
+      padding: 5px 40px 5px 6px;
+      gap: 9px;
+      border-radius: 999px;
+      overflow: hidden;
+      box-shadow: 0 8px 22px rgba(7, 12, 44, 0.28);
+      backdrop-filter: blur(14px);
+      -webkit-backdrop-filter: blur(14px);
+    }
+
+    .nav-project-action::before {
+      content: "";
+      position: absolute;
+      inset: 0;
+      border-radius: inherit;
+      pointer-events: none;
+      box-shadow: inset 0 1px 0 rgba(255,255,255,0.72);
+    }
+
+    .nav-project-action-copy {
+      display: flex;
+      flex-direction: column;
+      align-items: flex-start;
+      justify-content: center;
+      gap: 1px;
+      min-width: 0;
+      white-space: normal;
+      overflow: visible;
+    }
+
+    .nav-project-action-title {
+      width: 100%;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+      font-size: 12.5px;
+      line-height: 1.05;
+      font-weight: 850;
+      letter-spacing: 0.05px;
+    }
+
+    .nav-project-action-subtitle {
+      width: 100%;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+      font-size: 9.5px;
+      line-height: 1.05;
+      font-weight: 650;
+      opacity: 0.72;
+    }
+
+    .nav-project-action-icon {
+      width: 34px;
+      height: 34px;
+      flex-basis: 34px;
+      border-radius: 999px;
+      box-shadow: inset 0 0 0 1px rgba(255,255,255,0.48);
+    }
+
+    .nav-project-action-icon svg {
+      width: 16px;
+      height: 16px;
+    }
+
+    .nav-project-action-arrow {
+      right: 13px;
+      width: 19px;
+      height: 19px;
+      opacity: 0.58;
+    }
+
+    .nav-request-access-action {
+      border: 1px solid rgba(255,255,255,0.96);
+      background: linear-gradient(135deg, #ffffff 0%, #f2f4ff 58%, #e8edff 100%);
+      color: #252763;
+    }
+
+    .nav-request-access-action .nav-project-action-icon {
+      background: linear-gradient(135deg, #252763 0%, #4b51b6 100%);
+      color: #ffffff;
+    }
+
+    .nav-request-access-action:hover,
+    .nav-request-access-action:focus {
+      background: linear-gradient(135deg, #ffffff 0%, #e9edff 100%);
+      box-shadow: 0 11px 28px rgba(7, 12, 44, 0.34);
+    }
+
+    .nav-faq-action {
+      border: 1px solid rgba(199, 214, 255, 0.90);
+      background: linear-gradient(135deg, #eef4ff 0%, #ffffff 58%, #f0ecff 100%);
+      color: #252763;
+    }
+
+    .nav-faq-action .nav-project-action-icon {
+      background: linear-gradient(135deg, #4f7fd8 0%, #6e5dd5 100%);
+      color: #ffffff;
+    }
+
+    .nav-faq-action:hover,
+    .nav-faq-action:focus {
+      border-color: #ffffff;
+      background: linear-gradient(135deg, #ffffff 0%, #eaf0ff 100%);
+      color: #252763;
+      box-shadow: 0 11px 28px rgba(7, 12, 44, 0.34);
+    }
+
+    .faq-panel {
+      width: min(500px, 96vw);
+      background: #f6f7fb;
+    }
+
+    .faq-panel-header {
+      padding: 23px 24px 19px;
+      border-bottom: 0;
+      background:
+        radial-gradient(circle at 85% -20%, rgba(139, 157, 255, 0.44), transparent 38%),
+        linear-gradient(135deg, #202255 0%, #303584 58%, #454bb0 100%);
+    }
+
+    .faq-panel-title {
+      font-size: 23px;
+      letter-spacing: -0.25px;
+    }
+
+    .faq-panel-subtitle {
+      max-width: 340px;
+      margin-top: 6px;
+      color: rgba(255,255,255,0.78);
+    }
+
+    .faq-search-area {
+      padding: 15px 18px 12px;
+      border-bottom: 1px solid #e3e5ef;
+      background: rgba(255,255,255,0.96);
+      box-shadow: 0 5px 16px rgba(24, 28, 70, 0.06);
+      position: relative;
+      z-index: 2;
+    }
+
+    .faq-search-box {
+      min-height: 46px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 0 10px 0 14px;
+      border: 1px solid #d8dbea;
+      border-radius: 14px;
+      background: #f8f9fd;
+      box-shadow: inset 0 1px 2px rgba(24,28,70,0.04);
+      transition: border-color 0.2s ease, background-color 0.2s ease, box-shadow 0.2s ease;
+    }
+
+    .faq-search-box:focus-within {
+      border-color: #7278d4;
+      background: #ffffff;
+      box-shadow: 0 0 0 4px rgba(79, 85, 190, 0.11), 0 8px 18px rgba(37,39,99,0.08);
+    }
+
+    .faq-search-icon {
+      width: 20px;
+      height: 20px;
+      flex: 0 0 20px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      color: #6f7393;
+    }
+
+    .faq-search-icon svg {
+      width: 18px;
+      height: 18px;
+      fill: none;
+      stroke: currentColor;
+      stroke-width: 2;
+      stroke-linecap: round;
+    }
+
+    #faqSearchInput {
+      min-width: 0;
+      flex: 1 1 auto;
+      height: 44px;
+      padding: 0;
+      border: 0;
+      outline: 0;
+      background: transparent;
+      color: #252763;
+      font-family: inherit;
+      font-size: 14px;
+      font-weight: 650;
+      appearance: none;
+      -webkit-appearance: none;
+    }
+
+    #faqSearchInput::placeholder {
+      color: #9295aa;
+      font-weight: 550;
+    }
+
+    #faqSearchInput::-webkit-search-cancel-button {
+      display: none;
+    }
+
+    .faq-search-clear {
+      width: 30px;
+      height: 30px;
+      flex: 0 0 30px;
+      display: grid;
+      place-items: center;
+      border: 0;
+      border-radius: 999px;
+      background: #e9ebf6;
+      color: #626682;
+      cursor: pointer;
+      transition: background-color 0.18s ease, transform 0.18s ease;
+    }
+
+    .faq-search-clear.hidden {
+      display: none;
+    }
+
+    .faq-search-clear:hover,
+    .faq-search-clear:focus {
+      background: #dfe2f1;
+      transform: scale(1.04);
+      outline: none;
+    }
+
+    .faq-search-clear svg {
+      width: 12px;
+      height: 12px;
+      fill: none;
+      stroke: currentColor;
+      stroke-width: 2.2;
+      stroke-linecap: round;
+    }
+
+    .faq-search-summary {
+      min-height: 16px;
+      margin-top: 8px;
+      padding-left: 3px;
+      color: #797d96;
+      font-size: 11.5px;
+      font-weight: 650;
+    }
+
+    .faq-panel-body {
+      padding: 16px 18px 24px;
+      background:
+        linear-gradient(180deg, rgba(237,239,248,0.74), rgba(247,248,252,0.96) 150px),
+        #f7f8fc;
+    }
+
+    .faq-list {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+
+    .faq-item {
+      margin: 0;
+      border: 1px solid #e0e2ed;
+      border-radius: 15px;
+      background: rgba(255,255,255,0.98);
+      box-shadow: 0 5px 16px rgba(28, 33, 83, 0.06);
+      transition: transform 0.2s ease, border-color 0.2s ease, box-shadow 0.2s ease;
+    }
+
+    .faq-item:hover {
+      transform: translateY(-1px);
+      border-color: #cfd3e8;
+      box-shadow: 0 9px 24px rgba(28,33,83,0.10);
+    }
+
+    .faq-question {
+      gap: 11px;
+      padding: 15px 14px 15px 12px;
+      font-size: 14px;
+      font-weight: 760;
+      border-radius: 15px;
+    }
+
+    .faq-question:hover,
+    .faq-question:focus,
+    .faq-question[aria-expanded="true"] {
+      background: linear-gradient(135deg, #f7f8ff 0%, #eef1ff 100%);
+      color: #252763;
+    }
+
+    .faq-question-number {
+      width: 31px;
+      height: 31px;
+      flex: 0 0 31px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      border-radius: 10px;
+      background: #edf0ff;
+      color: #4f56aa;
+      font-size: 10px;
+      line-height: 1;
+      font-weight: 850;
+      letter-spacing: 0.45px;
+    }
+
+    .faq-question-text {
+      min-width: 0;
+      flex: 1 1 auto;
+    }
+
+    .faq-question-caret {
+      width: 27px;
+      height: 27px;
+      flex: 0 0 27px;
+      display: grid;
+      place-items: center;
+      border-radius: 999px;
+      background: #f1f2f8;
+      color: #666b8c;
+      transition: transform 0.22s ease, background-color 0.18s ease, color 0.18s ease;
+    }
+
+    .faq-question-caret svg {
+      width: 13px;
+      height: 13px;
+      fill: none;
+      stroke: currentColor;
+      stroke-width: 2.1;
+      stroke-linecap: round;
+      stroke-linejoin: round;
+    }
+
+    .faq-question[aria-expanded="true"] .faq-question-caret {
+      transform: rotate(90deg);
+      background: #4f56aa;
+      color: #ffffff;
+    }
+
+    .faq-answer-content {
+      padding: 2px 15px 17px 54px;
+      border-top: 1px solid rgba(224,226,237,0.72);
+      margin-top: 0;
+      padding-top: 14px;
+    }
+
+    .faq-empty-state {
+      padding: 35px 24px;
+      border: 1px dashed #cfd3e4;
+      border-radius: 16px;
+      background: rgba(255,255,255,0.86);
+      color: #747890;
+    }
+
     @media (max-width: 980px) {
-      .dashboard-refresh-popup {
-        min-height: 30px;
-        padding: 7px 30px 7px 14px;
-        font-size: 11.5px;
+      .nav-reminder-slot,
+      .top-nav.reminder-visible .nav-reminder-slot {
+        width: min(354px, calc(100vw - 24px));
+        max-width: 354px;
+        min-width: 0;
       }
 
-      .nav-spacer {
-        min-width: 190px;
-        padding: 0 8px;
+      .nav-project-action {
+        width: min(354px, calc(100vw - 24px));
+      }
+
+      .faq-panel {
+        width: min(500px, 100vw);
+      }
+    }
+
+    /* --- SINGLE-REPOSITORY PORTAL SWITCH TRANSITION --- */
+    .portal-nav-hidden,
+    .portal-nav-separator-hidden {
+      display: none !important;
+    }
+
+    /*
+      Modern Chromium browsers use a true cross-document transition. The page
+      itself stays still while the portal chrome softly cross-slides into the
+      next department or leader. This avoids the previous full disappearance.
+    */
+    @view-transition {
+      navigation: auto;
+    }
+
+    .top-nav {
+      view-transition-name: portal-top-navigation;
+    }
+
+    .header-bar {
+      view-transition-name: portal-guidance-bar;
+    }
+
+    .view-only-note {
+      view-transition-name: portal-view-note;
+    }
+
+    .auth-refresh-banner {
+      view-transition-name: portal-auth-banner;
+    }
+
+    ::view-transition-old(root),
+    ::view-transition-new(root) {
+      animation: none;
+      mix-blend-mode: normal;
+    }
+
+    ::view-transition-group(portal-top-navigation),
+    ::view-transition-group(portal-guidance-bar),
+    ::view-transition-group(portal-view-note),
+    ::view-transition-group(portal-auth-banner) {
+      animation-duration: 0.34s;
+      animation-timing-function: cubic-bezier(0.22, 1, 0.36, 1);
+      z-index: 2200;
+    }
+
+    ::view-transition-old(portal-top-navigation),
+    ::view-transition-old(portal-guidance-bar),
+    ::view-transition-old(portal-view-note),
+    ::view-transition-old(portal-auth-banner) {
+      animation: portalChromeSlideOut 0.15s ease-out both;
+      mix-blend-mode: normal;
+    }
+
+    ::view-transition-new(portal-top-navigation),
+    ::view-transition-new(portal-guidance-bar),
+    ::view-transition-new(portal-view-note),
+    ::view-transition-new(portal-auth-banner) {
+      animation: portalChromeSlideIn 0.32s cubic-bezier(0.22, 1, 0.36, 1) both;
+      mix-blend-mode: normal;
+    }
+
+    @keyframes portalChromeSlideOut {
+      to {
+        opacity: 0.35;
+        transform: translateY(-3px) scale(0.998);
+        filter: blur(1.4px);
+      }
+    }
+
+    @keyframes portalChromeSlideIn {
+      from {
+        opacity: 0;
+        transform: translateY(7px) scale(0.998);
+        filter: blur(3px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0) scale(1);
+        filter: blur(0);
+      }
+    }
+
+    /*
+      Fallback for browsers without cross-document View Transitions. The blue
+      navigation stays visible; only a subtle blur and glass-light sweep occur.
+    */
+    .top-nav,
+    .header-bar,
+    .view-only-note,
+    .auth-refresh-banner {
+      transition:
+        opacity 0.18s ease,
+        transform 0.24s cubic-bezier(0.22, 1, 0.36, 1),
+        filter 0.18s ease;
+    }
+
+    body.portal-switching .top-nav,
+    body.portal-switching .header-bar,
+    body.portal-switching .view-only-note,
+    body.portal-switching .auth-refresh-banner {
+      opacity: 0.82;
+      transform: translateY(-2px) scale(0.999);
+      filter: blur(1.2px) saturate(0.92);
+      pointer-events: none;
+    }
+
+    body.portal-arriving .top-nav,
+    body.portal-arriving .header-bar,
+    body.portal-arriving .view-only-note,
+    body.portal-arriving .auth-refresh-banner {
+      opacity: 0.35;
+      transform: translateY(6px) scale(0.999);
+      filter: blur(2.5px);
+    }
+
+    body.portal-switching::after,
+    body.portal-arriving::after {
+      content: "";
+      position: fixed;
+      top: 0;
+      left: -42vw;
+      width: 38vw;
+      height: 56px;
+      z-index: 2300;
+      pointer-events: none;
+      background: linear-gradient(
+        100deg,
+        rgba(255,255,255,0) 0%,
+        rgba(255,255,255,0.08) 28%,
+        rgba(255,255,255,0.42) 50%,
+        rgba(255,255,255,0.08) 72%,
+        rgba(255,255,255,0) 100%
+      );
+      transform: skewX(-15deg);
+      animation: portalChromeLightSweep 0.38s cubic-bezier(0.22, 1, 0.36, 1) both;
+    }
+
+    body.portal-arriving::after {
+      animation-direction: reverse;
+      opacity: 0.72;
+    }
+
+    @keyframes portalChromeLightSweep {
+      from {
+        left: -42vw;
+      }
+      to {
+        left: 112vw;
+      }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      .top-nav,
+      .header-bar,
+      .view-only-note,
+      .auth-refresh-banner {
+        animation: none !important;
+        transition: none !important;
+        filter: none !important;
+        transform: none !important;
+      }
+
+      body.portal-switching::after,
+      body.portal-arriving::after {
+        display: none !important;
       }
     }
   </style>
 </head>
 <body>
+  <script>
+    /* Apply the fallback arrival state before the portal chrome is parsed. */
+    (function() {
+      try {
+        if (window.sessionStorage.getItem("hrPortalFallbackArrival") === "1") {
+          document.body.classList.add("portal-arriving");
+          window.sessionStorage.removeItem("hrPortalFallbackArrival");
+        }
+      } catch (error) {
+        /* Storage can be unavailable in strict privacy modes; continue normally. */
+      }
+    })();
+  </script>
 
   <div class="top-nav reminder-collapsed">
 
@@ -1256,7 +2387,7 @@
 
         <div class="dropdown">
           <div class="dropdown-toggle" id="projectDropdownToggle" tabindex="0">
-            <span id="projectDropdownLabel">Projects</span> <span class="caret">▼</span>
+            <span id="projectDropdownLabel">All Projects</span> <span class="caret">▼</span>
           </div>
 
           <div class="dropdown-menu">
@@ -1285,26 +2416,25 @@
           </div>
           <div class="dropdown-menu">
             <div class="dropdown-header">HRLT</div>
-            <a href="https://swgashr.github.io/HR">Albert Taylor</a>
-            <a href="https://swgashr.github.io/HR-Operations">Gail Carmona</a>
-            <a href="https://swgashr.github.io/HR-Compensation-Benefits-HRS">Mike Bryant</a>
-            <a href="https://swgashr.github.io/HR-EX-DEI-TA">Courtney Moore</a>
+            <a href="?department=albert-taylor#home" data-department-key="albert-taylor">Albert Taylor</a>
+            <a href="?department=gail-carmona#home" data-department-key="gail-carmona">Gail Carmona</a>
+            <a href="?department=mike-bryant#home" data-department-key="mike-bryant">Mike Bryant</a>
+            <a href="?department=courtney-moore#home" data-department-key="courtney-moore">Courtney Moore</a>
 
             <div class="dropdown-divider"></div>
 
             <div class="dropdown-header">Departments</div>
-            <a href="https://swgashr.github.io/Benefits">Benefits</a>
-            <a href="https://swgashr.github.io/Compensation">Compensation</a>
-            <a href="https://swgashr.github.io/DEI">DE&I</a>
-            <a href="https://swgashr.github.io/HRLO">HRLO</a>
-            <a href="https://swgashr.github.io/Employee-Experience">Employee Experience</a>
-            <a href="https://swgashr.github.io/HRBP">HRBP</a>
-            <a href="https://swgashr.github.io/HRCM">HRCM</a>
-            <a href="https://swgashr.github.io/HRS">HRS</a>
-            <a href="https://swgashr.github.io/HRSS">HRSS</a>
-            <a href="https://swgashr.github.io/Labor-Relations">Labor Relations</a>
-            <a href="https://swgashr.github.io/Talent-Acquisition">Talent Acquisition</a>
-            <a href="https://swgashr.github.io/Talent-Development">Talent Development</a>
+            <a href="?department=benefits#home" data-department-key="benefits">Benefits</a>
+            <a href="?department=compensation#home" data-department-key="compensation">Compensation</a>
+            <a href="?department=dei#home" data-department-key="dei">DE&I</a>
+            <a href="?department=employee-experience#home" data-department-key="employee-experience">Employee Experience</a>
+            <a href="?department=hrbp#home" data-department-key="hrbp">HRBP</a>
+            <a href="?department=hrcm#home" data-department-key="hrcm">HRCM</a>
+            <a href="?department=hrs#home" data-department-key="hrs">HRS</a>
+            <a href="?department=hrss#home" data-department-key="hrss">HRSS</a>
+            <a href="?department=labor-relations#home" data-department-key="labor-relations">Labor Relations</a>
+            <a href="?department=talent-acquisition#home" data-department-key="talent-acquisition">Talent Acquisition</a>
+            <a href="?department=talent-development#home" data-department-key="talent-development">Talent Development</a>
 
             <div class="dropdown-divider"></div>
 
@@ -1341,29 +2471,46 @@
 
             <div class="dropdown-divider"></div>
 
-            <a id="jobAidMgrLink" href="INSERT_JOB_AID_MGR_LINK_HERE">Job Aid (MGR)</a>
-            <a id="jobAidDirLink" href="INSERT_JOB_AID_DIR_LINK_HERE">Job Aid (DIR)</a>
-
-            <div class="dropdown-divider"></div>
+            <button id="supportFaqButton"
+                    class="support-action-button support-faq-button"
+                    type="button"
+                    aria-controls="smartsheetFaqPanel"
+                    aria-expanded="false">
+              <span class="support-action-icon" aria-hidden="true">
+                <svg viewBox="0 0 24 24" focusable="false">
+                  <circle cx="12" cy="12" r="9"></circle>
+                  <path d="M9.8 9a2.4 2.4 0 0 1 4.6 1c0 1.8-2.4 2.1-2.4 3.8"></path>
+                  <path d="M12 17h.01"></path>
+                </svg>
+              </span>
+              <span class="support-action-copy">
+                <span class="support-action-title">Smartsheet FAQs</span>
+                <span class="support-action-subtitle">Guides, answers, and videos</span>
+              </span>
+              <span class="support-action-chevron" aria-hidden="true">
+                <svg viewBox="0 0 24 24" focusable="false">
+                  <path d="m9 5 7 7-7 7"></path>
+                </svg>
+              </span>
+            </button>
 
             <a id="requestAccessLink"
-               class="request-access-button"
+               class="support-action-button support-request-access-button"
                href="#"
-               onclick="openAccessRequestEmail(event)"
                aria-label="Request access by email">
-              <span class="request-access-left">
-                <span class="request-access-icon" aria-hidden="true">
-                  <svg viewBox="0 0 24 24" focusable="false">
-                    <rect x="4" y="6" width="16" height="12" rx="2"></rect>
-                    <path d="M4.5 7.5 12 13l7.5-5.5"></path>
-                  </svg>
-                </span>
-                <span>Request Access</span>
-              </span>
-              <span class="request-access-arrow" aria-hidden="true">
+              <span class="support-action-icon" aria-hidden="true">
                 <svg viewBox="0 0 24 24" focusable="false">
-                  <path d="M5 12h12"></path>
-                  <path d="m13 7 5 5-5 5"></path>
+                  <rect x="4" y="6" width="16" height="12" rx="2"></rect>
+                  <path d="M4.5 7.5 12 13l7.5-5.5"></path>
+                </svg>
+              </span>
+              <span class="support-action-copy">
+                <span class="support-action-title">Request Access</span>
+                <span class="support-action-subtitle">Email the portal owner</span>
+              </span>
+              <span class="support-action-chevron" aria-hidden="true">
+                <svg viewBox="0 0 24 24" focusable="false">
+                  <path d="m9 5 7 7-7 7"></path>
                 </svg>
               </span>
             </a>
@@ -1393,17 +2540,118 @@
         </button>
         <span class="nav-refresh-text">This Dashboard updates every 24 hours.</span>
       </div>
+
+      <a class="nav-project-action nav-request-access-action hidden"
+         id="projectRequestAccessButton"
+         href="#"
+         aria-label="Request access by email">
+        <span class="nav-project-action-icon" aria-hidden="true">
+          <svg viewBox="0 0 24 24" focusable="false">
+            <rect x="4" y="6" width="16" height="12" rx="2"></rect>
+            <path d="M4.5 7.5 12 13l7.5-5.5"></path>
+          </svg>
+        </span>
+        <span class="nav-project-action-copy">
+          <span class="nav-project-action-title">Request Access</span>
+          <span class="nav-project-action-subtitle">Get access to this project</span>
+        </span>
+        <span class="nav-project-action-arrow" aria-hidden="true">
+          <svg viewBox="0 0 24 24" focusable="false">
+            <path d="M5 12h12"></path>
+            <path d="m13 7 5 5-5 5"></path>
+          </svg>
+        </span>
+      </a>
+
+      <button class="nav-project-action nav-faq-action hidden"
+              id="smartsheetFaqButton"
+              type="button"
+              aria-controls="smartsheetFaqPanel"
+              aria-expanded="false">
+        <span class="nav-project-action-icon" aria-hidden="true">
+          <svg viewBox="0 0 24 24" focusable="false">
+            <circle cx="12" cy="12" r="9"></circle>
+            <path d="M9.8 9a2.4 2.4 0 0 1 4.6 1c0 1.8-2.4 2.1-2.4 3.8"></path>
+            <path d="M12 17h.01"></path>
+          </svg>
+        </span>
+        <span class="nav-project-action-copy">
+          <span class="nav-project-action-title">Smartsheet FAQs</span>
+          <span class="nav-project-action-subtitle">Quick answers and how-to videos</span>
+        </span>
+        <span class="nav-project-action-arrow" aria-hidden="true">
+          <svg viewBox="0 0 24 24" focusable="false">
+            <path d="M5 12h12"></path>
+            <path d="m13 7 5 5-5 5"></path>
+          </svg>
+        </span>
+      </button>
     </div>
 
     <a class="swgas-logo-link"
        id="departmentSharePointLink"
-       href="https://swgas.sharepoint.com/sites/HR"
+       href="#"
        target="_blank"
        rel="noopener noreferrer"
-       title="Southwest Gas SharePoint">
-      <img id="departmentLogo" src="swgas.png" alt="Southwest Gas" class="swgas-logo">
+       title="Department SharePoint">
+      <img id="departmentLogo" src="swgas-benefits.png" alt="Department logo" class="swgas-logo">
     </a>
   </div>
+
+  <div class="faq-panel-backdrop" id="faqPanelBackdrop" aria-hidden="true"></div>
+
+  <aside class="faq-panel"
+         id="smartsheetFaqPanel"
+         aria-labelledby="smartsheetFaqTitle"
+         aria-hidden="true">
+    <div class="faq-panel-header">
+      <div class="faq-panel-heading-wrap">
+        <h2 class="faq-panel-title" id="smartsheetFaqTitle">Smartsheet FAQs</h2>
+        <p class="faq-panel-subtitle">Select a question to view instructions or a video.</p>
+      </div>
+
+      <button class="faq-panel-close"
+              id="faqPanelClose"
+              type="button"
+              aria-label="Close Smartsheet FAQs">
+        <svg viewBox="0 0 18 18" aria-hidden="true" focusable="false">
+          <path d="M4 4l10 10M14 4 4 14"></path>
+        </svg>
+      </button>
+    </div>
+
+    <div class="faq-search-area">
+      <label class="faq-search-box" for="faqSearchInput">
+        <span class="faq-search-icon" aria-hidden="true">
+          <svg viewBox="0 0 24 24" focusable="false">
+            <circle cx="11" cy="11" r="6.5"></circle>
+            <path d="m16 16 4 4"></path>
+          </svg>
+        </span>
+        <input id="faqSearchInput"
+               type="search"
+               autocomplete="off"
+               placeholder="Search questions..."
+               aria-label="Search Smartsheet FAQs">
+        <button class="faq-search-clear hidden"
+                id="faqSearchClear"
+                type="button"
+                aria-label="Clear FAQ search">
+          <svg viewBox="0 0 18 18" aria-hidden="true" focusable="false">
+            <path d="M4 4l10 10M14 4 4 14"></path>
+          </svg>
+        </button>
+      </label>
+      <div class="faq-search-summary" id="faqSearchSummary" aria-live="polite"></div>
+    </div>
+
+    <div class="faq-panel-body">
+      <div class="faq-empty-state" id="faqEmptyState">
+        Smartsheet FAQs will appear here once questions are added to the portal configuration.
+      </div>
+      <div class="faq-list" id="faqList"></div>
+    </div>
+  </aside>
 
   <div class="header-bar hidden" id="warningBar">
     <div class="header-left">
@@ -1507,116 +2755,1060 @@
 
   <script>
     /* ==========================================================
-       EDIT THIS SECTION ONLY FOR TITLES, MAIN LINKS, AND PROJECTS
+       SHARED PORTAL SETTINGS
+       These stay the same across the single repository.
        ========================================================== */
 
-    const PORTAL_CONFIG = {
-      portalTitle: "VP: HR Project Portal",
+    const SHARED_PORTAL_SETTINGS = {
+      defaultDepartmentKey: "benefits",
+      faviconFileName: "department.png",
+      logoFileName: "swgas-benefits.png",
+      contactEmail: "Benjamin.Bell@swgas.com",
+      allHrPersonalTasksUrl: "https://workapps.smartsheet.com/app/wJm2VpWWq27w5cPQ5rc399qrFc",
 
-      departmentName: "All",
+      supportLinks: {
+        projectCreationRequest: "https://app.smartsheet.com/b/form/019a16dd2b3d7e2d96db9a9e8c1aedc7",
+        smartsheetSupport: "https://app.smartsheet.com/b/form/019a16e297d77bd2b18acb36bc27e593"
 
-      defaultViewId: "home",
+      }
+    };
 
-      views: {
-        home: {
-          label: "Home",
-          embedSrc: "https://app.smartsheet.com/b/publish?EQBCT=7d9f27cd03244d95b758b8093f3a90dd",
-          viewOnlyNote: false,
-          refreshReminder: true
-        },
+    /* ==========================================================
+       SINGLE-REPOSITORY PORTAL DIRECTORY
 
-        mainInitiatives: {
-          label: "All HR Projects Dashboard",
-          embedSrc: "https://app.smartsheet.com/b/publish?EQBCT=51b6077469244ea4b04fc5ba07e52876",
-          viewOnlyNote: false,
-          refreshReminder: true
-        },
+       Edit department- and leader-specific settings only in this object.
+       The key is used in the URL, for example:
+         ?department=benefits#home
 
-        allDepartmentProjects: {
-          label: "All HR Projects (View Only)",
-          embedSrc: "https://app.smartsheet.com/b/publish?EQBCT=a8c8d9416f8a45079c62e3aefe2d73e4",
-          viewOnlyNote: true,
-          refreshReminder: false
+       Top-right logo files are relative to this index.html and use the
+       swgas-...png naming pattern. Leader entries may use projectGroupLabels
+       to define which groups they can browse; leader groups remain collapsed
+       and are never preloaded. You may place logo files in a folder by
+       changing a value to something like:
+         "images/swgas-benefits.png"
+       ========================================================== */
+
+    const DEPARTMENT_PORTALS = {
+      benefits: {
+        departmentName: "Benefits",
+        portalTitle: "Benefits Project Portal",
+        projectGroupLabel: "Benefits",
+        logoFileName: "swgas-benefits.png",
+        departmentSharePointUrl: "INSERT_BENEFITS_SHAREPOINT_URL_HERE",
+        defaultViewId: "home",
+        views: {
+          home: {
+            label: "Home",
+            embedSrc: "INSERT_BENEFITS_HOME_DASHBOARD_PUBLISHED_LINK_HERE",
+            viewOnlyNote: false,
+            refreshNote: true,
+            preload: true
+          },
+          mainInitiatives: {
+            label: "(Department Name) Main Initiatives",
+            embedSrc: "INSERT_BENEFITS_MAIN_INITIATIVES_PUBLISHED_LINK_HERE",
+            viewOnlyNote: false,
+            refreshNote: true,
+            preload: true
+          },
+          allDepartmentProjects: {
+            label: "All (Department Name) Projects (View Only)",
+            embedSrc: "INSERT_BENEFITS_ALL_PROJECTS_PUBLISHED_LINK_HERE",
+            viewOnlyNote: true,
+            refreshNote: false,
+            preload: true
+          }
         }
       },
 
+      compensation: {
+        departmentName: "Compensation",
+        portalTitle: "Compensation Project Portal",
+        projectGroupLabel: "Compensation",
+        logoFileName: "swgas-compensation.png",
+        departmentSharePointUrl: "INSERT_COMPENSATION_SHAREPOINT_URL_HERE",
+        defaultViewId: "home",
+        views: {
+          home: {
+            label: "Home",
+            embedSrc: "INSERT_COMPENSATION_HOME_DASHBOARD_PUBLISHED_LINK_HERE",
+            viewOnlyNote: false,
+            refreshNote: true,
+            preload: true
+          },
+          mainInitiatives: {
+            label: "(Department Name) Main Initiatives",
+            embedSrc: "INSERT_COMPENSATION_MAIN_INITIATIVES_PUBLISHED_LINK_HERE",
+            viewOnlyNote: false,
+            refreshNote: true,
+            preload: true
+          },
+          allDepartmentProjects: {
+            label: "All (Department Name) Projects (View Only)",
+            embedSrc: "INSERT_COMPENSATION_ALL_PROJECTS_PUBLISHED_LINK_HERE",
+            viewOnlyNote: true,
+            refreshNote: false,
+            preload: true
+          }
+        }
+      },
+
+      dei: {
+        departmentName: "DE&I",
+        portalTitle: "DE&I Project Portal",
+        projectGroupLabel: "DE&I",
+        logoFileName: "swgas-dei.png",
+        departmentSharePointUrl: "INSERT_DEI_SHAREPOINT_URL_HERE",
+        defaultViewId: "home",
+        views: {
+          home: {
+            label: "Home",
+            embedSrc: "INSERT_DEI_HOME_DASHBOARD_PUBLISHED_LINK_HERE",
+            viewOnlyNote: false,
+            refreshNote: true,
+            preload: true
+          },
+          mainInitiatives: {
+            label: "(Department Name) Main Initiatives",
+            embedSrc: "INSERT_DEI_MAIN_INITIATIVES_PUBLISHED_LINK_HERE",
+            viewOnlyNote: false,
+            refreshNote: true,
+            preload: true
+          },
+          allDepartmentProjects: {
+            label: "All (Department Name) Projects (View Only)",
+            embedSrc: "INSERT_DEI_ALL_PROJECTS_PUBLISHED_LINK_HERE",
+            viewOnlyNote: true,
+            refreshNote: false,
+            preload: true
+          }
+        }
+      },
+
+      "employee-experience": {
+        departmentName: "Employee Experience",
+        portalTitle: "Employee Experience Project Portal",
+        projectGroupLabel: "Employee Experience",
+        logoFileName: "swgas-ex.png",
+        departmentSharePointUrl: "INSERT_EMPLOYEE_EXPERIENCE_SHAREPOINT_URL_HERE",
+        defaultViewId: "home",
+        views: {
+          home: {
+            label: "Home",
+            embedSrc: "INSERT_EMPLOYEE_EXPERIENCE_HOME_DASHBOARD_PUBLISHED_LINK_HERE",
+            viewOnlyNote: false,
+            refreshNote: true,
+            preload: true
+          },
+          mainInitiatives: {
+            label: "(Department Name) Main Initiatives",
+            embedSrc: "INSERT_EMPLOYEE_EXPERIENCE_MAIN_INITIATIVES_PUBLISHED_LINK_HERE",
+            viewOnlyNote: false,
+            refreshNote: true,
+            preload: true
+          },
+          allDepartmentProjects: {
+            label: "All (Department Name) Projects (View Only)",
+            embedSrc: "INSERT_EMPLOYEE_EXPERIENCE_ALL_PROJECTS_PUBLISHED_LINK_HERE",
+            viewOnlyNote: true,
+            refreshNote: false,
+            preload: true
+          }
+        }
+      },
+
+      hrbp: {
+        departmentName: "HRBP",
+        portalTitle: "HRBP Project Portal",
+        projectGroupLabel: "HRBP",
+        logoFileName: "swgas-hrbp.png",
+        departmentSharePointUrl: "INSERT_HRBP_SHAREPOINT_URL_HERE",
+        defaultViewId: "home",
+        views: {
+          home: {
+            label: "Home",
+            embedSrc: "INSERT_HRBP_HOME_DASHBOARD_PUBLISHED_LINK_HERE",
+            viewOnlyNote: false,
+            refreshNote: true,
+            preload: true
+          },
+          mainInitiatives: {
+            label: "(Department Name) Main Initiatives",
+            embedSrc: "INSERT_HRBP_MAIN_INITIATIVES_PUBLISHED_LINK_HERE",
+            viewOnlyNote: false,
+            refreshNote: true,
+            preload: true
+          },
+          allDepartmentProjects: {
+            label: "All (Department Name) Projects (View Only)",
+            embedSrc: "INSERT_HRBP_ALL_PROJECTS_PUBLISHED_LINK_HERE",
+            viewOnlyNote: true,
+            refreshNote: false,
+            preload: true
+          }
+        }
+      },
+
+      hrcm: {
+        departmentName: "HR Change Management",
+        portalTitle: "HR Change Management Project Portal",
+        projectGroupLabel: "HR Change Management",
+        logoFileName: "swgas-hrcm.png",
+        departmentSharePointUrl: "INSERT_HRCM_SHAREPOINT_URL_HERE",
+        defaultViewId: "home",
+        views: {
+          home: {
+            label: "Home",
+            embedSrc: "INSERT_HRCM_HOME_DASHBOARD_PUBLISHED_LINK_HERE",
+            viewOnlyNote: false,
+            refreshNote: true,
+            preload: true
+          },
+          mainInitiatives: {
+            label: "(Department Name) Main Initiatives",
+            embedSrc: "INSERT_HRCM_MAIN_INITIATIVES_PUBLISHED_LINK_HERE",
+            viewOnlyNote: false,
+            refreshNote: true,
+            preload: true
+          },
+          allDepartmentProjects: {
+            label: "All (Department Name) Projects (View Only)",
+            embedSrc: "INSERT_HRCM_ALL_PROJECTS_PUBLISHED_LINK_HERE",
+            viewOnlyNote: true,
+            refreshNote: false,
+            preload: true
+          }
+        }
+      },
+
+      hrs: {
+        departmentName: "HRS",
+        portalTitle: "HRS Project Portal",
+        projectGroupLabel: "HRS",
+        logoFileName: "swgas-hrs.png",
+        departmentSharePointUrl: "INSERT_HRS_SHAREPOINT_URL_HERE",
+        defaultViewId: "home",
+        views: {
+          home: {
+            label: "Home",
+            embedSrc: "INSERT_HRS_HOME_DASHBOARD_PUBLISHED_LINK_HERE",
+            viewOnlyNote: false,
+            refreshNote: true,
+            preload: true
+          },
+          mainInitiatives: {
+            label: "(Department Name) Main Initiatives",
+            embedSrc: "INSERT_HRS_MAIN_INITIATIVES_PUBLISHED_LINK_HERE",
+            viewOnlyNote: false,
+            refreshNote: true,
+            preload: true
+          },
+          allDepartmentProjects: {
+            label: "All (Department Name) Projects (View Only)",
+            embedSrc: "INSERT_HRS_ALL_PROJECTS_PUBLISHED_LINK_HERE",
+            viewOnlyNote: true,
+            refreshNote: false,
+            preload: true
+          }
+        }
+      },
+
+      hrss: {
+        departmentName: "HRSS",
+        portalTitle: "HRSS Project Portal",
+        projectGroupLabel: "HRSS",
+        logoFileName: "swgas-hrss.png",
+        departmentSharePointUrl: "INSERT_HRSS_SHAREPOINT_URL_HERE",
+        defaultViewId: "home",
+        views: {
+          home: {
+            label: "Home",
+            embedSrc: "INSERT_HRSS_HOME_DASHBOARD_PUBLISHED_LINK_HERE",
+            viewOnlyNote: false,
+            refreshNote: true,
+            preload: true
+          },
+          mainInitiatives: {
+            label: "(Department Name) Main Initiatives",
+            embedSrc: "INSERT_HRSS_MAIN_INITIATIVES_PUBLISHED_LINK_HERE",
+            viewOnlyNote: false,
+            refreshNote: true,
+            preload: true
+          },
+          allDepartmentProjects: {
+            label: "All (Department Name) Projects (View Only)",
+            embedSrc: "INSERT_HRSS_ALL_PROJECTS_PUBLISHED_LINK_HERE",
+            viewOnlyNote: true,
+            refreshNote: false,
+            preload: true
+          }
+        }
+      },
+
+      "labor-relations": {
+        departmentName: "Labor Relations",
+        portalTitle: "Labor Relations Project Portal",
+        projectGroupLabel: "Labor Relations",
+        logoFileName: "swgas-labor-relations.png",
+        departmentSharePointUrl: "INSERT_LABOR_RELATIONS_SHAREPOINT_URL_HERE",
+        defaultViewId: "home",
+        views: {
+          home: {
+            label: "Home",
+            embedSrc: "INSERT_LABOR_RELATIONS_HOME_DASHBOARD_PUBLISHED_LINK_HERE",
+            viewOnlyNote: false,
+            refreshNote: true,
+            preload: true
+          },
+          mainInitiatives: {
+            label: "(Department Name) Main Initiatives",
+            embedSrc: "INSERT_LABOR_RELATIONS_MAIN_INITIATIVES_PUBLISHED_LINK_HERE",
+            viewOnlyNote: false,
+            refreshNote: true,
+            preload: true
+          },
+          allDepartmentProjects: {
+            label: "All (Department Name) Projects (View Only)",
+            embedSrc: "INSERT_LABOR_RELATIONS_ALL_PROJECTS_PUBLISHED_LINK_HERE",
+            viewOnlyNote: true,
+            refreshNote: false,
+            preload: true
+          }
+        }
+      },
+
+      "talent-acquisition": {
+        departmentName: "Talent Acquisition",
+        portalTitle: "Talent Acquisition Project Portal",
+        projectGroupLabel: "Talent Acquisition",
+        logoFileName: "swgas-ta.png",
+        departmentSharePointUrl: "INSERT_TALENT_ACQUISITION_SHAREPOINT_URL_HERE",
+        defaultViewId: "home",
+        views: {
+          home: {
+            label: "Home",
+            embedSrc: "INSERT_TALENT_ACQUISITION_HOME_DASHBOARD_PUBLISHED_LINK_HERE",
+            viewOnlyNote: false,
+            refreshNote: true,
+            preload: true
+          },
+          mainInitiatives: {
+            label: "(Department Name) Main Initiatives",
+            embedSrc: "INSERT_TALENT_ACQUISITION_MAIN_INITIATIVES_PUBLISHED_LINK_HERE",
+            viewOnlyNote: false,
+            refreshNote: true,
+            preload: true
+          },
+          allDepartmentProjects: {
+            label: "All (Department Name) Projects (View Only)",
+            embedSrc: "INSERT_TALENT_ACQUISITION_ALL_PROJECTS_PUBLISHED_LINK_HERE",
+            viewOnlyNote: true,
+            refreshNote: false,
+            preload: true
+          }
+        }
+      },
+
+      "talent-development": {
+        departmentName: "Talent Development",
+        portalTitle: "Talent Development Project Portal",
+        projectGroupLabel: "Talent Development",
+        logoFileName: "swgas-td.png",
+        departmentSharePointUrl: "INSERT_TALENT_DEVELOPMENT_SHAREPOINT_URL_HERE",
+        defaultViewId: "home",
+        views: {
+          home: {
+            label: "Home",
+            embedSrc: "INSERT_TALENT_DEVELOPMENT_HOME_DASHBOARD_PUBLISHED_LINK_HERE",
+            viewOnlyNote: false,
+            refreshNote: true,
+            preload: true
+          },
+          mainInitiatives: {
+            label: "(Department Name) Main Initiatives",
+            embedSrc: "INSERT_TALENT_DEVELOPMENT_MAIN_INITIATIVES_PUBLISHED_LINK_HERE",
+            viewOnlyNote: false,
+            refreshNote: true,
+            preload: true
+          },
+          allDepartmentProjects: {
+            label: "All (Department Name) Projects (View Only)",
+            embedSrc: "INSERT_TALENT_DEVELOPMENT_ALL_PROJECTS_PUBLISHED_LINK_HERE",
+            viewOnlyNote: true,
+            refreshNote: false,
+            preload: true
+          }
+        }
+      },
+
+      "albert-taylor": {
+        portalType: "leader",
+        departmentName: "Albert Taylor",
+        portalTitle: "Albert Taylor Project Portal",
+        projectGroupLabels: [
+          "Benefits",
+          "Compensation",
+          "DE&I",
+          "Employee Experience",
+          "HRBP",
+          "HR Change Management",
+          "HRS",
+          "HRSS",
+          "Labor Relations",
+          "Talent Acquisition",
+          "Talent Development"
+        ],
+        logoFileName: "swgas-albert-taylor.png",
+        departmentSharePointUrl: "INSERT_ALBERT_TAYLOR_SHAREPOINT_URL_HERE",
+        defaultViewId: "home",
+        views: {
+          home: {
+            label: "Main Initiatives",
+            embedSrc: "INSERT_ALBERT_TAYLOR_MAIN_INITIATIVES_PUBLISHED_LINK_HERE",
+            viewOnlyNote: false,
+            refreshNote: true,
+            preload: true
+          },
+          mainInitiatives: {
+            label: "(Department Name) Main Initiatives",
+            sourceViewId: "home",
+            showInNavigation: false
+          },
+          allDepartmentProjects: {
+            label: "All (Department Name) Projects (View Only)",
+            embedSrc: "INSERT_ALBERT_TAYLOR_ALL_PROJECTS_PUBLISHED_LINK_HERE",
+            viewOnlyNote: true,
+            refreshNote: false,
+            preload: true
+          }
+        }
+      },
+
+      "gail-carmona": {
+        portalType: "leader",
+        departmentName: "Gail Carmona",
+        portalTitle: "Gail Carmona Project Portal",
+        projectGroupLabels: [
+          "HRBP",
+          "HR Change Management",
+          "HRSS",
+          "Labor Relations"
+        ],
+        logoFileName: "swgas-gail-carmona.png",
+        departmentSharePointUrl: "INSERT_GAIL_CARMONA_SHAREPOINT_URL_HERE",
+        defaultViewId: "home",
+        views: {
+          home: {
+            label: "Home",
+            embedSrc: "INSERT_GAIL_CARMONA_HOME_DASHBOARD_PUBLISHED_LINK_HERE",
+            viewOnlyNote: false,
+            refreshNote: true,
+            preload: true
+          },
+          mainInitiatives: {
+            label: "(Department Name) Main Initiatives",
+            embedSrc: "INSERT_GAIL_CARMONA_MAIN_INITIATIVES_PUBLISHED_LINK_HERE",
+            viewOnlyNote: false,
+            refreshNote: true,
+            preload: true
+          },
+          allDepartmentProjects: {
+            label: "All (Department Name) Projects (View Only)",
+            embedSrc: "INSERT_GAIL_CARMONA_ALL_PROJECTS_PUBLISHED_LINK_HERE",
+            viewOnlyNote: true,
+            refreshNote: false,
+            preload: true
+          }
+        }
+      },
+
+      "mike-bryant": {
+        portalType: "leader",
+        departmentName: "Mike Bryant",
+        portalTitle: "Mike Bryant Project Portal",
+        projectGroupLabels: [
+          "Benefits",
+          "Compensation",
+          "HRS"
+        ],
+        logoFileName: "swgas-mike-bryant.png",
+        departmentSharePointUrl: "INSERT_MIKE_BRYANT_SHAREPOINT_URL_HERE",
+        defaultViewId: "home",
+        views: {
+          home: {
+            label: "Home",
+            embedSrc: "INSERT_MIKE_BRYANT_HOME_DASHBOARD_PUBLISHED_LINK_HERE",
+            viewOnlyNote: false,
+            refreshNote: true,
+            preload: true
+          },
+          mainInitiatives: {
+            label: "(Department Name) Main Initiatives",
+            embedSrc: "INSERT_MIKE_BRYANT_MAIN_INITIATIVES_PUBLISHED_LINK_HERE",
+            viewOnlyNote: false,
+            refreshNote: true,
+            preload: true
+          },
+          allDepartmentProjects: {
+            label: "All (Department Name) Projects (View Only)",
+            embedSrc: "INSERT_MIKE_BRYANT_ALL_PROJECTS_PUBLISHED_LINK_HERE",
+            viewOnlyNote: true,
+            refreshNote: false,
+            preload: true
+          }
+        }
+      },
+
+      "courtney-moore": {
+        portalType: "leader",
+        departmentName: "Courtney Moore",
+        portalTitle: "Courtney Moore Project Portal",
+        projectGroupLabels: [
+          "DE&I",
+          "Employee Experience",
+          "Talent Acquisition"
+        ],
+        logoFileName: "swgas-courtney-moore.png",
+        departmentSharePointUrl: "INSERT_COURTNEY_MOORE_SHAREPOINT_URL_HERE",
+        defaultViewId: "home",
+        views: {
+          home: {
+            label: "Home",
+            embedSrc: "INSERT_COURTNEY_MOORE_HOME_DASHBOARD_PUBLISHED_LINK_HERE",
+            viewOnlyNote: false,
+            refreshNote: true,
+            preload: true
+          },
+          mainInitiatives: {
+            label: "(Department Name) Main Initiatives",
+            embedSrc: "INSERT_COURTNEY_MOORE_MAIN_INITIATIVES_PUBLISHED_LINK_HERE",
+            viewOnlyNote: false,
+            refreshNote: true,
+            preload: true
+          },
+          allDepartmentProjects: {
+            label: "All (Department Name) Projects (View Only)",
+            embedSrc: "INSERT_COURTNEY_MOORE_ALL_PROJECTS_PUBLISHED_LINK_HERE",
+            viewOnlyNote: true,
+            refreshNote: false,
+            preload: true
+          }
+        }
+      }
+
+    };
+
+    const DEPARTMENT_KEY_ALIASES = {
+      ex: "employee-experience",
+      employeeexperience: "employee-experience",
+      "employee-experience": "employee-experience",
+      cm: "hrcm",
+      "hr-change-management": "hrcm",
+      lr: "labor-relations",
+      "labor-relations": "labor-relations",
+      ta: "talent-acquisition",
+      "talent-acquisition": "talent-acquisition",
+      td: "talent-development",
+      "talent-development": "talent-development",
+      albert: "albert-taylor",
+      alberttaylor: "albert-taylor",
+      "albert-taylor": "albert-taylor",
+      gail: "gail-carmona",
+      gailcarmona: "gail-carmona",
+      "gail-carmona": "gail-carmona",
+      mike: "mike-bryant",
+      mikebryant: "mike-bryant",
+      "mike-bryant": "mike-bryant",
+      courtney: "courtney-moore",
+      courtneymoore: "courtney-moore",
+      "courtney-moore": "courtney-moore"
+    };
+
+    /* ==========================================================
+       SHARED PORTAL CONTENT AND PROJECT DIRECTORY
+       This content remains shared by every department.
+       ========================================================== */
+
+    const PORTAL_CONFIG = {
+      /*
+        These portal-level values are assigned automatically from
+        DEPARTMENT_PORTALS before the main portal script starts.
+      */
+      portalTitle: "",
+      departmentSharePointUrl: "",
+      defaultViewId: "home",
+
+      /*
+        Shared Smartsheet FAQ settings:
+        - faqVideoFolder is relative to this index.html.
+        - Questions and videos are shared across every department and leader portal.
+        - Videos remain lazy-loaded until a question is expanded.
+      */
+      faqVideoFolder: "",
+
+      smartsheetFaqs: [
+        {
+          id: "row-section-topic-task",
+          question: "How do I make a row into a Section, Topic, and Task?",
+          visible: true,
+          answerHtml: "",
+          video: false,
+          videoFileName: "row-section-topic-task.mp4",
+          repeat: false
+        },
+        {
+          id: "add-row",
+          question: "How do I add a row?",
+          visible: true,
+          answerHtml: "",
+          video: false,
+          videoFileName: "add-row.mp4",
+          repeat: false
+        },
+        {
+          id: "delete-row",
+          question: "How do I delete a row?",
+          visible: true,
+          answerHtml: "",
+          video: false,
+          videoFileName: "delete-row.mp4",
+          repeat: false
+        },
+        {
+          id: "people-column-notifications",
+          question: "What are the notifications that get sent out as I add users to the People and Individual Contributor Columns?",
+          visible: true,
+          answerHtml: "",
+          video: false,
+          videoFileName: "people-column-notifications.mp4",
+          repeat: false
+        },
+        {
+          id: "use-filters",
+          question: "How do I use filters?",
+          visible: true,
+          answerHtml: "",
+          video: false,
+          videoFileName: "use-filters.mp4",
+          repeat: false
+        },
+        {
+          id: "use-copilot-project-plan",
+          question: "How do I use Copilot to help make my project plan?",
+          visible: true,
+          answerHtml: "",
+          video: false,
+          videoFileName: "use-copilot-project-plan.mp4",
+          repeat: false
+        }
+      ],
+
+      /* Assigned from the active DEPARTMENT_PORTALS entry. */
+      views: {},
+
+      /* ========================================================
+         SHARED PROJECT DIRECTORY
+
+         ACTIVE-PORTAL BEHAVIOR:
+         Department portals automatically open and preload their assigned group.
+         HR leader portals keep every group collapsed and load projects on click.
+         Do not manually switch these values for each portal.
+         ======================================================== */
       projectGroups: [
-        {
-          label: "DIR: HR Operations",
-          sections: [
-            {
-              label: "BAU",
-              projects: [
-                { id: "bau td", label: "Talent Development (BAU)", embedSrc: "https://app.smartsheet.com/b/publish?EQBCT=00df3436d89e46f8be081df151c0b3a5" },
-                { id: "bau hrlo", label: "HRLO (BAU)", embedSrc: "https://app.smartsheet.com/b/publish?EQBCT=2e17ca053d784f4db544a995f2fafd09" },
-                { id: "bau hrbp", label: "HRBP (BAU)", embedSrc: "https://app.smartsheet.com/b/publish?EQBCT=9fa3c4a5dcc24a1da11ece562921c7c5" },
-                { id: "bau labor relations", label: "Labor Relations (BAU)", embedSrc: "https://app.smartsheet.com/b/publish?EQBCT=3b119c94e2a54f4585a838bf6e4bce00" }
-              ]
-            },
-            {
-              label: "All Projects",
-              projects: [
-                { id: "succession planning and development plans", label: "Succession Planning & Development Plans", embedSrc: "https://app.smartsheet.com/b/publish?EQBCT=b28d26edde0145d9ab91518a807c04fc" },
-                { id: "competency configuration / rollout plan", label: "Competency Configuration / Rollout Plans", embedSrc: "https://app.smartsheet.com/b/publish?EQBCT=a32b2110d3d5400dac1760825bfa6281" },
-                { id: "elo transition plan", label: "ELO Transition Plan", embedSrc: "https://app.smartsheet.com/b/publish?EQBCT=46376cb1ff6e47bf9b7ed1e62019ecd7" },
-                { id: "form 185.2 project plan", label: "Form 185.2 Project Plan", embedSrc: "https://app.smartsheet.com/b/publish?EQBCT=9185a65e98384b469d5f88cc765c3b55" },
-                { id: "readiness", label: "Readiness", embedSrc: "https://app.smartsheet.com/b/publish?EQBCT=cd4faaab81c04c92b07b3f46adf80d68" },
-                { id: "summer intern projects", label: "Summer Intern Projects", embedSrc: "https://app.smartsheet.com/b/publish?EQBCT=be3638b35df84dcea0ee453384cb00e1" }
-              ]
-            }
-          ]
-        },
-        {
-          label: "DIR: Compensation, Benefits, & HRS",
-          sections: [
-            {
-              label: "BAU",
-              projects: [
-                { id: "bau comp", label: "Compensation (BAU)", embedSrc: "https://app.smartsheet.com/b/publish?EQBCT=2e0fb8962bb6449cad85da6fd92c626a" },
-                { id: "bau benefits", label: "Benefits (BAU)", embedSrc: "https://app.smartsheet.com/b/publish?EQBCT=d575dd0772a144f3b5e57aa51803d403" },
-                { id: "bau hrs", label: "HRS (BAU)", embedSrc: "https://app.smartsheet.com/b/publish?EQBCT=54bbc1becb764181b981021e4f5bcc99" }
-              ]
-            },
-            {
-              label: "All Projects",
-              projects: [
-                { id: "open enrollment 2026", label: "Open Enrollment (2026)", embedSrc: "https://app.smartsheet.com/b/publish?EQBCT=379a936b6187472faf634ba8aaf80c8b" }
-              ]
-            }
-          ]
-        },
-        {
-          label: "DIR: EX, DE&I, & TA",
-          sections: [
-            {
-              label: "BAU",
-              projects: [
-                { id: "bau ex", label: "Employee Experience (BAU)", embedSrc: "https://app.smartsheet.com/b/publish?EQBCT=5c7efc0357a5471f8559cde63936a16f" },
-                { id: "bau dei", label: "DE&I (BAU)", embedSrc: "https://app.smartsheet.com/b/publish?EQBCT=ab57594639f5477b8cf810217530e5e9" },
-                { id: "bau ta", label: "Talent Acquisition (BAU)", embedSrc: "https://app.smartsheet.com/b/publish?EQBCT=6971c2f6cbd64b4390af95b58670c485" },
-                { id: "bau hrss", label: "HRSS (BAU)", embedSrc: "https://app.smartsheet.com/b/publish?EQBCT=c10a615ed1464de49c96d275592e908d" }
-              ]
-            },
-            {
-              label: "All Projects",
-              projects: [
-                { id: "tyctwd 2026", label: "TYCTWD (2026)", embedSrc: "https://app.smartsheet.com/b/publish?EQBCT=d47cd6a5a19f4c5f92e94a813dcc3be0" },
-                { id: "candidate assessment process", label: "Candidate Assessment Process", embedSrc: "https://app.smartsheet.com/b/publish?EQBCT=b92ed59874604dea8f2b0215a258d528" },
-                { id: "hrss specialists training plan lori", label: "HRSS Specialists Training Plan Lori", embedSrc: "https://app.smartsheet.com/b/publish?EQBCT=1c4f79dfca7f469e9c6f73b9595dfede" },
-                { id: "hrsss specialists training plan kayle", label: "HRSS Specialists Training Plan Kayle", embedSrc: "https://app.smartsheet.com/b/publish?EQBCT=989958f443b1469ebc356286b32263dc" }
-              ]
-            }
-          ]
-        },
-        {
-          label: "HR Change Management",
+{
+          label: "Benefits",
+          openByDefault: false,
+          embed: true,
+          preload: false,
           projects: [
-            { id: "bau hrcm", label: "HRCM (BAU)", embedSrc: "https://app.smartsheet.com/b/publish?EQBCT=b57a2524e6144de2a06b6fd3eb60faa7" },
-            { id: "evp rollout plan", label: "EVP Rollout Plan", embedSrc: "https://app.smartsheet.com/b/publish?EQBCT=de1146e552624a2dbc19ab8821465d03" }
+            { id: "short-term-projects-benefits", label: "Short-Term Projects (Benefits)", embedSrc: "https://app.smartsheet.com/b/publish?EQBCT=d575dd0772a144f3b5e57aa51803d403", visible: true },
+            { id: "open enrollment 2026", label: "Open Enrollment 2026", embedSrc: "https://app.smartsheet.com/b/publish?EQBCT=379a936b6187472faf634ba8aaf80c8b", visible: true },
+            { id: "benefits-project-template-1", label: "Project Template 1", embedSrc: "INSERT_BENEFITS_PROJECT_TEMPLATE_1_EMBED_LINK_HERE", visible: false },
+            { id: "benefits-project-template-2", label: "Project Template 2", embedSrc: "INSERT_BENEFITS_PROJECT_TEMPLATE_2_EMBED_LINK_HERE", visible: false },
+            { id: "benefits-project-template-3", label: "Project Template 3", embedSrc: "INSERT_BENEFITS_PROJECT_TEMPLATE_3_EMBED_LINK_HERE", visible: false },
+            { id: "benefits-project-template-4", label: "Project Template 4", embedSrc: "INSERT_BENEFITS_PROJECT_TEMPLATE_4_EMBED_LINK_HERE", visible: false }
+          ],
+          archiveProjects: [
+            { id: "short-term-projects-archive-benefits", label: "Short-Term Projects Archive (Benefits)", embedSrc: "INSERT_LINK_HERE", visible: true },
+            { id: "open enrollment 2025", label: "Open Enrollment 2025", embedSrc: "https://app.smartsheet.com/b/publish?EQBCT=e606315264984f84bd6e288a6871ec5a", visible: true },
+            { id: "benefits-archive-template-2", label: "Project Template 2", embedSrc: "INSERT_BENEFITS_ARCHIVE_TEMPLATE_2_EMBED_LINK_HERE", visible: false},
+            { id: "benefits-archive-template-3", label: "Project Template 3", embedSrc: "INSERT_BENEFITS_ARCHIVE_TEMPLATE_3_EMBED_LINK_HERE", visible: false },
+            { id: "benefits-archive-template-4", label: "Project Template 4", embedSrc: "INSERT_BENEFITS_ARCHIVE_TEMPLATE_4_EMBED_LINK_HERE", visible: false },
+            { id: "benefits-archive-template-5", label: "Project Template 5", embedSrc: "INSERT_BENEFITS_ARCHIVE_TEMPLATE_5_EMBED_LINK_HERE", visible: false }
+          ]
+        },
+{
+          label: "Compensation",
+          openByDefault: false,
+          embed: true,
+          preload: false,
+          projects: [
+            { id: "short-term-projects-compensation", label: "Short-Term Projects (Compensation)", embedSrc: "https://app.smartsheet.com/b/publish?EQBCT=2e0fb8962bb6449cad85da6fd92c626a", visible: true },
+            { id: "promotion-timeline-changes", label: "Promotion Timeline Changes", embedSrc: "https://app.smartsheet.com/b/publish?EQBCT=4b61b07051704901992629b165e5ae4a", visible: true },
+            { id: "compensation-project-template-2", label: "Project Template 2", embedSrc: "INSERT_COMPENSATION_PROJECT_TEMPLATE_2_EMBED_LINK_HERE", visible: false },
+            { id: "compensation-project-template-3", label: "Project Template 3", embedSrc: "INSERT_COMPENSATION_PROJECT_TEMPLATE_3_EMBED_LINK_HERE", visible: false },
+            { id: "compensation-project-template-4", label: "Project Template 4", embedSrc: "INSERT_COMPENSATION_PROJECT_TEMPLATE_4_EMBED_LINK_HERE", visible: false }
+          ],
+          archiveProjects: [
+            { id: "short-term-projects-archive-compensation", label: "Short-Term Projects Archive (Compensation)", embedSrc: "INSERT_LINK_HERE", visible: true },
+            { id: "compensation-archive-template-2", label: "Project Template 2", embedSrc: "INSERT_COMPENSATION_ARCHIVE_TEMPLATE_2_EMBED_LINK_HERE", visible: false },
+            { id: "compensation-archive-template-3", label: "Project Template 3", embedSrc: "INSERT_COMPENSATION_ARCHIVE_TEMPLATE_3_EMBED_LINK_HERE", visible: false },
+            { id: "compensation-archive-template-4", label: "Project Template 4", embedSrc: "INSERT_COMPENSATION_ARCHIVE_TEMPLATE_4_EMBED_LINK_HERE", visible: false },
+            { id: "compensation-archive-template-5", label: "Project Template 5", embedSrc: "INSERT_COMPENSATION_ARCHIVE_TEMPLATE_5_EMBED_LINK_HERE", visible: false }
+          ]
+        },
+{
+          label: "DE&I",
+          openByDefault: false,
+          embed: true,
+          preload: false,
+          projects: [
+            { id: "short-term-projects-dei", label: "Short-Term Projects (DE&I)", embedSrc: "https://app.smartsheet.com/b/publish?EQBCT=ab57594639f5477b8cf810217530e5e9", visible: true },
+            { id: "dei-project-template-1", label: "Project Template 1", embedSrc: "INSERT_DEI_PROJECT_TEMPLATE_1_EMBED_LINK_HERE", visible: false },
+            { id: "dei-project-template-2", label: "Project Template 2", embedSrc: "INSERT_DEI_PROJECT_TEMPLATE_2_EMBED_LINK_HERE", visible: false },
+            { id: "dei-project-template-3", label: "Project Template 3", embedSrc: "INSERT_DEI_PROJECT_TEMPLATE_3_EMBED_LINK_HERE", visible: false },
+            { id: "dei-project-template-4", label: "Project Template 4", embedSrc: "INSERT_DEI_PROJECT_TEMPLATE_4_EMBED_LINK_HERE", visible: false }
+          ],
+          archiveProjects: [
+            { id: "short-term-projects-archive-dei", label: "Short-Term Projects Archive (DE&I)", embedSrc: "INSERT_LINK_HERE", visible: true },
+            { id: "dei-archive-template-2", label: "Project Template 2", embedSrc: "INSERT_DEI_ARCHIVE_TEMPLATE_2_EMBED_LINK_HERE", visible: false },
+            { id: "dei-archive-template-3", label: "Project Template 3", embedSrc: "INSERT_DEI_ARCHIVE_TEMPLATE_3_EMBED_LINK_HERE", visible: false },
+            { id: "dei-archive-template-4", label: "Project Template 4", embedSrc: "INSERT_DEI_ARCHIVE_TEMPLATE_4_EMBED_LINK_HERE", visible: false },
+            { id: "dei-archive-template-5", label: "Project Template 5", embedSrc: "INSERT_DEI_ARCHIVE_TEMPLATE_5_EMBED_LINK_HERE", visible: false }
+          ]
+        },
+{
+          label: "Employee Experience",
+          openByDefault: false,
+          embed: true,
+          preload: false,
+          projects: [
+            { id: "short-term-projects-ex", label: "Short-Term Projects (EX)", embedSrc: "https://app.smartsheet.com/b/publish?EQBCT=5c7efc0357a5471f8559cde63936a16f", visible: true },
+            { id: "employee-experience-project-template-5", label: "Project Template 5", embedSrc: "INSERT_EMPLOYEE_EXPERIENCE_PROJECT_TEMPLATE_5_EMBED_LINK_HERE", visible: false },
+            { id: "employee-experience-project-template-1", label: "Project Template 1", embedSrc: "INSERT_EMPLOYEE_EXPERIENCE_PROJECT_TEMPLATE_1_EMBED_LINK_HERE", visible: false },
+            { id: "employee-experience-project-template-2", label: "Project Template 2", embedSrc: "INSERT_EMPLOYEE_EXPERIENCE_PROJECT_TEMPLATE_2_EMBED_LINK_HERE", visible: false },
+            { id: "employee-experience-project-template-3", label: "Project Template 3", embedSrc: "INSERT_EMPLOYEE_EXPERIENCE_PROJECT_TEMPLATE_3_EMBED_LINK_HERE", visible: false },
+            { id: "employee-experience-project-template-4", label: "Project Template 4", embedSrc: "INSERT_EMPLOYEE_EXPERIENCE_PROJECT_TEMPLATE_4_EMBED_LINK_HERE", visible: false }
+          ],
+          archiveProjects: [
+            { id: "short-term-projects-archive-ex", label: "Short-Term Projects Archive (EX)", embedSrc: "INSERT_LINK_HERE", visible: true },
+            { id: "tyctwd-2026", label: "TYCTWD (2026)", embedSrc: "https://app.smartsheet.com/b/publish?EQBCT=d47cd6a5a19f4c5f92e94a813dcc3be0", visible: true },
+            { id: "employee-experience-archive-template-3", label: "Project Template 3", embedSrc: "INSERT_EMPLOYEE_EXPERIENCE_ARCHIVE_TEMPLATE_3_EMBED_LINK_HERE", visible: false },
+            { id: "employee-experience-archive-template-4", label: "Project Template 4", embedSrc: "INSERT_EMPLOYEE_EXPERIENCE_ARCHIVE_TEMPLATE_4_EMBED_LINK_HERE", visible: false },
+            { id: "employee-experience-archive-template-5", label: "Project Template 5", embedSrc: "INSERT_EMPLOYEE_EXPERIENCE_ARCHIVE_TEMPLATE_5_EMBED_LINK_HERE", visible: false }
+          ]
+        },
+{
+          label: "HRBP",
+          openByDefault: false,
+          embed: true,
+          preload: false,
+          projects: [
+            { id: "short-term-projects-hrbp", label: "Short-Term Projects (HRBP)", embedSrc: "https://app.smartsheet.com/b/publish?EQBCT=9fa3c4a5dcc24a1da11ece562921c7c5", visible: true },
+            { id: "form-185.2-project-plan", label: "Form 185.2 Project Plan", embedSrc: "https://app.smartsheet.com/b/publish?EQBCT=9185a65e98384b469d5f88cc765c3b55", visible: true },
+            { id: "hrbp-project-template-2", label: "Project Template 2", embedSrc: "INSERT_HRBP_PROJECT_TEMPLATE_2_EMBED_LINK_HERE", visible: false },
+            { id: "hrbp-project-template-3", label: "Project Template 3", embedSrc: "INSERT_HRBP_PROJECT_TEMPLATE_3_EMBED_LINK_HERE", visible: false },
+            { id: "hrbp-project-template-4", label: "Project Template 4", embedSrc: "INSERT_HRBP_PROJECT_TEMPLATE_4_EMBED_LINK_HERE", visible: false }
+          ],
+          archiveProjects: [
+            { id: "short-term-projects-archive-hrbp", label: "Short-Term Projects Archive (HRBP)", embedSrc: "INSERT_LINK_HERE", visible: true },
+            { id: "hrbp-archive-template-2", label: "Project Template 2", embedSrc: "INSERT_HRBP_ARCHIVE_TEMPLATE_2_EMBED_LINK_HERE", visible: false },
+            { id: "hrbp-archive-template-3", label: "Project Template 3", embedSrc: "INSERT_HRBP_ARCHIVE_TEMPLATE_3_EMBED_LINK_HERE", visible: false },
+            { id: "hrbp-archive-template-4", label: "Project Template 4", embedSrc: "INSERT_HRBP_ARCHIVE_TEMPLATE_4_EMBED_LINK_HERE", visible: false },
+            { id: "hrbp-archive-template-5", label: "Project Template 5", embedSrc: "INSERT_HRBP_ARCHIVE_TEMPLATE_5_EMBED_LINK_HERE", visible: false }
+          ]
+        },
+{
+          label: "HR Change Management",
+          openByDefault: false,
+          embed: true,
+          preload: false,
+          projects: [
+            { id: "short-term-projects-hrcm", label: "Short-Term Projects (HRCM)", embedSrc: "https://app.smartsheet.com/b/publish?EQBCT=b57a2524e6144de2a06b6fd3eb60faa7", visible: true },
+            { id: "evp-rollout-plan", label: "EVP Rollout Plan", embedSrc: "https://app.smartsheet.com/b/publish?EQBCT=de1146e552624a2dbc19ab8821465d03", visible: true },
+            { id: "hr-change-management-project-template-1", label: "Project Template 1", embedSrc: "INSERT_HR_CHANGE_MANAGEMENT_PROJECT_TEMPLATE_1_EMBED_LINK_HERE", visible: false },
+            { id: "hr-change-management-project-template-2", label: "Project Template 2", embedSrc: "INSERT_HR_CHANGE_MANAGEMENT_PROJECT_TEMPLATE_2_EMBED_LINK_HERE", visible: false },
+            { id: "hr-change-management-project-template-3", label: "Project Template 3", embedSrc: "INSERT_HR_CHANGE_MANAGEMENT_PROJECT_TEMPLATE_3_EMBED_LINK_HERE", visible: false },
+            { id: "hr-change-management-project-template-4", label: "Project Template 4", embedSrc: "INSERT_HR_CHANGE_MANAGEMENT_PROJECT_TEMPLATE_4_EMBED_LINK_HERE", visible: false }
+          ],
+          archiveProjects: [
+            { id: "short-term-projects-archive-hrcm", label: "Short-Term Projects Archive (HRCM)", embedSrc: "INSERT_LINK_HERE", visible: true },
+            { id: "hr-change-management-archive-template-2", label: "Project Template 2", embedSrc: "INSERT_HR_CHANGE_MANAGEMENT_ARCHIVE_TEMPLATE_2_EMBED_LINK_HERE", visible: false },
+            { id: "hr-change-management-archive-template-3", label: "Project Template 3", embedSrc: "INSERT_HR_CHANGE_MANAGEMENT_ARCHIVE_TEMPLATE_3_EMBED_LINK_HERE", visible: false },
+            { id: "hr-change-management-archive-template-4", label: "Project Template 4", embedSrc: "INSERT_HR_CHANGE_MANAGEMENT_ARCHIVE_TEMPLATE_4_EMBED_LINK_HERE", visible: false },
+            { id: "hr-change-management-archive-template-5", label: "Project Template 5", embedSrc: "INSERT_HR_CHANGE_MANAGEMENT_ARCHIVE_TEMPLATE_5_EMBED_LINK_HERE", visible: false }
+          ]
+        },
+{
+          label: "HRS",
+          openByDefault: false,
+          embed: true,
+          preload: false,
+          projects: [
+            { id: "short-term-projects-hrs", label: "Short-Term Projects (HRS)", embedSrc: "https://app.smartsheet.com/b/publish?EQBCT=54bbc1becb764181b981021e4f5bcc99", visible: true },
+            { id: "hrs-project-template-1", label: "Project Template 1", embedSrc: "INSERT_HRS_PROJECT_TEMPLATE_1_EMBED_LINK_HERE", visible: false },
+            { id: "hrs-project-template-2", label: "Project Template 2", embedSrc: "INSERT_HRS_PROJECT_TEMPLATE_2_EMBED_LINK_HERE", visible: false },
+            { id: "hrs-project-template-3", label: "Project Template 3", embedSrc: "INSERT_HRS_PROJECT_TEMPLATE_3_EMBED_LINK_HERE", visible: false },
+            { id: "hrs-project-template-4", label: "Project Template 4", embedSrc: "INSERT_HRS_PROJECT_TEMPLATE_4_EMBED_LINK_HERE", visible: false }
+          ],
+          archiveProjects: [
+            { id: "short-term-projects-archive-hrs", label: "Short-Term Projects Archive (HRS)", embedSrc: "INSERT_LINK_HERE", visible: true },
+            { id: "hrs-archive-template-2", label: "Project Template 2", embedSrc: "INSERT_HRS_ARCHIVE_TEMPLATE_2_EMBED_LINK_HERE", visible: false },
+            { id: "hrs-archive-template-3", label: "Project Template 3", embedSrc: "INSERT_HRS_ARCHIVE_TEMPLATE_3_EMBED_LINK_HERE", visible: false },
+            { id: "hrs-archive-template-4", label: "Project Template 4", embedSrc: "INSERT_HRS_ARCHIVE_TEMPLATE_4_EMBED_LINK_HERE", visible: false },
+            { id: "hrs-archive-template-5", label: "Project Template 5", embedSrc: "INSERT_HRS_ARCHIVE_TEMPLATE_5_EMBED_LINK_HERE", visible: false }
+          ]
+        },
+{
+          label: "HRSS",
+          openByDefault: false,
+          embed: true,
+          preload: false,
+          projects: [
+            { id: "short-term-projects-hrss", label: "Short-Term Projects (HRSS)", embedSrc: "https://app.smartsheet.com/b/publish?EQBCT=c10a615ed1464de49c96d275592e908d", visible: true },
+            { id: "hrsss-specialists-training-plan-kayle", label: "HRSS Specialists Training Plan Kayle", embedSrc: "https://app.smartsheet.com/b/publish?EQBCT=989958f443b1469ebc356286b32263dc", visible: true },
+            { id: "hrss-specialists-training-plan-lori", label: "HRSS Specialists Training Plan Lori", embedSrc: "https://app.smartsheet.com/b/publish?EQBCT=1c4f79dfca7f469e9c6f73b9595dfede", visible: true },
+            { id: "ta-hrss-systems", label: "TA / HRSS Systems", embedSrc: "https://app.smartsheet.com/b/publish?EQBCT=333559a0c5a547b7b54b316ad6c79150", visible: true },
+            { id: "hrss-project-template-2", label: "Project Template 2", embedSrc: "INSERT_HRSS_PROJECT_TEMPLATE_2_EMBED_LINK_HERE", visible: false },
+            { id: "hrss-project-template-3", label: "Project Template 3", embedSrc: "INSERT_HRSS_PROJECT_TEMPLATE_3_EMBED_LINK_HERE", visible: false },
+            { id: "hrss-project-template-4", label: "Project Template 4", embedSrc: "INSERT_HRSS_PROJECT_TEMPLATE_4_EMBED_LINK_HERE", visible: false }
+          ],
+          archiveProjects: [
+            { id: "short-term-projects-archive-hrss", label: "Short-Term Projects Archive (HRSS)", embedSrc: "INSERT_LINK_HERE", visible: true },
+            { id: "hrss-archive-template-2", label: "Project Template 2", embedSrc: "INSERT_HRSS_ARCHIVE_TEMPLATE_2_EMBED_LINK_HERE", visible: false },
+            { id: "hrss-archive-template-3", label: "Project Template 3", embedSrc: "INSERT_HRSS_ARCHIVE_TEMPLATE_3_EMBED_LINK_HERE", visible: false },
+            { id: "hrss-archive-template-4", label: "Project Template 4", embedSrc: "INSERT_HRSS_ARCHIVE_TEMPLATE_4_EMBED_LINK_HERE", visible: false },
+            { id: "hrss-archive-template-5", label: "Project Template 5", embedSrc: "INSERT_HRSS_ARCHIVE_TEMPLATE_5_EMBED_LINK_HERE", visible: false }
+          ]
+        },
+{
+          label: "Labor Relations",
+          openByDefault: false,
+          embed: true,
+          preload: false,
+          projects: [
+            { id: "short-term-projects-labor-relations", label: "Short-Term Projects (LR)", embedSrc: "https://app.smartsheet.com/b/publish?EQBCT=3b119c94e2a54f4585a838bf6e4bce00", visible: true },
+            { id: "readiness", label: "Readiness", embedSrc: "https://app.smartsheet.com/b/publish?EQBCT=cd4faaab81c04c92b07b3f46adf80d68", visible: true },
+            { id: "summer-intern-projects", label: "Summer Intern Projects", embedSrc: "https://app.smartsheet.com/b/publish?EQBCT=be3638b35df84dcea0ee453384cb00e1", visible: true },
+            { id: "labor-relations-project-template-2", label: "Project Template 2", embedSrc: "INSERT_LABOR_RELATIONS_PROJECT_TEMPLATE_2_EMBED_LINK_HERE", visible: false },
+            { id: "labor-relations-project-template-3", label: "Project Template 3", embedSrc: "INSERT_LABOR_RELATIONS_PROJECT_TEMPLATE_3_EMBED_LINK_HERE", visible: false },
+            { id: "labor-relations-project-template-4", label: "Project Template 4", embedSrc: "INSERT_LABOR_RELATIONS_PROJECT_TEMPLATE_4_EMBED_LINK_HERE", visible: false }
+          ],
+          archiveProjects: [
+            { id: "short-term-projects-archive-lr", label: "Short-Term Projects Archive (LR)", embedSrc: "INSERT_LINK_HERE", visible: true },
+            { id: "labor-relations-archive-template-2", label: "Project Template 2", embedSrc: "INSERT_LABOR_RELATIONS_ARCHIVE_TEMPLATE_2_EMBED_LINK_HERE", visible: false },
+            { id: "labor-relations-archive-template-3", label: "Project Template 3", embedSrc: "INSERT_LABOR_RELATIONS_ARCHIVE_TEMPLATE_3_EMBED_LINK_HERE", visible: false },
+            { id: "labor-relations-archive-template-4", label: "Project Template 4", embedSrc: "INSERT_LABOR_RELATIONS_ARCHIVE_TEMPLATE_4_EMBED_LINK_HERE", visible: false },
+            { id: "labor-relations-archive-template-5", label: "Project Template 5", embedSrc: "INSERT_LABOR_RELATIONS_ARCHIVE_TEMPLATE_5_EMBED_LINK_HERE", visible: false }
+          ]
+        },
+{
+          label: "Talent Acquisition",
+          openByDefault: false,
+          embed: true,
+          preload: false,
+          projects: [
+            { id: "short-term-projects-talent-acquisition", label: "Short-Term Projects (TA)", embedSrc: "https://app.smartsheet.com/b/publish?EQBCT=6971c2f6cbd64b4390af95b58670c485", visible: true },
+            { id: "candidate-assessment-process", label: "Candidate Assessment Process", embedSrc: "https://app.smartsheet.com/b/publish?EQBCT=b92ed59874604dea8f2b0215a258d528", visible: true },
+            { id: "talent-acquisition-project-template-1", label: "Project Template 1", embedSrc: "INSERT_TALENT_ACQUISITION_PROJECT_TEMPLATE_1_EMBED_LINK_HERE", visible: false },
+            { id: "talent-acquisition-project-template-2", label: "Project Template 2", embedSrc: "INSERT_TALENT_ACQUISITION_PROJECT_TEMPLATE_2_EMBED_LINK_HERE", visible: false },
+            { id: "talent-acquisition-project-template-3", label: "Project Template 3", embedSrc: "INSERT_TALENT_ACQUISITION_PROJECT_TEMPLATE_3_EMBED_LINK_HERE", visible: false },
+            { id: "talent-acquisition-project-template-4", label: "Project Template 4", embedSrc: "INSERT_TALENT_ACQUISITION_PROJECT_TEMPLATE_4_EMBED_LINK_HERE", visible: false }
+          ],
+          archiveProjects: [
+            { id: "short-term-projects-archive-ta", label: "Short-Term Projects Archive (TA)", embedSrc: "INSERT_LINK_HERE", visible: true },
+            { id: "talent-acquisition-archive-template-2", label: "Project Template 2", embedSrc: "INSERT_TALENT_ACQUISITION_ARCHIVE_TEMPLATE_2_EMBED_LINK_HERE", visible: false },
+            { id: "talent-acquisition-archive-template-3", label: "Project Template 3", embedSrc: "INSERT_TALENT_ACQUISITION_ARCHIVE_TEMPLATE_3_EMBED_LINK_HERE", visible: false },
+            { id: "talent-acquisition-archive-template-4", label: "Project Template 4", embedSrc: "INSERT_TALENT_ACQUISITION_ARCHIVE_TEMPLATE_4_EMBED_LINK_HERE", visible: false },
+            { id: "talent-acquisition-archive-template-5", label: "Project Template 5", embedSrc: "INSERT_TALENT_ACQUISITION_ARCHIVE_TEMPLATE_5_EMBED_LINK_HERE", visible: false }
+          ]
+        },
+{
+          label: "Talent Development",
+          openByDefault: false,
+          embed: true,
+          preload: false,
+          projects: [
+            { id: "short-term-projects-talent-development", label: "Short-Term Projects (TD)", embedSrc: "https://app.smartsheet.com/b/publish?EQBCT=00df3436d89e46f8be081df151c0b3a5", visible: true },
+            { id: "competency-configuration-rollout-plan", label: "Competency Configuration / Rollout Plans", embedSrc: "https://app.smartsheet.com/b/publish?EQBCT=a32b2110d3d5400dac1760825bfa6281", visible: true },
+            { id: "succession-planning-and-development-plans", label: "Succession Planning & Development Plans", embedSrc: "https://app.smartsheet.com/b/publish?EQBCT=b28d26edde0145d9ab91518a807c04fc", visible: true },
+            { id: "talent-development-project-template-1", label: "Project Template 1", embedSrc: "INSERT_TALENT_DEVELOPMENT_PROJECT_TEMPLATE_1_EMBED_LINK_HERE", visible: false },
+            { id: "talent-development-project-template-2", label: "Project Template 2", embedSrc: "INSERT_TALENT_DEVELOPMENT_PROJECT_TEMPLATE_2_EMBED_LINK_HERE", visible: false },
+            { id: "talent-development-project-template-3", label: "Project Template 3", embedSrc: "INSERT_TALENT_DEVELOPMENT_PROJECT_TEMPLATE_3_EMBED_LINK_HERE", visible: false },
+            { id: "talent-development-project-template-4", label: "Project Template 4", embedSrc: "INSERT_TALENT_DEVELOPMENT_PROJECT_TEMPLATE_4_EMBED_LINK_HERE", visible: false }
+          ],
+          archiveProjects: [
+            { id: "short-term-projects-archive-td", label: "Short-Term Projects Archive (TD)", embedSrc: "INSERT_LINK_HERE", visible: true },
+            { id: "elo transition plan", label: "ELO Transition Plan", embedSrc: "https://app.smartsheet.com/b/publish?EQBCT=46376cb1ff6e47bf9b7ed1e62019ecd7", visible: true },
+            { id: "talent-development-archive-template-3", label: "Project Template 3", embedSrc: "INSERT_TALENT_DEVELOPMENT_ARCHIVE_TEMPLATE_3_EMBED_LINK_HERE", visible: false },
+            { id: "talent-development-archive-template-4", label: "Project Template 4", embedSrc: "INSERT_TALENT_DEVELOPMENT_ARCHIVE_TEMPLATE_4_EMBED_LINK_HERE", visible: false },
+            { id: "talent-development-archive-template-5", label: "Project Template 5", embedSrc: "INSERT_TALENT_DEVELOPMENT_ARCHIVE_TEMPLATE_5_EMBED_LINK_HERE", visible: false }
           ]
         }
       ]
     };
+
+    /* ==========================================================
+       ACTIVE DEPARTMENT RESOLUTION
+       The page reloads the same index.html when a different department
+       is selected. Reloading is intentional: it safely resets Smartsheet
+       iframes, loading state, unsaved-change checks, and preload queues.
+       ========================================================== */
+
+    function normalizeDepartmentKey(value) {
+      return String(value || "")
+        .trim()
+        .toLowerCase()
+        .replace(/&/g, "and")
+        .replace(/[^a-z0-9]+/g, "-")
+        .replace(/^-+|-+$/g, "");
+    }
+
+    function resolveDepartmentKey(rawValue) {
+      const normalizedValue = normalizeDepartmentKey(rawValue);
+      const compactValue = normalizedValue.replace(/-/g, "");
+      const aliasedValue =
+        DEPARTMENT_KEY_ALIASES[normalizedValue] ||
+        DEPARTMENT_KEY_ALIASES[compactValue] ||
+        normalizedValue;
+
+      return Object.prototype.hasOwnProperty.call(DEPARTMENT_PORTALS, aliasedValue)
+        ? aliasedValue
+        : "";
+    }
+
+    function getRequestedDepartmentKey() {
+      const pageUrl = new URL(window.location.href);
+      const requestedKey = resolveDepartmentKey(pageUrl.searchParams.get("department"));
+      const defaultKey = resolveDepartmentKey(SHARED_PORTAL_SETTINGS.defaultDepartmentKey);
+      const firstConfiguredKey = Object.keys(DEPARTMENT_PORTALS)[0] || "";
+
+      return requestedKey || defaultKey || firstConfiguredKey;
+    }
+
+    function clonePortalViews(views) {
+      const clonedViews = {};
+
+      Object.keys(views || {}).forEach(function(viewId) {
+        clonedViews[viewId] = Object.assign({}, views[viewId]);
+      });
+
+      /*
+        A view may reuse another view's Smartsheet source. Albert Taylor uses
+        this so Home is Main Initiatives without requiring the same URL twice.
+      */
+      Object.keys(clonedViews).forEach(function(viewId) {
+        const view = clonedViews[viewId];
+        const sourceViewId = view && view.sourceViewId;
+        const sourceView = sourceViewId ? clonedViews[sourceViewId] : null;
+
+        if (!sourceView) {
+          return;
+        }
+
+        clonedViews[viewId] = Object.assign({}, sourceView, view, {
+          embedSrc: sourceView.embedSrc
+        });
+      });
+
+      return clonedViews;
+    }
+
+    function getConfiguredProjectGroupLabels(portalEntry) {
+      const multipleLabels = Array.isArray(portalEntry && portalEntry.projectGroupLabels)
+        ? portalEntry.projectGroupLabels
+        : [];
+      const singleLabel = portalEntry && portalEntry.projectGroupLabel
+        ? [portalEntry.projectGroupLabel]
+        : [];
+      const uniqueLabels = new Set();
+
+      multipleLabels.concat(singleLabel).forEach(function(label) {
+        const normalizedLabel = String(label || "").trim();
+
+        if (normalizedLabel) {
+          uniqueLabels.add(normalizedLabel);
+        }
+      });
+
+      return Array.from(uniqueLabels);
+    }
+
+    const ACTIVE_DEPARTMENT_KEY = getRequestedDepartmentKey();
+    const ACTIVE_DEPARTMENT = DEPARTMENT_PORTALS[ACTIVE_DEPARTMENT_KEY];
+
+    if (!ACTIVE_DEPARTMENT) {
+      throw new Error("No valid department is configured in DEPARTMENT_PORTALS.");
+    }
+
+    PORTAL_CONFIG.portalTitle = ACTIVE_DEPARTMENT.portalTitle;
+    PORTAL_CONFIG.departmentName = ACTIVE_DEPARTMENT.departmentName;
+    PORTAL_CONFIG.departmentSharePointUrl = ACTIVE_DEPARTMENT.departmentSharePointUrl;
+    PORTAL_CONFIG.defaultViewId = ACTIVE_DEPARTMENT.defaultViewId || "home";
+    PORTAL_CONFIG.views = clonePortalViews(ACTIVE_DEPARTMENT.views);
+
+    SHARED_PORTAL_SETTINGS.logoFileName = ACTIVE_DEPARTMENT.logoFileName;
+
+    /*
+      The browser-tab icon is intentionally shared across every portal.
+      Department and leader selection changes only the top-right logo.
+    */
+    SHARED_PORTAL_SETTINGS.faviconFileName = "department.png";
+
+    const ACTIVE_PROJECT_GROUP_LABELS = getConfiguredProjectGroupLabels(ACTIVE_DEPARTMENT);
+    const IS_LEADER_PORTAL = ACTIVE_DEPARTMENT.portalType === "leader";
+    const SHOULD_PRELOAD_ACTIVE_PORTAL = !IS_LEADER_PORTAL;
+
+    /*
+      Department portals automatically open and preload only their assigned
+      department group. HR leader portals keep every project group collapsed
+      and do not preload any project iframe; projects remain available on click.
+    */
+    (PORTAL_CONFIG.projectGroups || []).forEach(function(group) {
+      const groupLabel = String(group && group.label || "").trim();
+      const isActivePortalGroup = ACTIVE_PROJECT_GROUP_LABELS.includes(groupLabel);
+      const shouldAutoLoadGroup = SHOULD_PRELOAD_ACTIVE_PORTAL && isActivePortalGroup;
+
+      group.openByDefault = shouldAutoLoadGroup;
+      group.preload = shouldAutoLoadGroup;
+
+      /* Assigned groups must remain embeddable so projects can load on click. */
+      if (isActivePortalGroup) {
+        group.embed = true;
+      }
+    });
+
+    /*
+      Only department portals preload their Home, Main Initiatives, and All
+      Projects views. A leader's active Home view still loads normally, while
+      the remaining leader views wait until they are selected.
+    */
+    Object.keys(PORTAL_CONFIG.views || {}).forEach(function(viewId) {
+      const view = PORTAL_CONFIG.views[viewId];
+
+      if (view && typeof view === "object") {
+        view.preload = SHOULD_PRELOAD_ACTIVE_PORTAL && view.preload === true;
+      }
+    });
+
+    /*
+      Derive the department name from the active portal title as an additional
+      consistency check. The configured departmentName remains the source of truth.
+    */
+    function deriveDepartmentNameFromPortalTitle(portalTitle) {
+      const normalizedTitle = String(portalTitle || "").trim();
+      const titleMatch = normalizedTitle.match(/^(.*?)\s+Project\s+Portal$/i);
+
+      return titleMatch ? titleMatch[1].trim() : "";
+    }
+
+    const DERIVED_DEPARTMENT_NAME = deriveDepartmentNameFromPortalTitle(
+      PORTAL_CONFIG.portalTitle
+    );
+
+    if (DERIVED_DEPARTMENT_NAME) {
+      PORTAL_CONFIG.departmentName = DERIVED_DEPARTMENT_NAME;
+    }
 
     /* ==========================================================
        MAIN PORTAL SCRIPT
@@ -1632,10 +3824,20 @@
     const loadingMessage = document.getElementById("loadingMessage");
     const placeholderMessage = document.getElementById("placeholderMessage");
     const viewOnlyNote = document.getElementById("viewOnlyNote");
-    const topNav = document.querySelector(".top-nav");
-    const refreshPopup = document.getElementById("refreshReminder");
-    const refreshPopupText = refreshPopup ? refreshPopup.querySelector(".nav-refresh-text") : null;
-    const refreshPopupClose = document.getElementById("refreshReminderClose");
+    const refreshReminder = document.getElementById("refreshReminder");
+    const refreshReminderText = refreshReminder ? refreshReminder.querySelector(".nav-refresh-text") : null;
+    const refreshReminderClose = document.getElementById("refreshReminderClose");
+    const projectRequestAccessButton = document.getElementById("projectRequestAccessButton");
+    const smartsheetFaqButton = document.getElementById("smartsheetFaqButton");
+    const supportFaqButton = document.getElementById("supportFaqButton");
+    const smartsheetFaqPanel = document.getElementById("smartsheetFaqPanel");
+    const faqPanelBackdrop = document.getElementById("faqPanelBackdrop");
+    const faqPanelClose = document.getElementById("faqPanelClose");
+    const faqList = document.getElementById("faqList");
+    const faqEmptyState = document.getElementById("faqEmptyState");
+    const faqSearchInput = document.getElementById("faqSearchInput");
+    const faqSearchClear = document.getElementById("faqSearchClear");
+    const faqSearchSummary = document.getElementById("faqSearchSummary");
     const projectLinksContainer = document.getElementById("projectLinksContainer");
     const projectSearch = document.getElementById("projectSearch");
     const noProjectResults = document.getElementById("noProjectResults");
@@ -1646,13 +3848,13 @@
     const navScrollLeft = document.getElementById("navScrollLeft");
     const navScrollRight = document.getElementById("navScrollRight");
     const navReminderSlot = document.getElementById("navReminderSlot");
+    const topNav = document.querySelector(".top-nav");
+    const portalFavicon = document.querySelector('link[rel="icon"]');
     const allHrPersonalTasksLink = document.getElementById("allHrPersonalTasksLink");
     const departmentSharePointLink = document.getElementById("departmentSharePointLink");
     const departmentLogo = document.getElementById("departmentLogo");
     const projectCreationRequestLink = document.getElementById("projectCreationRequestLink");
     const smartsheetSupportLink = document.getElementById("smartsheetSupportLink");
-    const jobAidMgrLink = document.getElementById("jobAidMgrLink");
-    const jobAidDirLink = document.getElementById("jobAidDirLink");
     const requestAccessLink = document.getElementById("requestAccessLink");
     const placeholderEmailLink = document.getElementById("placeholderEmailLink");
     const placeholderProjectCreationLink = document.getElementById("placeholderProjectCreationLink");
@@ -1663,15 +3865,18 @@
     let projectModeActive = false;
     let pendingNavigationAction = null;
     let projectWarningCollapsedByUser = false;
+    let navPopupDismissedRouteKey = null;
     let currentViewKey = null;
     let currentRouteHash = "";
     let suppressHashChange = false;
     let lastFocusedElementBeforeModal = null;
-    let navPopupDismissedRouteKey = null;
     let iframeRegistry = {};
     let preloadStarted = false;
     let suppressUnsavedBeforeUnload = false;
-    let fadeCleanupTimer = null;
+    let projectAccessDisplayTimer = null;
+    let projectActionTransitionTimer = null;
+    let navSlotCollapseTimer = null;
+    let lastFocusedElementBeforeFaqPanel = null;
 
     let loadingShowTimer = null;
     let loadingHideTimer = null;
@@ -1682,16 +3887,26 @@
     const LOADER_HIDE_AFTER_IFRAME_LOAD_MS = 650;
     const LOADER_FADE_MS = 320;
     const LOADER_MIN_VISIBLE_MS = 900;
+
+    /*
+      These settings preload the remaining Smartsheet embeds shortly after
+      the first view opens. The small stagger prevents the browser from trying
+      to load every Smartsheet page at the exact same second.
+    */
     const PRELOAD_START_DELAY_MS = 900;
     const PRELOAD_STAGGER_MS = 250;
-    const IFRAME_FADE_MS = 340;
+
+    /* Top-navigation project support sequence. */
+    const NAV_MESSAGE_FADE_MS = 420;
+    const PROJECT_REQUEST_ACCESS_VISIBLE_MS = 10000;
+
     /*
       Smartsheet sign-in recovery.
       Because the Smartsheet sign-in button lives inside a cross-domain iframe,
       this portal cannot reliably detect the exact sign-in click. To avoid random
-      full-page refreshes, the portal shows a safe refresh banner after a likely
-      sign-in return. The user can refresh only the embedded Smartsheet views
-      without reloading the entire portal.
+      full-page refreshes, the portal now shows a safe refresh banner after a
+      likely sign-in return. The user can refresh only the embedded Smartsheet
+      views without reloading the entire portal.
     */
     const AUTH_STORAGE_PREFIX = String(PORTAL_CONFIG.departmentName || "department")
       .replace(/[^a-z0-9]/gi, "")
@@ -1773,7 +3988,7 @@
           embedSrc: project.embedSrc,
           isProject: true,
           viewOnlyNote: false,
-          refreshReminder: false
+          refreshNote: false
         };
       }
 
@@ -1788,7 +4003,7 @@
         embedSrc: view.embedSrc,
         isProject: false,
         viewOnlyNote: view.viewOnlyNote,
-        refreshReminder: view.refreshReminder
+        refreshNote: view.refreshNote
       };
     }
 
@@ -1796,13 +4011,17 @@
       const routes = [];
 
       Object.keys(PORTAL_CONFIG.views).forEach(function(viewId) {
-        routes.push({
-          type: "view",
-          id: viewId
-        });
+        const view = PORTAL_CONFIG.views[viewId];
+
+        if (view && view.preload === true) {
+          routes.push({
+            type: "view",
+            id: viewId
+          });
+        }
       });
 
-      getAllProjects().forEach(function(project) {
+      getPreloadableProjects().forEach(function(project) {
         routes.push({
           type: "project",
           id: project.id
@@ -1861,31 +4080,9 @@
         return null;
       }
 
-      clearTimeout(fadeCleanupTimer);
-
       Object.keys(iframeRegistry).forEach(function(registryKey) {
-        const frame = iframeRegistry[registryKey].frame;
-        const shouldActivate = registryKey === key;
-
-        if (shouldActivate) {
-          frame.classList.remove("fading-out");
-          frame.classList.add("active");
-        } else if (frame.classList.contains("active")) {
-          frame.classList.remove("active");
-          frame.classList.add("fading-out");
-        } else {
-          frame.classList.remove("active");
-          frame.classList.remove("fading-out");
-        }
+        iframeRegistry[registryKey].frame.classList.toggle("active", registryKey === key);
       });
-
-      fadeCleanupTimer = setTimeout(function() {
-        Object.keys(iframeRegistry).forEach(function(registryKey) {
-          if (registryKey !== key) {
-            iframeRegistry[registryKey].frame.classList.remove("fading-out");
-          }
-        });
-      }, IFRAME_FADE_MS + 50);
 
       return iframeRecord;
     }
@@ -1898,23 +4095,7 @@
       preloadStarted = true;
 
       const activeKey = activeRoute ? routeKey(activeRoute) : "";
-      const routesToPreload = [];
-
-      Object.keys(PORTAL_CONFIG.views).forEach(function(viewId) {
-        routesToPreload.push({
-          type: "view",
-          id: viewId
-        });
-      });
-
-      getPreloadableProjects().forEach(function(project) {
-        routesToPreload.push({
-          type: "project",
-          id: project.id
-        });
-      });
-
-      const filteredRoutesToPreload = routesToPreload.filter(function(route) {
+      const routesToPreload = getAllEmbeddableRoutes().filter(function(route) {
         const embedData = getEmbedDataForRoute(route);
 
         return (
@@ -1927,11 +4108,11 @@
       let routeIndex = 0;
 
       function preloadNextRoute() {
-        if (routeIndex >= filteredRoutesToPreload.length) {
+        if (routeIndex >= routesToPreload.length) {
           return;
         }
 
-        getOrCreateIframeForRoute(filteredRoutesToPreload[routeIndex]);
+        getOrCreateIframeForRoute(routesToPreload[routeIndex]);
         routeIndex += 1;
 
         setTimeout(preloadNextRoute, PRELOAD_STAGGER_MS);
@@ -2141,16 +4322,6 @@
       }, LOADER_SHOW_DELAY_MS);
     }
 
-    function forceHideLoadingMessage() {
-      clearTimeout(loadingShowTimer);
-      clearTimeout(loadingHideTimer);
-      clearTimeout(loadingFadeTimer);
-      loadingMessage.classList.add("hidden");
-      loadingMessage.classList.remove("visible");
-      loadingMessage.classList.remove("fading");
-      loadingVisibleAt = 0;
-    }
-
     function hideLoadingMessage() {
       clearTimeout(loadingShowTimer);
       clearTimeout(loadingHideTimer);
@@ -2173,6 +4344,17 @@
           loadingVisibleAt = 0;
         }, LOADER_FADE_MS);
       }, remainingVisibleTime);
+    }
+
+    function hideLoadingMessageImmediately() {
+      clearTimeout(loadingShowTimer);
+      clearTimeout(loadingHideTimer);
+      clearTimeout(loadingFadeTimer);
+
+      loadingMessage.classList.add("hidden");
+      loadingMessage.classList.remove("visible");
+      loadingMessage.classList.remove("fading");
+      loadingVisibleAt = 0;
     }
 
     function scheduleLoadingMessageHide() {
@@ -2202,43 +4384,171 @@
       viewOnlyNote.classList.add("hidden");
     }
 
-    function setNavPopup(shouldShow, message) {
-      if (!refreshPopup) {
-        if (navReminderSlot) {
-          navReminderSlot.classList.add("collapsed");
-        }
+    function getTopNavMessageElements() {
+      return [refreshReminder, projectRequestAccessButton, smartsheetFaqButton].filter(Boolean);
+    }
 
-        if (topNav) {
-          topNav.classList.remove("reminder-visible");
-          topNav.classList.add("reminder-collapsed");
-        }
-
-        updateNavScrollControlsSoon();
-        return;
+    function setNavSlotExpanded(shouldExpand) {
+      if (navSlotCollapseTimer) {
+        clearTimeout(navSlotCollapseTimer);
+        navSlotCollapseTimer = null;
       }
-
-      if (message && refreshPopupText) {
-        refreshPopupText.textContent = message;
-        refreshPopupText.setAttribute("title", message);
-      }
-
-      const shouldShowPopup = shouldShow && navPopupDismissedRouteKey !== currentViewKey;
-
-      refreshPopup.classList.toggle("hidden", !shouldShowPopup);
 
       if (navReminderSlot) {
-        navReminderSlot.classList.toggle("collapsed", !shouldShowPopup);
+        navReminderSlot.classList.toggle("collapsed", !shouldExpand);
       }
 
       if (topNav) {
-        topNav.classList.toggle("reminder-visible", shouldShowPopup);
-        topNav.classList.toggle("reminder-collapsed", !shouldShowPopup);
+        topNav.classList.toggle("reminder-visible", shouldExpand);
+        topNav.classList.toggle("reminder-collapsed", !shouldExpand);
       }
 
       updateNavScrollControlsSoon();
     }
 
-    function setRefreshReminder(shouldShow) {
+    function clearTopNavMessageTimer(element) {
+      if (element && element._navMessageHideTimer) {
+        clearTimeout(element._navMessageHideTimer);
+        element._navMessageHideTimer = null;
+      }
+    }
+
+    function hideTopNavMessage(element, immediate, collapseAfter, afterHidden) {
+      if (!element) {
+        if (typeof afterHidden === "function") {
+          afterHidden();
+        }
+        return;
+      }
+
+      clearTopNavMessageTimer(element);
+      element.classList.remove("is-visible");
+      element.setAttribute("aria-hidden", "true");
+
+      const finishHide = function() {
+        element.classList.add("hidden");
+        element._navMessageHideTimer = null;
+
+        if (collapseAfter) {
+          const anotherMessageIsVisible = getTopNavMessageElements().some(function(messageElement) {
+            return messageElement !== element && messageElement.classList.contains("is-visible");
+          });
+
+          if (!anotherMessageIsVisible) {
+            setNavSlotExpanded(false);
+          }
+        }
+
+        if (typeof afterHidden === "function") {
+          afterHidden();
+        }
+      };
+
+      if (immediate) {
+        finishHide();
+      } else {
+        element._navMessageHideTimer = setTimeout(finishHide, NAV_MESSAGE_FADE_MS);
+      }
+    }
+
+    function showTopNavMessage(element) {
+      if (!element) {
+        setNavSlotExpanded(false);
+        return;
+      }
+
+      clearTopNavMessageTimer(element);
+      setNavSlotExpanded(true);
+      element.classList.remove("hidden");
+      element.setAttribute("aria-hidden", "false");
+
+      /*
+        Force the initial hidden state to paint first so the opacity and
+        translate transition consistently animate, including on first load.
+      */
+      void element.offsetWidth;
+
+      requestAnimationFrame(function() {
+        element.classList.add("is-visible");
+      });
+    }
+
+    function hideAllTopNavMessages(immediate) {
+      getTopNavMessageElements().forEach(function(element) {
+        hideTopNavMessage(element, immediate === true, false);
+      });
+
+      if (immediate === true) {
+        setNavSlotExpanded(false);
+      } else {
+        navSlotCollapseTimer = setTimeout(function() {
+          const hasVisibleMessage = getTopNavMessageElements().some(function(element) {
+            return element.classList.contains("is-visible");
+          });
+
+          if (!hasVisibleMessage) {
+            setNavSlotExpanded(false);
+          }
+        }, NAV_MESSAGE_FADE_MS);
+      }
+    }
+
+    function cancelProjectSupportSequence(hideMessages) {
+      if (projectAccessDisplayTimer) {
+        clearTimeout(projectAccessDisplayTimer);
+        projectAccessDisplayTimer = null;
+      }
+
+      if (projectActionTransitionTimer) {
+        clearTimeout(projectActionTransitionTimer);
+        projectActionTransitionTimer = null;
+      }
+
+      if (hideMessages !== false) {
+        hideTopNavMessage(projectRequestAccessButton, true, false);
+        hideTopNavMessage(smartsheetFaqButton, true, false);
+      }
+    }
+
+    function showProjectSupportSequence() {
+      cancelProjectSupportSequence(true);
+      closeFaqPanel(false);
+      hideTopNavMessage(refreshReminder, true, false);
+      showTopNavMessage(projectRequestAccessButton);
+
+      projectAccessDisplayTimer = setTimeout(function() {
+        projectAccessDisplayTimer = null;
+
+        hideTopNavMessage(projectRequestAccessButton, false, false, function() {
+          showTopNavMessage(smartsheetFaqButton);
+        });
+      }, PROJECT_REQUEST_ACCESS_VISIBLE_MS);
+    }
+
+    function setNavPopup(shouldShow, message) {
+      if (!refreshReminder) {
+        setNavSlotExpanded(false);
+        return;
+      }
+
+      if (message && refreshReminderText) {
+        refreshReminderText.textContent = message;
+        refreshReminderText.setAttribute("title", message);
+      }
+
+      const shouldShowPopup = shouldShow && navPopupDismissedRouteKey !== currentViewKey;
+
+      hideTopNavMessage(projectRequestAccessButton, true, false);
+      hideTopNavMessage(smartsheetFaqButton, true, false);
+
+      if (shouldShowPopup) {
+        showTopNavMessage(refreshReminder);
+      } else {
+        hideTopNavMessage(refreshReminder, false, true);
+      }
+    }
+
+    function setRefreshNote(shouldShow) {
       setNavPopup(shouldShow, "This Dashboard updates every 24 hours.");
     }
 
@@ -2319,7 +4629,7 @@
       const clickedLink = options.clickedLink;
       const viewKey = options.viewKey;
       const shouldShowViewOnlyNote = options.viewOnlyNote;
-      const shouldShowRefreshReminder = options.refreshReminder;
+      const shouldShowRefreshNote = options.refreshNote;
 
       if (isPlaceholderLink(newEmbedLink)) {
         showPlaceholderMessage();
@@ -2337,7 +4647,7 @@
       }
 
       if (iframeRecord.isLoaded) {
-        forceHideLoadingMessage();
+        hideLoadingMessageImmediately();
       } else {
         showLoadingMessage();
       }
@@ -2346,14 +4656,17 @@
         showWarningBar();
         setViewOnlyNote(false);
         setNavPopup(false);
+        showProjectSupportSequence();
       } else {
+        cancelProjectSupportSequence(true);
+        closeFaqPanel(false);
         hideWarningBar();
         setViewOnlyNote(false);
 
         if (shouldShowViewOnlyNote) {
           setViewOnlyReminder(true);
         } else {
-          setRefreshReminder(shouldShowRefreshReminder);
+          setRefreshNote(shouldShowRefreshNote);
         }
       }
 
@@ -2398,45 +4711,100 @@
       }
     }
 
-    function getAllProjectGroups() {
-      return PORTAL_CONFIG.projectGroups || [];
+    function sortItemsByLabel(items) {
+      return (items || []).slice().sort(function(firstItem, secondItem) {
+        const firstLabel = String(firstItem.label || "");
+        const secondLabel = String(secondItem.label || "");
+        const firstIsShortTerm = firstLabel.toLowerCase() === "short-term projects";
+        const secondIsShortTerm = secondLabel.toLowerCase() === "short-term projects";
+
+        if (firstIsShortTerm !== secondIsShortTerm) {
+          return firstIsShortTerm ? -1 : 1;
+        }
+
+        return firstLabel.localeCompare(
+          secondLabel,
+          undefined,
+          { sensitivity: "base", numeric: true }
+        );
+      });
     }
 
+    function isProjectVisible(project) {
+      /* Every project must explicitly opt in with visible: true. */
+      return Boolean(project) && project.visible === true;
+    }
+
+    function getVisibleProjectItems(items) {
+      return (items || []).filter(isProjectVisible);
+    }
+
+    function getAllProjectGroups() {
+      /* Department display order follows the order written in projectGroups. */
+      return (PORTAL_CONFIG.projectGroups || []).slice().filter(function(group) {
+        return group && group.visible !== false && group.visibility !== false;
+      });
+    }
+
+    /*
+      Embedding is controlled once per department.
+      Every project and archive project in the department follows group.embed.
+    */
+    function shouldEmbedProject(project, group) {
+      return Boolean(group && group.embed === true);
+    }
+
+    /* Collect every visible project from departments with embed: true. */
     function getAllProjects() {
       const projects = [];
 
       getAllProjectGroups().forEach(function(group) {
-        (group.projects || []).forEach(function(project) {
-          projects.push(project);
-        });
+        function addEmbeddedProjects(items) {
+          getVisibleProjectItems(items).forEach(function(project) {
+            if (shouldEmbedProject(project, group)) {
+              projects.push(project);
+            }
+          });
+        }
+
+        addEmbeddedProjects(group.projects);
 
         (group.sections || []).forEach(function(section) {
-          (section.projects || []).forEach(function(project) {
-            projects.push(project);
-          });
+          addEmbeddedProjects(section.projects);
         });
+
+        addEmbeddedProjects(group.archiveProjects);
       });
 
       return projects;
     }
 
+    /*
+      Department-level preloading applies only when both group.embed and
+      group.preload are true. It preloads visible active projects and visible
+      section projects. Archive projects are intentionally never preloaded.
+    */
     function getPreloadableProjects() {
       const projects = [];
 
       getAllProjectGroups().forEach(function(group) {
-        if (!group.preloadProjects) {
+        if (!(group.embed === true && group.preload === true)) {
           return;
         }
 
-        (group.projects || []).forEach(function(project) {
-          projects.push(project);
-        });
-
-        (group.sections || []).forEach(function(section) {
-          (section.projects || []).forEach(function(project) {
+        function addPreloadableProjects(items) {
+          getVisibleProjectItems(items).forEach(function(project) {
             projects.push(project);
           });
+        }
+
+        addPreloadableProjects(group.projects);
+
+        (group.sections || []).forEach(function(section) {
+          addPreloadableProjects(section.projects);
         });
+
+        /* Do not add group.archiveProjects here. Archives always load on click. */
       });
 
       return projects;
@@ -2444,7 +4812,7 @@
 
     function getProjectById(projectId) {
       return getAllProjects().find(function(project) {
-        return project.id === projectId;
+        return isProjectVisible(project) && project.id === projectId;
       });
     }
 
@@ -2484,7 +4852,7 @@
           clickedLink: clickedLink,
           viewKey: routeKey(route),
           viewOnlyNote: false,
-          refreshReminder: false
+          refreshNote: false
         });
       } else {
         const view = PORTAL_CONFIG.views[route.id];
@@ -2502,7 +4870,7 @@
           clickedLink: clickedLink,
           viewKey: routeKey(route),
           viewOnlyNote: view.viewOnlyNote,
-          refreshReminder: view.refreshReminder
+          refreshNote: view.refreshNote
         });
       }
 
@@ -2512,10 +4880,6 @@
 
       if (success && !shouldUpdateHash) {
         currentRouteHash = window.location.hash || routeHash(route);
-      }
-
-      if (success) {
-        startPreloadingEmbeddedLinks(route);
       }
 
       return success;
@@ -2534,6 +4898,7 @@
       }
 
       if (currentViewKey === routeKey(route)) {
+        showProjectSupportSequence();
         updateRouteHash(route);
         return;
       }
@@ -2606,12 +4971,77 @@
       setCollapsibleOpen(button, content, shouldOpen);
     }
 
+    function setArchiveOpen(button, content, shouldOpen) {
+      if (!button || !content) {
+        return;
+      }
+
+      button.setAttribute("aria-expanded", shouldOpen ? "true" : "false");
+      button.querySelector(".archive-caret").textContent = shouldOpen ? "▼" : "▶";
+      content.classList.toggle("open", shouldOpen);
+    }
+
+    function toggleArchiveOpen(button, content) {
+      const shouldOpen = !content.classList.contains("open");
+      setArchiveOpen(button, content, shouldOpen);
+    }
+
+    function createProjectLink(project, groupIndex, archiveProject) {
+      const projectLink = document.createElement("a");
+      const projectGroup = getAllProjectGroups()[groupIndex];
+      const shouldEmbedInPortal = shouldEmbedProject(project, projectGroup);
+
+      projectLink.className = archiveProject
+        ? "project-view-link archive-project-link"
+        : "project-view-link";
+      projectLink.setAttribute("data-project-group", String(groupIndex));
+      projectLink.setAttribute(
+        "data-project-search-text",
+        [
+          project.label || "",
+          project.id || "",
+          projectGroup && projectGroup.label ? projectGroup.label : "",
+          archiveProject ? "archive archived" : "active current"
+        ].join(" ")
+      );
+      projectLink.textContent = project.label;
+
+      if (shouldEmbedInPortal) {
+        projectLink.href = routeHash({
+          type: "project",
+          id: project.id
+        });
+        projectLink.setAttribute("data-project-id", project.id);
+        projectLink.setAttribute("data-project-iframe", "true");
+      } else {
+        projectLink.href = project.linkSrc || project.embedSrc || "#";
+        projectLink.classList.add("external-project-link");
+        projectLink.setAttribute("data-project-iframe", "false");
+        projectLink.title = "Open " + project.label;
+      }
+
+      if (archiveProject) {
+        projectLink.setAttribute("data-project-archive", String(groupIndex));
+      }
+
+      return projectLink;
+    }
+
     function renderProjectLinks() {
       projectLinksContainer.innerHTML = "";
 
       getAllProjectGroups().forEach(function(group, groupIndex) {
         const groupButton = createCollapsibleButton(group.label, "group", groupIndex);
         const groupContent = document.createElement("div");
+        const archiveSection = document.createElement("div");
+        const archiveDivider = document.createElement("div");
+        const archiveButton = document.createElement("button");
+        const archiveLabel = document.createElement("span");
+        const archiveIcon = document.createElement("span");
+        const archiveLabelText = document.createElement("span");
+        const archiveCaret = document.createElement("span");
+        const archiveContent = document.createElement("div");
+        const archiveProjects = getVisibleProjectItems(group.archiveProjects);
 
         groupContent.className = "project-group-content";
         groupContent.setAttribute("data-project-group-content", String(groupIndex));
@@ -2624,19 +5054,11 @@
         projectLinksContainer.appendChild(groupButton);
         projectLinksContainer.appendChild(groupContent);
 
-        (group.projects || []).forEach(function(project) {
-          const projectLink = document.createElement("a");
+        /* Change openByDefault in projectGroups to control the starting caret state. */
+        setCollapsibleOpen(groupButton, groupContent, group.openByDefault === true);
 
-          projectLink.className = "project-view-link";
-          projectLink.href = routeHash({
-            type: "project",
-            id: project.id
-          });
-          projectLink.setAttribute("data-project-id", project.id);
-          projectLink.setAttribute("data-project-group", String(groupIndex));
-          projectLink.textContent = project.label;
-
-          groupContent.appendChild(projectLink);
+        getVisibleProjectItems(group.projects).forEach(function(project) {
+          groupContent.appendChild(createProjectLink(project, groupIndex, false));
         });
 
         (group.sections || []).forEach(function(section, sectionIndex) {
@@ -2658,42 +5080,266 @@
             setCollapsibleOpen(sectionButton, sectionContent, true);
           }
 
-          (section.projects || []).forEach(function(project) {
-            const projectLink = document.createElement("a");
-
-            projectLink.className = "project-view-link";
-            projectLink.href = routeHash({
-              type: "project",
-              id: project.id
-            });
-            projectLink.setAttribute("data-project-id", project.id);
-            projectLink.setAttribute("data-project-group", String(groupIndex));
+          getVisibleProjectItems(section.projects).forEach(function(project) {
+            const projectLink = createProjectLink(project, groupIndex, false);
             projectLink.setAttribute("data-project-subgroup", groupIndex + ":" + sectionIndex);
-            projectLink.textContent = project.label;
-
             sectionContent.appendChild(projectLink);
           });
+        });
+
+        archiveSection.className = "archive-section";
+        archiveSection.setAttribute("data-project-archive-section", String(groupIndex));
+
+        archiveDivider.className = "dropdown-divider archive-divider";
+        archiveDivider.setAttribute("data-project-archive-divider", String(groupIndex));
+
+        archiveButton.type = "button";
+        archiveButton.className = "archive-toggle";
+        archiveButton.setAttribute("aria-expanded", "false");
+        archiveButton.setAttribute("data-project-archive-toggle", String(groupIndex));
+
+        archiveLabel.className = "archive-toggle-label";
+        archiveIcon.className = "archive-icon";
+        archiveIcon.setAttribute("aria-hidden", "true");
+        archiveIcon.innerHTML = '<svg viewBox="0 0 24 24" focusable="false"><path d="M4 7.5h16v12H4z"></path><path d="M7 4.5h10l1 3H6z"></path><path d="M9 11.5h6"></path></svg>';
+        archiveLabelText.textContent = "Archive";
+        archiveLabel.appendChild(archiveIcon);
+        archiveLabel.appendChild(archiveLabelText);
+
+        archiveCaret.className = "archive-caret";
+        archiveCaret.textContent = "▶";
+
+        archiveButton.appendChild(archiveLabel);
+        archiveButton.appendChild(archiveCaret);
+
+        archiveContent.className = "archive-content";
+        archiveContent.setAttribute("data-project-archive-content", String(groupIndex));
+
+        archiveButton.addEventListener("click", function(event) {
+          event.preventDefault();
+          toggleArchiveOpen(archiveButton, archiveContent);
+        });
+
+        if (archiveProjects.length > 0) {
+          archiveProjects.forEach(function(project) {
+            archiveContent.appendChild(createProjectLink(project, groupIndex, true));
+          });
+        } else {
+          const emptyArchiveMessage = document.createElement("div");
+          emptyArchiveMessage.className = "archive-empty-message";
+          emptyArchiveMessage.setAttribute("data-project-archive-empty", String(groupIndex));
+          emptyArchiveMessage.textContent = "No archived projects";
+          archiveContent.appendChild(emptyArchiveMessage);
+        }
+
+        archiveSection.appendChild(archiveDivider);
+        archiveSection.appendChild(archiveButton);
+        archiveSection.appendChild(archiveContent);
+        groupContent.appendChild(archiveSection);
+      });
+    }
+
+    /* ==========================================================
+       TYPO-TOLERANT SEARCH HELPERS
+       Used by both project search and FAQ search. Exact and partial
+       matches are checked first; fuzzy token matching is only used
+       when needed so normal searches stay fast.
+       ========================================================== */
+    function normalizePortalSearchText(value) {
+      return String(value || "")
+        .normalize("NFD")
+        .replace(/[\u0300-\u036f]/g, "")
+        .toLowerCase()
+        .replace(/&/g, " and ")
+        .replace(/[^a-z0-9]+/g, " ")
+        .trim()
+        .replace(/\s+/g, " ");
+    }
+
+    function getPortalSearchTokens(value) {
+      const normalizedValue = normalizePortalSearchText(value);
+      return normalizedValue ? normalizedValue.split(" ") : [];
+    }
+
+    function getPortalSearchEditLimit(tokenLength) {
+      if (tokenLength <= 3) {
+        return 0;
+      }
+
+      if (tokenLength <= 5) {
+        return 1;
+      }
+
+      if (tokenLength <= 8) {
+        return 2;
+      }
+
+      if (tokenLength <= 12) {
+        return 3;
+      }
+
+      return Math.max(3, Math.floor(tokenLength * 0.24));
+    }
+
+    function portalSearchEditDistance(firstValue, secondValue, maximumDistance) {
+      const first = String(firstValue || "");
+      const second = String(secondValue || "");
+
+      if (first === second) {
+        return 0;
+      }
+
+      if (Math.abs(first.length - second.length) > maximumDistance) {
+        return maximumDistance + 1;
+      }
+
+      let previousRow = Array.from({ length: second.length + 1 }, function(_, index) {
+        return index;
+      });
+
+      for (let firstIndex = 1; firstIndex <= first.length; firstIndex += 1) {
+        const currentRow = [firstIndex];
+        let smallestValueInRow = currentRow[0];
+
+        for (let secondIndex = 1; secondIndex <= second.length; secondIndex += 1) {
+          const substitutionCost = first[firstIndex - 1] === second[secondIndex - 1] ? 0 : 1;
+          const cellValue = Math.min(
+            currentRow[secondIndex - 1] + 1,
+            previousRow[secondIndex] + 1,
+            previousRow[secondIndex - 1] + substitutionCost
+          );
+
+          currentRow.push(cellValue);
+          smallestValueInRow = Math.min(smallestValueInRow, cellValue);
+        }
+
+        if (smallestValueInRow > maximumDistance) {
+          return maximumDistance + 1;
+        }
+
+        previousRow = currentRow;
+      }
+
+      return previousRow[second.length];
+    }
+
+    function isPortalSearchSubsequence(shortToken, candidateToken) {
+      if (!shortToken || !candidateToken) {
+        return false;
+      }
+
+      let shortIndex = 0;
+
+      for (
+        let candidateIndex = 0;
+        candidateIndex < candidateToken.length && shortIndex < shortToken.length;
+        candidateIndex += 1
+      ) {
+        if (shortToken[shortIndex] === candidateToken[candidateIndex]) {
+          shortIndex += 1;
+        }
+      }
+
+      return shortIndex === shortToken.length;
+    }
+
+    function portalSearchTokensMatch(queryToken, candidateToken) {
+      if (!queryToken || !candidateToken) {
+        return false;
+      }
+
+      if (queryToken === candidateToken) {
+        return true;
+      }
+
+      /* Preserve intuitive partial-word matching such as "succ" or "notif". */
+      if (
+        queryToken.length >= 3 &&
+        (candidateToken.includes(queryToken) || queryToken.includes(candidateToken))
+      ) {
+        return true;
+      }
+
+      /*
+        Support compact short-word typos such as "rw" for "row" without
+        broadly treating unrelated three-letter words as edit-distance matches.
+      */
+      if (
+        queryToken.length >= 2 &&
+        queryToken.length <= 3 &&
+        candidateToken.length <= 5 &&
+        candidateToken.length - queryToken.length <= 2 &&
+        isPortalSearchSubsequence(queryToken, candidateToken)
+      ) {
+        return true;
+      }
+
+      const editLimit = getPortalSearchEditLimit(queryToken.length);
+
+      if (editLimit === 0) {
+        return false;
+      }
+
+      return portalSearchEditDistance(queryToken, candidateToken, editLimit) <= editLimit;
+    }
+
+    function portalSearchMatches(queryValue, searchableValue) {
+      const normalizedQuery = normalizePortalSearchText(queryValue);
+      const normalizedSearchableValue = normalizePortalSearchText(searchableValue);
+
+      if (!normalizedQuery) {
+        return true;
+      }
+
+      if (!normalizedSearchableValue) {
+        return false;
+      }
+
+      if (normalizedSearchableValue.includes(normalizedQuery)) {
+        return true;
+      }
+
+      const compactQuery = normalizedQuery.replace(/\s+/g, "");
+      const compactSearchableValue = normalizedSearchableValue.replace(/\s+/g, "");
+
+      if (compactQuery.length >= 4 && compactSearchableValue.includes(compactQuery)) {
+        return true;
+      }
+
+      const queryTokens = getPortalSearchTokens(normalizedQuery);
+      const candidateTokens = getPortalSearchTokens(normalizedSearchableValue);
+
+      return queryTokens.every(function(queryToken) {
+        return candidateTokens.some(function(candidateToken) {
+          return portalSearchTokensMatch(queryToken, candidateToken);
         });
       });
     }
 
     function filterProjectLinks() {
-      const searchTerm = projectSearch.value.trim().toLowerCase();
+      const searchTerm = projectSearch.value.trim();
       const projectLinks = Array.from(projectLinksContainer.querySelectorAll(".project-view-link"));
       const groupButtons = Array.from(projectLinksContainer.querySelectorAll("[data-project-group-toggle]"));
       const groupContents = Array.from(projectLinksContainer.querySelectorAll("[data-project-group-content]"));
       const sectionButtons = Array.from(projectLinksContainer.querySelectorAll("[data-project-subgroup-toggle]"));
       const sectionContents = Array.from(projectLinksContainer.querySelectorAll("[data-project-subgroup-content]"));
+      const archiveSections = Array.from(projectLinksContainer.querySelectorAll("[data-project-archive-section]"));
+      const archiveButtons = Array.from(projectLinksContainer.querySelectorAll("[data-project-archive-toggle]"));
+      const archiveContents = Array.from(projectLinksContainer.querySelectorAll("[data-project-archive-content]"));
+      const archiveDividers = Array.from(projectLinksContainer.querySelectorAll("[data-project-archive-divider]"));
+      const emptyArchiveMessages = Array.from(projectLinksContainer.querySelectorAll("[data-project-archive-empty]"));
 
       let visibleCount = 0;
       const visibleGroups = {};
       const visibleSections = {};
+      const visibleArchives = {};
 
       projectLinks.forEach(function(link) {
-        const projectName = link.textContent.toLowerCase();
+        const projectName = link.getAttribute("data-project-search-text") || link.textContent;
         const groupKey = link.getAttribute("data-project-group");
         const sectionKey = link.getAttribute("data-project-subgroup");
-        const shouldShow = !searchTerm || projectName.includes(searchTerm);
+        const archiveKey = link.getAttribute("data-project-archive");
+        const shouldShow = portalSearchMatches(searchTerm, projectName);
 
         link.style.display = shouldShow ? "block" : "none";
 
@@ -2703,6 +5349,10 @@
 
           if (sectionKey) {
             visibleSections[sectionKey] = true;
+          }
+
+          if (archiveKey !== null) {
+            visibleArchives[archiveKey] = true;
           }
         }
       });
@@ -2714,7 +5364,35 @@
 
       sectionButtons.forEach(function(button) {
         const sectionKey = button.getAttribute("data-project-subgroup-toggle");
-        button.style.display = visibleSections[sectionKey] ? "flex" : "none";
+        button.style.display = !searchTerm || visibleSections[sectionKey] ? "flex" : "none";
+      });
+
+      archiveButtons.forEach(function(button) {
+        const groupKey = button.getAttribute("data-project-archive-toggle");
+        const content = projectLinksContainer.querySelector('[data-project-archive-content="' + groupKey + '"]');
+        const divider = projectLinksContainer.querySelector('[data-project-archive-divider="' + groupKey + '"]');
+        const shouldShowArchive = !searchTerm || visibleArchives[groupKey];
+
+        const section = projectLinksContainer.querySelector('[data-project-archive-section="' + groupKey + '"]');
+
+        button.style.display = shouldShowArchive ? "flex" : "none";
+
+        if (section) {
+          section.style.display = shouldShowArchive ? "block" : "none";
+        }
+
+        if (divider) {
+          divider.style.display = "none";
+        }
+
+        if (content) {
+          content.style.display = shouldShowArchive ? "" : "none";
+          setArchiveOpen(button, content, Boolean(searchTerm && visibleArchives[groupKey]));
+        }
+      });
+
+      emptyArchiveMessages.forEach(function(message) {
+        message.style.display = searchTerm ? "none" : "block";
       });
 
       if (searchTerm) {
@@ -2739,7 +5417,10 @@
         groupContents.forEach(function(content) {
           const groupKey = content.getAttribute("data-project-group-content");
           const button = projectLinksContainer.querySelector('[data-project-group-toggle="' + groupKey + '"]');
-          setCollapsibleOpen(button, content, false);
+          const group = getAllProjectGroups()[Number(groupKey)];
+          const shouldOpenByDefault = Boolean(group && group.openByDefault === true);
+
+          setCollapsibleOpen(button, content, shouldOpenByDefault);
           content.style.display = "";
         });
 
@@ -2751,6 +5432,21 @@
 
           setCollapsibleOpen(button, content, shouldOpenByDefault);
           content.style.display = "";
+        });
+
+        archiveContents.forEach(function(content) {
+          const groupKey = content.getAttribute("data-project-archive-content");
+          const button = projectLinksContainer.querySelector('[data-project-archive-toggle="' + groupKey + '"]');
+          setArchiveOpen(button, content, false);
+          content.style.display = "";
+        });
+
+        archiveSections.forEach(function(section) {
+          section.style.display = "block";
+        });
+
+        archiveDividers.forEach(function(divider) {
+          divider.style.display = "none";
         });
       }
 
@@ -2765,10 +5461,6 @@
       }
 
       return "mailto:" + cleanEmail + "?subject=Smartsheet%20Portal%20Link%20Issue";
-    }
-
-    function getPortalContactEmail() {
-      return "Benjamin.Bell@swgas.com";
     }
 
     function openAccessRequestEmail(event) {
@@ -2815,16 +5507,464 @@
       }, 1500);
     }
 
-    function applyConfigToNavigation() {
-      if (PORTAL_CONFIG.portalTitle && PORTAL_CONFIG.portalTitle.trim() !== "") {
-        document.title = PORTAL_CONFIG.portalTitle;
+    function getFaqVideoUrl(fileName) {
+      if (typeof fileName !== "string" || fileName.trim() === "") {
+        return "";
       }
 
-      projectDropdownLabel.textContent = PORTAL_CONFIG.departmentName + " Projects";
+      const trimmedFileName = fileName.trim();
+
+      if (/^(?:https?:|data:|blob:|\/)/i.test(trimmedFileName)) {
+        return trimmedFileName;
+      }
+
+      const configuredFolder = typeof PORTAL_CONFIG.faqVideoFolder === "string"
+        ? PORTAL_CONFIG.faqVideoFolder.trim()
+        : "";
+      const normalizedFolder = configuredFolder === ""
+        ? ""
+        : configuredFolder.replace(/\\/g, "/").replace(/\/?$/, "/");
+      const normalizedFileName = trimmedFileName.replace(/^\.\//, "").replace(/^\//, "");
+
+      return normalizedFolder + normalizedFileName;
+    }
+
+    function pauseFaqVideos(container) {
+      if (!container) {
+        return;
+      }
+
+      container.querySelectorAll("video").forEach(function(video) {
+        try {
+          video.pause();
+        } catch (error) {
+          // Ignore browsers that do not expose pause during teardown.
+        }
+      });
+    }
+
+    function lazyLoadFaqVideo(answerContent, questionConfig) {
+      if (
+        !answerContent ||
+        !questionConfig ||
+        questionConfig.video !== true ||
+        answerContent.dataset.videoLoaded === "true"
+      ) {
+        return;
+      }
+
+      const videoUrl = getFaqVideoUrl(questionConfig.videoFileName);
+
+      if (!videoUrl || isPlaceholderLink(videoUrl)) {
+        return;
+      }
+
+      const videoWrap = document.createElement("div");
+      const video = document.createElement("video");
+      const videoNote = document.createElement("p");
+      const shouldRepeat = questionConfig.repeat === true;
+
+      videoWrap.className = "faq-video-wrap";
+      video.className = "faq-video";
+      video.preload = "none";
+      video.setAttribute("playsinline", "");
+      video.src = videoUrl;
+      video.loop = shouldRepeat;
+      video.controls = !shouldRepeat;
+
+      if (shouldRepeat) {
+        video.autoplay = true;
+        video.muted = true;
+        video.defaultMuted = true;
+        videoNote.textContent = "This demonstration plays automatically and repeats.";
+      } else {
+        video.autoplay = false;
+        video.muted = false;
+        videoNote.textContent = "Select Play when you are ready to view this demonstration.";
+      }
+
+      videoNote.className = "faq-video-note";
+      videoWrap.appendChild(video);
+      videoWrap.appendChild(videoNote);
+      answerContent.appendChild(videoWrap);
+      answerContent.dataset.videoLoaded = "true";
+
+      if (shouldRepeat) {
+        const playPromise = video.play();
+
+        if (playPromise && typeof playPromise.catch === "function") {
+          playPromise.catch(function() {
+            video.controls = true;
+            videoNote.textContent = "Select Play to start this repeating demonstration.";
+          });
+        }
+      }
+    }
+
+    function getFaqPlainText(html) {
+      if (typeof html !== "string" || html.trim() === "") {
+        return "";
+      }
+
+      const textContainer = document.createElement("div");
+      textContainer.innerHTML = html;
+      return (textContainer.textContent || textContainer.innerText || "").trim();
+    }
+
+    function createFaqQuestion(questionConfig, questionIndex) {
+      if (
+        !questionConfig ||
+        questionConfig.visible !== true ||
+        typeof questionConfig.question !== "string" ||
+        questionConfig.question.trim() === ""
+      ) {
+        return null;
+      }
+
+      const itemElement = document.createElement("section");
+      const questionButton = document.createElement("button");
+      const questionNumber = document.createElement("span");
+      const questionText = document.createElement("span");
+      const questionCaret = document.createElement("span");
+      const answerElement = document.createElement("div");
+      const answerInner = document.createElement("div");
+      const answerContent = document.createElement("div");
+      const answerId = "smartsheetFaqAnswer_" + String(questionConfig.id || questionIndex).replace(/[^a-zA-Z0-9_-]/g, "_");
+
+      itemElement.className = "faq-item";
+      itemElement.dataset.faqId = questionConfig.id || "";
+
+      questionButton.type = "button";
+      questionButton.className = "faq-question";
+      questionButton.setAttribute("aria-expanded", "false");
+      questionButton.setAttribute("aria-controls", answerId);
+
+      questionNumber.className = "faq-question-number";
+      questionNumber.textContent = String(questionIndex + 1).padStart(2, "0");
+      questionNumber.setAttribute("aria-hidden", "true");
+
+      questionText.className = "faq-question-text";
+      questionText.textContent = questionConfig.question;
+
+      questionCaret.className = "faq-question-caret";
+      questionCaret.setAttribute("aria-hidden", "true");
+      questionCaret.innerHTML = '<svg viewBox="0 0 20 20" focusable="false"><path d="m7 5 5 5-5 5"></path></svg>';
+
+      questionButton.appendChild(questionNumber);
+      questionButton.appendChild(questionText);
+      questionButton.appendChild(questionCaret);
+
+      answerElement.className = "faq-answer";
+      answerElement.id = answerId;
+      answerElement.setAttribute("aria-hidden", "true");
+
+      answerInner.className = "faq-answer-inner";
+      answerContent.className = "faq-answer-content";
+
+      if (typeof questionConfig.answerHtml === "string" && questionConfig.answerHtml.trim() !== "") {
+        answerContent.innerHTML = questionConfig.answerHtml;
+      } else {
+        const blankAnswer = document.createElement("p");
+        blankAnswer.className = "faq-answer-placeholder";
+        blankAnswer.textContent = "Instructions will be added here.";
+        answerContent.appendChild(blankAnswer);
+      }
+
+      answerInner.appendChild(answerContent);
+      answerElement.appendChild(answerInner);
+
+      questionButton.addEventListener("click", function() {
+        const shouldOpen = questionButton.getAttribute("aria-expanded") !== "true";
+
+        questionButton.setAttribute("aria-expanded", String(shouldOpen));
+        answerElement.setAttribute("aria-hidden", String(!shouldOpen));
+        answerElement.classList.toggle("open", shouldOpen);
+
+        if (shouldOpen) {
+          lazyLoadFaqVideo(answerContent, questionConfig);
+        } else {
+          pauseFaqVideos(answerContent);
+        }
+      });
+
+      itemElement.appendChild(questionButton);
+      itemElement.appendChild(answerElement);
+      return itemElement;
+    }
+
+    function renderSmartsheetFaqs(searchQuery) {
+      if (!faqList || !faqEmptyState) {
+        return;
+      }
+
+      const configuredFaqs = Array.isArray(PORTAL_CONFIG.smartsheetFaqs)
+        ? PORTAL_CONFIG.smartsheetFaqs
+        : [];
+      const normalizedQuery = typeof searchQuery === "string"
+        ? searchQuery.trim()
+        : "";
+      const visibleFaqs = configuredFaqs.filter(function(question) {
+        return question && question.visible === true;
+      });
+      const matchingFaqs = visibleFaqs.filter(function(question) {
+        if (normalizedQuery === "") {
+          return true;
+        }
+
+        const searchableText = [
+          question.id || "",
+          question.question || "",
+          getFaqPlainText(question.answerHtml || ""),
+          question.videoFileName || ""
+        ].join(" ");
+
+        return portalSearchMatches(normalizedQuery, searchableText);
+      });
+
+      faqList.innerHTML = "";
+
+      matchingFaqs.forEach(function(question, questionIndex) {
+        const questionElement = createFaqQuestion(question, questionIndex);
+
+        if (questionElement) {
+          faqList.appendChild(questionElement);
+        }
+      });
+
+      const renderedFaqCount = faqList.querySelectorAll(".faq-item").length;
+      const hasQuestions = visibleFaqs.length > 0;
+      const hasSearch = normalizedQuery !== "";
+
+      faqEmptyState.classList.toggle("hidden", renderedFaqCount > 0);
+      faqEmptyState.textContent = hasSearch && hasQuestions
+        ? 'No close matches for "' + searchQuery.trim() + '". Try fewer words or another spelling.'
+        : "Smartsheet FAQs will appear here once questions are added to the portal configuration.";
+
+      if (faqSearchSummary) {
+        if (!hasQuestions) {
+          faqSearchSummary.textContent = "No visible questions";
+        } else if (hasSearch) {
+          faqSearchSummary.textContent = renderedFaqCount + (renderedFaqCount === 1 ? " result" : " results");
+        } else {
+          faqSearchSummary.textContent = visibleFaqs.length + (visibleFaqs.length === 1 ? " question" : " questions");
+        }
+      }
+
+      if (faqSearchClear) {
+        faqSearchClear.classList.toggle("hidden", !hasSearch);
+      }
+    }
+
+    function openFaqPanel() {
+      if (!smartsheetFaqPanel || !faqPanelBackdrop) {
+        return;
+      }
+
+      lastFocusedElementBeforeFaqPanel = document.activeElement;
+      smartsheetFaqPanel.classList.add("open");
+      faqPanelBackdrop.classList.add("open");
+      smartsheetFaqPanel.setAttribute("aria-hidden", "false");
+      faqPanelBackdrop.setAttribute("aria-hidden", "false");
+
+      [smartsheetFaqButton, supportFaqButton].forEach(function(button) {
+        if (button) {
+          button.setAttribute("aria-expanded", "true");
+        }
+      });
+
+      if (faqSearchInput) {
+        setTimeout(function() {
+          faqSearchInput.focus();
+        }, 380);
+      } else if (faqPanelClose) {
+        setTimeout(function() {
+          faqPanelClose.focus();
+        }, 380);
+      }
+    }
+
+    function closeFaqPanel(restoreFocus) {
+      if (!smartsheetFaqPanel || !faqPanelBackdrop) {
+        return;
+      }
+
+      smartsheetFaqPanel.classList.remove("open");
+      faqPanelBackdrop.classList.remove("open");
+      smartsheetFaqPanel.setAttribute("aria-hidden", "true");
+      faqPanelBackdrop.setAttribute("aria-hidden", "true");
+
+      [smartsheetFaqButton, supportFaqButton].forEach(function(button) {
+        if (button) {
+          button.setAttribute("aria-expanded", "false");
+        }
+      });
+
+      pauseFaqVideos(smartsheetFaqPanel);
+
+      if (
+        restoreFocus !== false &&
+        lastFocusedElementBeforeFaqPanel &&
+        typeof lastFocusedElementBeforeFaqPanel.focus === "function"
+      ) {
+        lastFocusedElementBeforeFaqPanel.focus();
+      }
+
+      lastFocusedElementBeforeFaqPanel = null;
+    }
+
+    function updateConfiguredLink(linkElement, href, labelText) {
+      if (!linkElement) {
+        return;
+      }
+
+      if (href) {
+        linkElement.href = href;
+      }
+
+      if (labelText) {
+        linkElement.textContent = labelText;
+      }
+    }
+
+    function getSharedSupportLink(linkKey) {
+      const departmentSpecificLinks = PORTAL_CONFIG.supportLinks || {};
+      const sharedLinks = SHARED_PORTAL_SETTINGS.supportLinks || {};
+
+      return departmentSpecificLinks[linkKey] || sharedLinks[linkKey] || "";
+    }
+
+    function getPortalContactEmail() {
+      return (SHARED_PORTAL_SETTINGS.contactEmail || "").trim();
+    }
+
+    function buildDepartmentPortalHref(departmentKey) {
+      const targetUrl = new URL(window.location.href);
+      targetUrl.searchParams.set("department", departmentKey);
+      targetUrl.hash = "#home";
+
+      return targetUrl.pathname + targetUrl.search + targetUrl.hash;
+    }
+
+    const PORTAL_SWITCH_FALLBACK_MS = 175;
+    let portalSwitchInProgress = false;
+
+    function browserSupportsPortalViewTransitions() {
+      return Boolean(
+        typeof document.startViewTransition === "function" &&
+        window.CSS &&
+        typeof window.CSS.supports === "function" &&
+        window.CSS.supports("view-transition-name: portal-top-navigation")
+      );
+    }
+
+    function navigateToPortalWithFade(href) {
+      if (!href || portalSwitchInProgress) {
+        return;
+      }
+
+      portalSwitchInProgress = true;
+      suppressUnsavedBeforeUnload = true;
+
+      const reduceMotion = window.matchMedia &&
+        window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+      const useNativePortalTransition = !reduceMotion && browserSupportsPortalViewTransitions();
+
+      /*
+        The CSS @view-transition rule handles supported browsers automatically.
+        Navigate immediately so the browser can capture the current and next
+        portal chrome as a seamless cross-document transition.
+      */
+      if (useNativePortalTransition || reduceMotion) {
+        window.location.assign(href);
+        return;
+      }
+
+      /* Polished fallback: retain the header, sweep it, then reveal the new one. */
+      document.body.classList.add("portal-switching");
+
+      try {
+        window.sessionStorage.setItem("hrPortalFallbackArrival", "1");
+      } catch (error) {
+        /* Continue without the arrival effect if storage is unavailable. */
+      }
+
+      window.setTimeout(function() {
+        window.location.assign(href);
+      }, PORTAL_SWITCH_FALLBACK_MS);
+    }
+
+    function finishPortalArrival() {
+      portalSwitchInProgress = false;
+      suppressUnsavedBeforeUnload = false;
+      document.body.classList.remove("portal-switching");
+
+      if (document.body.classList.contains("portal-arriving")) {
+        requestAnimationFrame(function() {
+          requestAnimationFrame(function() {
+            document.body.classList.remove("portal-arriving");
+          });
+        });
+      }
+    }
+
+    window.addEventListener("pageshow", finishPortalArrival);
+
+    if (document.readyState === "loading") {
+      document.addEventListener("DOMContentLoaded", finishPortalArrival, { once: true });
+    } else {
+      finishPortalArrival();
+    }
+
+    function applyDepartmentNavigationLinks() {
+      document.querySelectorAll("[data-department-key]").forEach(function(link) {
+        const configuredKey = resolveDepartmentKey(link.getAttribute("data-department-key"));
+        const isActive = configuredKey === ACTIVE_DEPARTMENT_KEY;
+
+        if (!configuredKey) {
+          link.removeAttribute("href");
+          link.classList.add("disabled");
+          link.setAttribute("aria-disabled", "true");
+          return;
+        }
+
+        link.href = buildDepartmentPortalHref(configuredKey);
+        link.classList.toggle("active", isActive);
+
+        if (isActive) {
+          link.setAttribute("aria-current", "page");
+        } else {
+          link.removeAttribute("aria-current");
+        }
+      });
+    }
+
+    function applyConfigToNavigation() {
+      const resolvedDepartmentName = replaceDepartmentName(PORTAL_CONFIG.departmentName || "Department");
+      const resolvedPortalTitle = replaceDepartmentName(PORTAL_CONFIG.portalTitle || resolvedDepartmentName + " Project Portal");
+
+      document.title = resolvedPortalTitle;
+      projectDropdownLabel.textContent = "All Projects";
+      applyDepartmentNavigationLinks();
+
+      if (portalFavicon && SHARED_PORTAL_SETTINGS.faviconFileName) {
+        portalFavicon.href = SHARED_PORTAL_SETTINGS.faviconFileName;
+      }
+
+      updateConfiguredLink(allHrPersonalTasksLink, SHARED_PORTAL_SETTINGS.allHrPersonalTasksUrl);
+      updateConfiguredLink(departmentSharePointLink, PORTAL_CONFIG.departmentSharePointUrl);
 
       if (departmentSharePointLink) {
-        departmentSharePointLink.title = PORTAL_CONFIG.departmentName + " SharePoint";
+        departmentSharePointLink.title = resolvedDepartmentName + " SharePoint";
       }
+
+      if (departmentLogo && SHARED_PORTAL_SETTINGS.logoFileName) {
+        departmentLogo.src = SHARED_PORTAL_SETTINGS.logoFileName;
+        departmentLogo.alt = resolvedDepartmentName + " logo";
+      }
+
+      updateConfiguredLink(projectCreationRequestLink, getSharedSupportLink("projectCreationRequest"));
+      updateConfiguredLink(smartsheetSupportLink, getSharedSupportLink("smartsheetSupport"));
+      updateConfiguredLink(placeholderProjectCreationLink, getSharedSupportLink("projectCreationRequest"));
 
       if (placeholderEmailLink) {
         const contactEmail = getPortalContactEmail();
@@ -2838,6 +5978,21 @@
 
         if (!view) {
           return;
+        }
+
+        const showInNavigation = view.showInNavigation !== false;
+        const followingSeparator = link.nextElementSibling &&
+          link.nextElementSibling.classList.contains("nav-separator")
+          ? link.nextElementSibling
+          : null;
+
+        link.classList.toggle("portal-nav-hidden", !showInNavigation);
+
+        if (followingSeparator) {
+          followingSeparator.classList.toggle(
+            "portal-nav-separator-hidden",
+            !showInNavigation
+          );
         }
 
         if (viewId !== "home") {
@@ -2860,8 +6015,12 @@
         return;
       }
 
-      loadRoute(route, false);
+      const didLoadRoute = loadRoute(route, false);
       currentRouteHash = window.location.hash || routeHash(route);
+
+      if (didLoadRoute) {
+        startPreloadingEmbeddedLinks(route);
+      }
     }
 
     function handleHashChange() {
@@ -2924,15 +6083,6 @@
       }
     });
 
-    if (refreshPopupClose) {
-      refreshPopupClose.addEventListener("click", function(event) {
-        event.preventDefault();
-        event.stopPropagation();
-        navPopupDismissedRouteKey = currentViewKey;
-        setNavPopup(false);
-      });
-    }
-
     document.addEventListener("keydown", function(event) {
       const modalIsOpen = !saveModal.classList.contains("hidden");
 
@@ -2967,6 +6117,85 @@
       }
     });
 
+    if (refreshReminderClose) {
+      refreshReminderClose.addEventListener("click", function(event) {
+        event.preventDefault();
+        event.stopPropagation();
+        navPopupDismissedRouteKey = currentViewKey;
+        setNavPopup(false);
+      });
+    }
+
+    if (projectRequestAccessButton) {
+      projectRequestAccessButton.addEventListener("click", function(event) {
+        openAccessRequestEmail(event);
+      });
+    }
+
+    if (smartsheetFaqButton) {
+      smartsheetFaqButton.addEventListener("click", function(event) {
+        event.preventDefault();
+        event.stopPropagation();
+        openFaqPanel();
+      });
+    }
+
+    if (supportFaqButton) {
+      supportFaqButton.addEventListener("click", function(event) {
+        event.preventDefault();
+        event.stopPropagation();
+        openFaqPanel();
+      });
+    }
+
+    if (faqPanelClose) {
+      faqPanelClose.addEventListener("click", function() {
+        closeFaqPanel(true);
+      });
+    }
+
+    if (faqPanelBackdrop) {
+      faqPanelBackdrop.addEventListener("click", function() {
+        closeFaqPanel(true);
+      });
+    }
+
+    if (faqSearchInput) {
+      faqSearchInput.addEventListener("input", function() {
+        renderSmartsheetFaqs(faqSearchInput.value);
+      });
+
+      faqSearchInput.addEventListener("keydown", function(event) {
+        if (event.key === "Escape" && faqSearchInput.value !== "") {
+          event.stopPropagation();
+          faqSearchInput.value = "";
+          renderSmartsheetFaqs("");
+        }
+      });
+    }
+
+    if (faqSearchClear) {
+      faqSearchClear.addEventListener("click", function() {
+        if (!faqSearchInput) {
+          return;
+        }
+
+        faqSearchInput.value = "";
+        renderSmartsheetFaqs("");
+        faqSearchInput.focus();
+      });
+    }
+
+    document.addEventListener("keydown", function(event) {
+      if (
+        event.key === "Escape" &&
+        smartsheetFaqPanel &&
+        smartsheetFaqPanel.classList.contains("open")
+      ) {
+        event.preventDefault();
+        closeFaqPanel(true);
+      }
+    });
 
     projectSearch.addEventListener("input", filterProjectLinks);
     window.addEventListener("hashchange", handleHashChange);
@@ -3018,7 +6247,9 @@
       }
 
       const isPortalViewLink = clickedLink.classList.contains("portal-view-link");
-      const isProjectViewLink = clickedLink.classList.contains("project-view-link");
+      const isProjectViewLink = clickedLink.classList.contains("project-view-link") &&
+        clickedLink.getAttribute("data-project-iframe") === "true";
+      const isPortalDirectoryLink = clickedLink.hasAttribute("data-department-key");
       const isPlaceholderActionLink = clickedLink.classList.contains("placeholder-action-link");
       const isRequestAccessLink = clickedLink.id === "requestAccessLink";
       const href = clickedLink.getAttribute("href");
@@ -3030,6 +6261,19 @@
       }
 
       if (isPlaceholderActionLink) {
+        return;
+      }
+
+      if (isPortalDirectoryLink) {
+        event.preventDefault();
+
+        if (!href || clickedLink.getAttribute("aria-disabled") === "true") {
+          return;
+        }
+
+        runWithSaveCheck(function() {
+          navigateToPortalWithFade(clickedLink.href);
+        });
         return;
       }
 
@@ -3081,8 +6325,6 @@
       }
     });
 
-
-
     function getNavHorizontalPadding() {
       if (!navScrollRegion) {
         return 0;
@@ -3095,16 +6337,168 @@
       return paddingLeft + paddingRight;
     }
 
+    function getVisibleNavChildren() {
+      if (!navScrollRegion) {
+        return [];
+      }
+
+      return Array.from(navScrollRegion.children).filter(function(child) {
+        const childStyles = window.getComputedStyle(child);
+
+        return childStyles.display !== "none" && childStyles.visibility !== "hidden";
+      });
+    }
+
+    function getOuterElementWidth(element) {
+      if (!element) {
+        return 0;
+      }
+
+      const styles = window.getComputedStyle(element);
+      const marginLeft = parseFloat(styles.marginLeft) || 0;
+      const marginRight = parseFloat(styles.marginRight) || 0;
+      const rect = element.getBoundingClientRect();
+
+      return rect.width + marginLeft + marginRight;
+    }
+
+    function getNavContentWidthFromChildren() {
+      if (!navScrollRegion) {
+        return 0;
+      }
+
+      return getVisibleNavChildren().reduce(function(totalWidth, child) {
+        return totalWidth + getOuterElementWidth(child);
+      }, 0);
+    }
+
+    function getNavVisibleBounds() {
+      if (!navScrollShell || !navScrollRegion) {
+        return {
+          left: 0,
+          right: 0,
+          width: 0
+        };
+      }
+
+      const shellRect = navScrollShell.getBoundingClientRect();
+      const regionRect = navScrollRegion.getBoundingClientRect();
+      const visibleLeft = Math.max(shellRect.left, regionRect.left);
+      const visibleRight = Math.min(shellRect.right, regionRect.right);
+
+      return {
+        left: visibleLeft,
+        right: visibleRight,
+        width: Math.max(visibleRight - visibleLeft, 0)
+      };
+    }
+
+    function getNavAvailableWidth() {
+      return getNavVisibleBounds().width;
+    }
+
+    function getNavItemTargetElement(child) {
+      if (!child) {
+        return null;
+      }
+
+      return child.classList.contains("dropdown")
+        ? child.querySelector(".dropdown-toggle") || child
+        : child;
+    }
+
+    function measureNavOverflowWithoutScrollControls() {
+      if (!navScrollShell || !navScrollRegion) {
+        return false;
+      }
+
+      const tolerance = 0.5;
+      const hadNoScrollClass = navScrollShell.classList.contains("no-scroll");
+      const originalScrollLeft = navScrollRegion.scrollLeft;
+
+      /*
+        Measure in the true no-scroll state so the 46px arrow padding does not
+        trick the nav into showing arrows when the full navigation already fits.
+      */
+      navScrollShell.classList.add("nav-scroll-measuring");
+      navScrollShell.classList.add("no-scroll");
+      navScrollRegion.scrollLeft = 0;
+
+      void navScrollRegion.offsetWidth;
+
+      const bounds = getNavVisibleBounds();
+      const naturalContentWidth = getNavContentWidthFromChildren();
+      const contentIsTooWide = naturalContentWidth > bounds.width + tolerance;
+      const hasClippedItem = getVisibleNavChildren().some(function(child) {
+        const childRect = child.getBoundingClientRect();
+        const targetElement = getNavItemTargetElement(child);
+        const targetTextIsClipped = targetElement
+          ? targetElement.scrollWidth > targetElement.clientWidth + tolerance
+          : false;
+        const childIsClippedByRegion = childRect.left < bounds.left - tolerance ||
+          childRect.right > bounds.right + tolerance;
+
+        return targetTextIsClipped || childIsClippedByRegion;
+      });
+
+      if (!hadNoScrollClass) {
+        navScrollShell.classList.remove("no-scroll");
+        navScrollRegion.scrollLeft = originalScrollLeft;
+      }
+
+      navScrollShell.classList.remove("nav-scroll-measuring");
+
+      return contentIsTooWide || hasClippedItem;
+    }
+
+    function navHasPartiallyHiddenItems() {
+      return measureNavOverflowWithoutScrollControls();
+    }
+
+    function getNavMaxScrollLeft() {
+      if (!navScrollRegion) {
+        return 0;
+      }
+
+      return Math.max(navScrollRegion.scrollWidth - navScrollRegion.clientWidth, 0);
+    }
+
+    function updateNavArrowStates() {
+      if (!navScrollRegion || !navScrollShell) {
+        return;
+      }
+
+      if (navScrollShell.classList.contains("no-scroll")) {
+        if (navScrollLeft) {
+          navScrollLeft.disabled = true;
+        }
+
+        if (navScrollRight) {
+          navScrollRight.disabled = true;
+        }
+
+        return;
+      }
+
+      const maxScrollLeft = getNavMaxScrollLeft();
+      const atStart = navScrollRegion.scrollLeft <= 2;
+      const atEnd = navScrollRegion.scrollLeft >= maxScrollLeft - 2;
+
+      if (navScrollLeft) {
+        navScrollLeft.disabled = atStart;
+      }
+
+      if (navScrollRight) {
+        navScrollRight.disabled = atEnd;
+      }
+    }
+
     function updateNavScrollControls() {
       if (!navScrollRegion || !navScrollShell) {
         return;
       }
 
-      const horizontalPadding = getNavHorizontalPadding();
-      const naturalContentWidth = Math.max(navScrollRegion.scrollWidth - horizontalPadding, 0);
-      const availableWidthWithoutArrows = navScrollRegion.clientWidth;
-      const topNavOverflows = topNav ? topNav.scrollWidth > topNav.clientWidth + 2 : false;
-      const hasOverflow = naturalContentWidth > availableWidthWithoutArrows + 2 || topNavOverflows;
+      const hasOverflow = measureNavOverflowWithoutScrollControls();
 
       navScrollShell.classList.toggle("no-scroll", !hasOverflow);
 
@@ -3124,40 +6518,62 @@
 
       /* Force the browser to apply the has-scroll padding before reading the scroll limits. */
       void navScrollRegion.offsetWidth;
-
-      const maxScrollLeft = Math.max(navScrollRegion.scrollWidth - navScrollRegion.clientWidth, 0);
-      const atStart = navScrollRegion.scrollLeft <= 2;
-      const atEnd = navScrollRegion.scrollLeft >= maxScrollLeft - 2;
-
-      if (navScrollLeft) {
-        navScrollLeft.disabled = atStart;
-      }
-
-      if (navScrollRight) {
-        navScrollRight.disabled = atEnd;
-      }
+      updateNavArrowStates();
     }
 
     function updateNavScrollControlsSoon() {
       requestAnimationFrame(function() {
         updateNavScrollControls();
-        requestAnimationFrame(updateNavScrollControls);
+        requestAnimationFrame(function() {
+          updateNavScrollControls();
+          setTimeout(updateNavScrollControls, 80);
+          setTimeout(updateNavScrollControls, 260);
+          setTimeout(updateNavScrollControls, 420);
+        });
       });
     }
 
     function scrollNavTopics(direction) {
-      if (!navScrollRegion) {
+      if (!navScrollRegion || !navScrollShell) {
         return;
       }
 
-      const scrollAmount = Math.max(Math.round(navScrollRegion.clientWidth * 0.72), 220);
+      /*
+        Do not use scrollIntoView here. On a flex-based nav it can make tiny
+        "nearest item" jumps and can prevent the user from reaching the full
+        scroll range. A direct scrollLeft target is much more reliable.
+      */
+      navScrollShell.classList.remove("no-scroll");
+      void navScrollRegion.offsetWidth;
 
-      navScrollRegion.scrollBy({
-        left: direction * scrollAmount,
+      const maxScrollLeft = getNavMaxScrollLeft();
+
+      if (maxScrollLeft <= 0) {
+        updateNavScrollControls();
+        return;
+      }
+
+      const currentScrollLeft = navScrollRegion.scrollLeft;
+      const usableWidth = Math.max(navScrollRegion.clientWidth - getNavHorizontalPadding(), 0);
+      const scrollAmount = Math.max(Math.round(usableWidth * 0.82), 260);
+      let targetScrollLeft = direction > 0
+        ? Math.min(currentScrollLeft + scrollAmount, maxScrollLeft)
+        : Math.max(currentScrollLeft - scrollAmount, 0);
+
+      /* If the remaining movement is tiny, finish the trip to the end/start. */
+      if (Math.abs(targetScrollLeft - currentScrollLeft) < 8) {
+        targetScrollLeft = direction > 0 ? maxScrollLeft : 0;
+      }
+
+      navScrollRegion.scrollTo({
+        left: targetScrollLeft,
         behavior: "smooth"
       });
 
-      setTimeout(updateNavScrollControls, 260);
+      setTimeout(updateNavArrowStates, 80);
+      setTimeout(updateNavArrowStates, 260);
+      setTimeout(updateNavArrowStates, 520);
+      setTimeout(positionOpenDropdownMenus, 280);
     }
 
     function positionDropdownMenu(dropdown) {
@@ -3217,7 +6633,7 @@
     if (navScrollRegion) {
       navScrollRegion.addEventListener("scroll", function() {
         positionOpenDropdownMenus();
-        updateNavScrollControls();
+        updateNavArrowStates();
       });
     }
 
@@ -3226,8 +6642,319 @@
       updateNavScrollControlsSoon();
     });
 
+    window.addEventListener("load", function() {
+      updateNavScrollControlsSoon();
+    });
+
+    if (document.fonts && document.fonts.ready) {
+      document.fonts.ready.then(updateNavScrollControlsSoon);
+    }
+
+    if (window.ResizeObserver && navScrollShell) {
+      const navResizeObserver = new ResizeObserver(function() {
+        updateNavScrollControlsSoon();
+      });
+
+      navResizeObserver.observe(navScrollShell);
+
+      if (topNav) {
+        navResizeObserver.observe(topNav);
+      }
+
+      if (navReminderSlot) {
+        navResizeObserver.observe(navReminderSlot);
+      }
+
+      if (departmentSharePointLink) {
+        navResizeObserver.observe(departmentSharePointLink);
+      }
+    }
+
+    /* ==========================================================
+       CONFIGURATION SELF-CHECK
+       Runs whenever the portal opens. It does not change valid settings;
+       it reports configuration mistakes in the browser console so future
+       edits are easier to verify.
+       ========================================================== */
+    function validatePortalConfiguration() {
+      const errors = [];
+      const warnings = [];
+      const seenProjectIds = new Set();
+      const archiveProjectIds = new Set();
+      const groups = Array.isArray(PORTAL_CONFIG.projectGroups)
+        ? PORTAL_CONFIG.projectGroups
+        : [];
+      const faqQuestions = Array.isArray(PORTAL_CONFIG.smartsheetFaqs)
+        ? PORTAL_CONFIG.smartsheetFaqs
+        : [];
+      const seenFaqQuestionIds = new Set();
+      const requiredViewIds = ["home", "mainInitiatives", "allDepartmentProjects"];
+      const configuredPortalTitle = typeof PORTAL_CONFIG.portalTitle === "string"
+        ? PORTAL_CONFIG.portalTitle.trim()
+        : "";
+      const configuredDepartmentName = typeof PORTAL_CONFIG.departmentName === "string"
+        ? PORTAL_CONFIG.departmentName.trim()
+        : "";
+
+      if (!ACTIVE_DEPARTMENT_KEY || !ACTIVE_DEPARTMENT) {
+        errors.push("The active portal URL does not match a configured DEPARTMENT_PORTALS entry.");
+      }
+
+      if (
+        configuredPortalTitle === "" ||
+        configuredPortalTitle === "(Department Name) Project Portal" ||
+        isPlaceholderLink(configuredPortalTitle)
+      ) {
+        errors.push('Replace portalTitle with the department title, such as "Compensation Project Portal".');
+      } else if (!/^(.*?)\s+Project\s+Portal$/i.test(configuredPortalTitle)) {
+        errors.push('portalTitle must end with "Project Portal", such as "Compensation Project Portal".');
+      }
+
+      if (
+        configuredDepartmentName === "" ||
+        configuredDepartmentName === "(Department Name)" ||
+        isPlaceholderLink(configuredDepartmentName)
+      ) {
+        errors.push("The department name could not be derived from portalTitle.");
+      }
+
+      if (isPlaceholderLink(PORTAL_CONFIG.departmentSharePointUrl || "")) {
+        errors.push("Replace departmentSharePointUrl with the department SharePoint page URL.");
+      }
+
+      requiredViewIds.forEach(function(viewId) {
+        const view = PORTAL_CONFIG.views && PORTAL_CONFIG.views[viewId];
+
+        if (!view || typeof view !== "object") {
+          errors.push('Missing required view configuration: "' + viewId + '".');
+          return;
+        }
+
+        if (isPlaceholderLink(view.embedSrc || "")) {
+          errors.push('Replace the published Smartsheet link for the "' + viewId + '" view.');
+        }
+
+        if (typeof view.preload !== "boolean") {
+          errors.push('View "' + viewId + '" must have preload: true or false.');
+        }
+      });
+
+      function validateProject(project, locationLabel, isArchive) {
+        if (!project || typeof project !== "object") {
+          errors.push(locationLabel + " contains an invalid project entry.");
+          return;
+        }
+
+        if (typeof project.id !== "string" || project.id.trim() === "") {
+          errors.push(locationLabel + " has a project without a valid id.");
+        } else if (seenProjectIds.has(project.id)) {
+          errors.push('Duplicate project id: "' + project.id + '".');
+        } else {
+          seenProjectIds.add(project.id);
+        }
+
+        if (typeof project.visible !== "boolean") {
+          errors.push((project.id || locationLabel) + " must have visible: true or visible: false.");
+        }
+
+        if (Object.prototype.hasOwnProperty.call(project, "preload")) {
+          errors.push(
+            (project.id || locationLabel) +
+            " has a project-level preload setting. Preload belongs on the department only."
+          );
+        }
+
+        if (isArchive && project.id) {
+          archiveProjectIds.add(project.id);
+        }
+
+        const projectUrl = project.linkSrc || project.embedSrc || "";
+
+        if (project.visible === true && !projectUrl) {
+          errors.push((project.id || locationLabel) + " is visible but has no link.");
+        } else if (project.visible === true && isPlaceholderLink(projectUrl)) {
+          errors.push((project.id || locationLabel) + " is visible but still uses a placeholder link.");
+        }
+      }
+
+      groups.forEach(function(group, groupIndex) {
+        const groupName = group && group.label
+          ? String(group.label)
+          : "Department " + (groupIndex + 1);
+
+        if (!group || typeof group !== "object") {
+          errors.push(groupName + " is not a valid department configuration.");
+          return;
+        }
+
+        ["openByDefault", "embed", "preload"].forEach(function(settingName) {
+          if (typeof group[settingName] !== "boolean") {
+            errors.push(groupName + " must have " + settingName + ": true or false.");
+          }
+        });
+
+        if (group.preload === true && group.embed !== true) {
+          warnings.push(groupName + " has preload: true, but preload is ignored because embed is false.");
+        }
+
+        (group.projects || []).forEach(function(project) {
+          validateProject(project, groupName + " active projects", false);
+        });
+
+        (group.sections || []).forEach(function(section, sectionIndex) {
+          (section.projects || []).forEach(function(project) {
+            validateProject(
+              project,
+              groupName + " section " + (sectionIndex + 1),
+              false
+            );
+          });
+        });
+
+        (group.archiveProjects || []).forEach(function(project) {
+          validateProject(project, groupName + " archive", true);
+        });
+      });
+
+      if (ACTIVE_PROJECT_GROUP_LABELS.length === 0) {
+        warnings.push(
+          configuredDepartmentName +
+          " has no projectGroupLabel or projectGroupLabels assignment."
+        );
+      }
+
+      ACTIVE_PROJECT_GROUP_LABELS.forEach(function(expectedGroupLabel) {
+        const matchingPortalGroups = groups.filter(function(group) {
+          return group && String(group.label || "").trim() === expectedGroupLabel;
+        });
+
+        if (matchingPortalGroups.length === 0) {
+          errors.push(
+            'Configured project group "' + expectedGroupLabel +
+            '" does not exactly match any projectGroups label.'
+          );
+          return;
+        }
+
+        if (matchingPortalGroups.length > 1) {
+          errors.push(
+            'Configured project group "' + expectedGroupLabel +
+            '" matches more than one projectGroups label.'
+          );
+          return;
+        }
+
+        const portalGroup = matchingPortalGroups[0];
+
+        if (portalGroup.embed !== true) {
+          errors.push(expectedGroupLabel + " must have embed: true for this portal.");
+        }
+
+        if (SHOULD_PRELOAD_ACTIVE_PORTAL) {
+          if (portalGroup.openByDefault !== true) {
+            errors.push(expectedGroupLabel + " must have openByDefault: true for this department portal.");
+          }
+
+          if (portalGroup.preload !== true) {
+            errors.push(expectedGroupLabel + " must have preload: true for this department portal.");
+          }
+        } else {
+          if (portalGroup.openByDefault !== false) {
+            errors.push(expectedGroupLabel + " must stay collapsed for this HR leader portal.");
+          }
+
+          if (portalGroup.preload !== false) {
+            errors.push(expectedGroupLabel + " must not preload for this HR leader portal.");
+          }
+        }
+      });
+
+      faqQuestions.forEach(function(question, questionIndex) {
+        const questionLabel = question && question.question
+          ? String(question.question)
+          : "FAQ question " + (questionIndex + 1);
+
+        if (!question || typeof question !== "object") {
+          errors.push(questionLabel + " is not a valid FAQ question.");
+          return;
+        }
+
+        if (typeof question.id !== "string" || question.id.trim() === "") {
+          errors.push(questionLabel + " must have a unique id.");
+        } else if (seenFaqQuestionIds.has(question.id)) {
+          errors.push('Duplicate FAQ question id: "' + question.id + '".');
+        } else {
+          seenFaqQuestionIds.add(question.id);
+        }
+
+        if (typeof question.visible !== "boolean") {
+          errors.push(questionLabel + " must have visible: true or visible: false.");
+        }
+
+        if (typeof question.video !== "boolean") {
+          errors.push(questionLabel + " must have video: true or video: false.");
+        }
+
+        if (typeof question.repeat !== "boolean") {
+          errors.push(questionLabel + " must have repeat: true or repeat: false.");
+        }
+
+        if (
+          question.video === true &&
+          (typeof question.videoFileName !== "string" || question.videoFileName.trim() === "")
+        ) {
+          errors.push(questionLabel + " has video: true but no videoFileName.");
+        }
+      });
+
+      const preloadIds = getPreloadableProjects().map(function(project) {
+        return project.id;
+      });
+
+      const archivedPreloadIds = preloadIds.filter(function(projectId) {
+        return archiveProjectIds.has(projectId);
+      });
+
+      if (archivedPreloadIds.length > 0) {
+        errors.push(
+          "Archive projects entered the preload queue: " +
+          archivedPreloadIds.join(", ")
+        );
+      }
+
+      const result = {
+        valid: errors.length === 0,
+        readyToPublish: errors.length === 0,
+        derivedDepartmentName: configuredDepartmentName,
+        errors: errors,
+        warnings: warnings,
+        departmentCount: groups.length,
+        projectCount: seenProjectIds.size,
+        faqQuestionCount: seenFaqQuestionIds.size,
+        preloadProjectIds: preloadIds
+      };
+
+      window.PORTAL_CONFIG_VALIDATION = result;
+
+      if (errors.length > 0) {
+        console.error("Portal configuration errors:", errors);
+      }
+
+      if (warnings.length > 0) {
+        console.warn("Portal configuration warnings:", warnings);
+      }
+
+      if (errors.length === 0 && warnings.length === 0) {
+        console.info("Portal configuration validated successfully.", result);
+      }
+
+      return result;
+    }
+
+    validatePortalConfiguration();
     applyConfigToNavigation();
     renderProjectLinks();
+    renderSmartsheetFaqs();
     loadInitialRoute();
     updateNavScrollControlsSoon();
   </script>
