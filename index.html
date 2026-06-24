@@ -3,11 +3,13 @@
   HR PROJECT PORTAL — SINGLE REPOSITORY VERSION
 
   HOW PORTAL SWITCHING WORKS:
-  • One index.html serves every department and HR leader.
-  • The active portal is selected by the URL:
-      ?department=benefits#home
-      ?department=talent-development#home
-      ?department=albert-taylor#home
+  • One root index.html serves every department and HR leader.
+  • Albert Taylor is the default portal at:
+      https://swgashr.github.io/HR/
+  • Every other portal has a clean path in the same repository:
+      /HR/benefits/
+      /HR/talent-development/
+      /HR/gail-carmona/
   • Navigation links point back to this same file and use a polished cross-slide transition.
   • The active portal automatically controls:
       - Browser/page title
@@ -24,7 +26,7 @@
   REQUIRED BEFORE PUBLISHING:
   1. In DEPARTMENT_PORTALS, replace each INSERT_... SharePoint/view link.
   2. Upload each department and leader logo using the configured file name.
-  3. Change defaultDepartmentKey in SHARED_PORTAL_SETTINGS if desired.
+  3. Keep the supplied route folders in the repository so clean URLs work.
   4. Open each portal URL and confirm
      window.PORTAL_CONFIG_VALIDATION.valid is true.
 -->
@@ -32,7 +34,7 @@
 <head>
   <meta charset="UTF-8">
   <title>(Department Name) Project Portal</title>
-  <link rel="icon" type="image/png" href="department.png">
+  <link rel="icon" type="image/png" href="/HR/department.png">
   <link rel="preconnect" href="https://workapps.smartsheet.com">
   <link rel="dns-prefetch" href="https://workapps.smartsheet.com">
   <style>
@@ -2416,25 +2418,25 @@
           </div>
           <div class="dropdown-menu">
             <div class="dropdown-header">HRLT</div>
-            <a href="?department=albert-taylor#home" data-department-key="albert-taylor">Albert Taylor</a>
-            <a href="?department=gail-carmona#home" data-department-key="gail-carmona">Gail Carmona</a>
-            <a href="?department=mike-bryant#home" data-department-key="mike-bryant">Mike Bryant</a>
-            <a href="?department=courtney-moore#home" data-department-key="courtney-moore">Courtney Moore</a>
+            <a href="/HR/#home" data-department-key="albert-taylor">Albert Taylor</a>
+            <a href="/HR/gail-carmona/#home" data-department-key="gail-carmona">Gail Carmona</a>
+            <a href="/HR/mike-bryant/#home" data-department-key="mike-bryant">Mike Bryant</a>
+            <a href="/HR/courtney-moore/#home" data-department-key="courtney-moore">Courtney Moore</a>
 
             <div class="dropdown-divider"></div>
 
             <div class="dropdown-header">Departments</div>
-            <a href="?department=benefits#home" data-department-key="benefits">Benefits</a>
-            <a href="?department=compensation#home" data-department-key="compensation">Compensation</a>
-            <a href="?department=dei#home" data-department-key="dei">DE&I</a>
-            <a href="?department=employee-experience#home" data-department-key="employee-experience">Employee Experience</a>
-            <a href="?department=hrbp#home" data-department-key="hrbp">HRBP</a>
-            <a href="?department=hrcm#home" data-department-key="hrcm">HRCM</a>
-            <a href="?department=hrs#home" data-department-key="hrs">HRS</a>
-            <a href="?department=hrss#home" data-department-key="hrss">HRSS</a>
-            <a href="?department=labor-relations#home" data-department-key="labor-relations">Labor Relations</a>
-            <a href="?department=talent-acquisition#home" data-department-key="talent-acquisition">Talent Acquisition</a>
-            <a href="?department=talent-development#home" data-department-key="talent-development">Talent Development</a>
+            <a href="/HR/benefits/#home" data-department-key="benefits">Benefits</a>
+            <a href="/HR/compensation/#home" data-department-key="compensation">Compensation</a>
+            <a href="/HR/dei/#home" data-department-key="dei">DE&I</a>
+            <a href="/HR/employee-experience/#home" data-department-key="employee-experience">Employee Experience</a>
+            <a href="/HR/hrbp/#home" data-department-key="hrbp">HRBP</a>
+            <a href="/HR/hrcm/#home" data-department-key="hrcm">HRCM</a>
+            <a href="/HR/hrs/#home" data-department-key="hrs">HRS</a>
+            <a href="/HR/hrss/#home" data-department-key="hrss">HRSS</a>
+            <a href="/HR/labor-relations/#home" data-department-key="labor-relations">Labor Relations</a>
+            <a href="/HR/talent-acquisition/#home" data-department-key="talent-acquisition">Talent Acquisition</a>
+            <a href="/HR/talent-development/#home" data-department-key="talent-development">Talent Development</a>
 
             <div class="dropdown-divider"></div>
 
@@ -2760,7 +2762,8 @@
        ========================================================== */
 
     const SHARED_PORTAL_SETTINGS = {
-      defaultDepartmentKey: "benefits",
+      defaultDepartmentKey: "albert-taylor",
+      siteBasePath: "/HR/",
       faviconFileName: "department.png",
       logoFileName: "swgas-benefits.png",
       contactEmail: "Benjamin.Bell@swgas.com",
@@ -2777,8 +2780,12 @@
        SINGLE-REPOSITORY PORTAL DIRECTORY
 
        Edit department- and leader-specific settings only in this object.
-       The key is used in the URL, for example:
-         ?department=benefits#home
+       The key is used in the clean portal path, for example:
+         /HR/benefits/
+         /HR/talent-acquisition/
+
+       The legacy ?department=... format is still accepted and is
+       automatically converted to the matching clean path.
 
        Top-right logo files are relative to this index.html and use the
        swgas-...png naming pattern. Leader entries may use projectGroupLabels
@@ -3677,13 +3684,94 @@
         : "";
     }
 
+    function getPortalBasePath() {
+      let basePath = String(SHARED_PORTAL_SETTINGS.siteBasePath || "/").trim() || "/";
+
+      if (!basePath.startsWith("/")) {
+        basePath = "/" + basePath;
+      }
+
+      if (!basePath.endsWith("/")) {
+        basePath += "/";
+      }
+
+      return basePath.replace(/\/{2,}/g, "/");
+    }
+
+    function getDepartmentKeyFromPathname(pathname) {
+      const basePath = getPortalBasePath();
+      let normalizedPath = String(pathname || "/");
+
+      try {
+        normalizedPath = decodeURIComponent(normalizedPath);
+      } catch (error) {
+        /* Use the original path when decoding fails. */
+      }
+
+      const lowerPath = normalizedPath.toLowerCase();
+      const lowerBasePath = basePath.toLowerCase();
+
+      if (!lowerPath.startsWith(lowerBasePath)) {
+        return "";
+      }
+
+      const relativePath = normalizedPath
+        .slice(basePath.length)
+        .replace(/^\/+|\/+$/g, "")
+        .replace(/\/index\.html?$/i, "");
+
+      if (!relativePath || /^index\.html?$/i.test(relativePath)) {
+        return "";
+      }
+
+      return resolveDepartmentKey(relativePath.split("/")[0]);
+    }
+
     function getRequestedDepartmentKey() {
       const pageUrl = new URL(window.location.href);
-      const requestedKey = resolveDepartmentKey(pageUrl.searchParams.get("department"));
+      const requestedQueryKey = resolveDepartmentKey(pageUrl.searchParams.get("department"));
+      const requestedPathKey = getDepartmentKeyFromPathname(pageUrl.pathname);
       const defaultKey = resolveDepartmentKey(SHARED_PORTAL_SETTINGS.defaultDepartmentKey);
       const firstConfiguredKey = Object.keys(DEPARTMENT_PORTALS)[0] || "";
 
-      return requestedKey || defaultKey || firstConfiguredKey;
+      return requestedQueryKey || requestedPathKey || defaultKey || firstConfiguredKey;
+    }
+
+    function buildCleanPortalPath(departmentKey) {
+      const configuredKey = resolveDepartmentKey(departmentKey);
+      const defaultKey = resolveDepartmentKey(SHARED_PORTAL_SETTINGS.defaultDepartmentKey);
+      const basePath = getPortalBasePath();
+
+      if (!configuredKey || configuredKey === defaultKey) {
+        return basePath;
+      }
+
+      return basePath + encodeURIComponent(configuredKey) + "/";
+    }
+
+    function buildPortalAssetHref(fileName) {
+      const normalizedFileName = String(fileName || "").replace(/^\/+/, "");
+      return getPortalBasePath() + normalizedFileName;
+    }
+
+    function synchronizeCleanPortalUrl(departmentKey) {
+      if (!window.history || typeof window.history.replaceState !== "function") {
+        return;
+      }
+
+      const currentUrl = new URL(window.location.href);
+      const cleanPath = buildCleanPortalPath(departmentKey);
+      const currentHash = currentUrl.hash || "#home";
+
+      currentUrl.searchParams.delete("department");
+
+      const remainingSearch = currentUrl.searchParams.toString();
+      const cleanUrl = cleanPath + (remainingSearch ? "?" + remainingSearch : "") + currentHash;
+      const currentComparableUrl = currentUrl.pathname + currentUrl.search + currentUrl.hash;
+
+      if (currentComparableUrl !== cleanUrl) {
+        window.history.replaceState(window.history.state, "", cleanUrl);
+      }
     }
 
     function clonePortalViews(views) {
@@ -3740,6 +3828,8 @@
     if (!ACTIVE_DEPARTMENT) {
       throw new Error("No valid department is configured in DEPARTMENT_PORTALS.");
     }
+
+    synchronizeCleanPortalUrl(ACTIVE_DEPARTMENT_KEY);
 
     PORTAL_CONFIG.portalTitle = ACTIVE_DEPARTMENT.portalTitle;
     PORTAL_CONFIG.departmentName = ACTIVE_DEPARTMENT.departmentName;
@@ -5525,8 +5615,13 @@
         ? ""
         : configuredFolder.replace(/\\/g, "/").replace(/\/?$/, "/");
       const normalizedFileName = trimmedFileName.replace(/^\.\//, "").replace(/^\//, "");
+      const combinedVideoPath = normalizedFolder + normalizedFileName;
 
-      return normalizedFolder + normalizedFileName;
+      if (/^(?:https?:|data:|blob:|\/)/i.test(combinedVideoPath)) {
+        return combinedVideoPath;
+      }
+
+      return buildPortalAssetHref(combinedVideoPath);
     }
 
     function pauseFaqVideos(container) {
@@ -5838,11 +5933,19 @@
     }
 
     function buildDepartmentPortalHref(departmentKey) {
-      const targetUrl = new URL(window.location.href);
-      targetUrl.searchParams.set("department", departmentKey);
-      targetUrl.hash = "#home";
+      return buildCleanPortalPath(departmentKey) + "#home";
+    }
 
-      return targetUrl.pathname + targetUrl.search + targetUrl.hash;
+    function buildDepartmentPortalLoadHref(departmentKey) {
+      const configuredKey = resolveDepartmentKey(departmentKey);
+      const defaultKey = resolveDepartmentKey(SHARED_PORTAL_SETTINGS.defaultDepartmentKey);
+      const basePath = getPortalBasePath();
+
+      if (!configuredKey || configuredKey === defaultKey) {
+        return basePath + "#home";
+      }
+
+      return basePath + "?department=" + encodeURIComponent(configuredKey) + "#home";
     }
 
     const PORTAL_SWITCH_FALLBACK_MS = 175;
@@ -5947,7 +6050,7 @@
       applyDepartmentNavigationLinks();
 
       if (portalFavicon && SHARED_PORTAL_SETTINGS.faviconFileName) {
-        portalFavicon.href = SHARED_PORTAL_SETTINGS.faviconFileName;
+        portalFavicon.href = buildPortalAssetHref(SHARED_PORTAL_SETTINGS.faviconFileName);
       }
 
       updateConfiguredLink(allHrPersonalTasksLink, SHARED_PORTAL_SETTINGS.allHrPersonalTasksUrl);
@@ -5958,7 +6061,7 @@
       }
 
       if (departmentLogo && SHARED_PORTAL_SETTINGS.logoFileName) {
-        departmentLogo.src = SHARED_PORTAL_SETTINGS.logoFileName;
+        departmentLogo.src = buildPortalAssetHref(SHARED_PORTAL_SETTINGS.logoFileName);
         departmentLogo.alt = resolvedDepartmentName + " logo";
       }
 
@@ -6271,8 +6374,12 @@
           return;
         }
 
+        const requestedPortalKey = resolveDepartmentKey(
+          clickedLink.getAttribute("data-department-key")
+        );
+
         runWithSaveCheck(function() {
-          navigateToPortalWithFade(clickedLink.href);
+          navigateToPortalWithFade(buildDepartmentPortalLoadHref(requestedPortalKey));
         });
         return;
       }
