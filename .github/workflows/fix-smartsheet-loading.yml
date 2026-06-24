@@ -1,0 +1,192 @@
+name: Fix Smartsheet portal loading
+
+on:
+  push:
+    paths:
+      - .portal-loading-fix-trigger
+
+permissions:
+  contents: write
+
+jobs:
+  fix-loading:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Prioritize the active view and fix portal validation
+        shell: python
+        run: |
+          from pathlib import Path
+          import re
+          import subprocess
+
+          path = Path("index.html")
+          text = path.read_text(encoding="utf-8")
+
+          visible_placeholder = 'embedSrc: "INSERT_LINK_HERE", visible: true'
+          placeholder_count = text.count(visible_placeholder)
+          if placeholder_count not in (0, 11):
+              raise RuntimeError(f"Expected 11 visible archive placeholders or none; found {placeholder_count}.")
+          text = text.replace(
+              visible_placeholder,
+              'embedSrc: "INSERT_LINK_HERE", visible: false'
+          )
+
+          old_settings = '''    /*
+            These settings preload the remaining Smartsheet embeds shortly after
+            the first view opens. The small stagger prevents the browser from trying
+            to load every Smartsheet page at the exact same second.
+          */
+          const PRELOAD_START_DELAY_MS = 900;
+          const PRELOAD_STAGGER_MS = 250;'''
+
+          new_settings = '''    /*
+            Give the active Smartsheet view priority. Remaining views begin loading
+            only after the active view finishes, with a fallback delay in case its
+            load event is delayed by browser privacy or corporate network settings.
+            The larger stagger avoids competing Smartsheet requests.
+          */
+          const PRELOAD_START_DELAY_MS = 650;
+          const PRELOAD_ACTIVE_VIEW_FALLBACK_MS = 10000;
+          const PRELOAD_STAGGER_MS = 1200;'''
+
+          if old_settings in text:
+              text = text.replace(old_settings, new_settings, 1)
+          elif new_settings not in text:
+              raise RuntimeError("The preload timing block was not found.")
+
+          old_function = '''    function startPreloadingEmbeddedLinks(activeRoute) {
+            if (preloadStarted) {
+              return;
+            }
+
+            preloadStarted = true;
+
+            const activeKey = activeRoute ? routeKey(activeRoute) : "";
+            const routesToPreload = getAllEmbeddableRoutes().filter(function(route) {
+              const embedData = getEmbedDataForRoute(route);
+
+              return (
+                routeKey(route) !== activeKey &&
+                embedData &&
+                !isPlaceholderLink(embedData.embedSrc)
+              );
+            });
+
+            let routeIndex = 0;
+
+            function preloadNextRoute() {
+              if (routeIndex >= routesToPreload.length) {
+                return;
+              }
+
+              getOrCreateIframeForRoute(routesToPreload[routeIndex]);
+              routeIndex += 1;
+
+              setTimeout(preloadNextRoute, PRELOAD_STAGGER_MS);
+            }
+
+            setTimeout(preloadNextRoute, PRELOAD_START_DELAY_MS);
+          }'''
+
+          new_function = '''    function startPreloadingEmbeddedLinks(activeRoute) {
+            if (preloadStarted) {
+              return;
+            }
+
+            preloadStarted = true;
+
+            const activeKey = activeRoute ? routeKey(activeRoute) : "";
+            const activeIframeRecord = activeKey ? iframeRegistry[activeKey] : null;
+            const routesToPreload = getAllEmbeddableRoutes().filter(function(route) {
+              const embedData = getEmbedDataForRoute(route);
+
+              return (
+                routeKey(route) !== activeKey &&
+                embedData &&
+                !isPlaceholderLink(embedData.embedSrc)
+              );
+            });
+
+            let routeIndex = 0;
+            let preloadQueueStarted = false;
+            let activeViewFallbackTimer = null;
+
+            function preloadNextRoute() {
+              if (routeIndex >= routesToPreload.length) {
+                return;
+              }
+
+              getOrCreateIframeForRoute(routesToPreload[routeIndex]);
+              routeIndex += 1;
+
+              setTimeout(preloadNextRoute, PRELOAD_STAGGER_MS);
+            }
+
+            function beginPreloadQueue() {
+              if (preloadQueueStarted) {
+                return;
+              }
+
+              preloadQueueStarted = true;
+
+              if (activeViewFallbackTimer) {
+                clearTimeout(activeViewFallbackTimer);
+                activeViewFallbackTimer = null;
+              }
+
+              setTimeout(preloadNextRoute, PRELOAD_START_DELAY_MS);
+            }
+
+            if (!activeIframeRecord || activeIframeRecord.isLoaded) {
+              beginPreloadQueue();
+              return;
+            }
+
+            activeIframeRecord.frame.addEventListener("load", beginPreloadQueue, { once: true });
+            activeViewFallbackTimer = setTimeout(
+              beginPreloadQueue,
+              PRELOAD_ACTIVE_VIEW_FALLBACK_MS
+            );
+          }'''
+
+          if old_function in text:
+              text = text.replace(old_function, new_function, 1)
+          elif new_function not in text:
+              raise RuntimeError("The Smartsheet preload function was not found.")
+
+          if 'embedSrc: "INSERT_LINK_HERE", visible: true' in text:
+              raise RuntimeError("A visible archive placeholder remains.")
+
+          required = [
+              "const PRELOAD_ACTIVE_VIEW_FALLBACK_MS = 10000;",
+              "activeIframeRecord.frame.addEventListener(\"load\", beginPreloadQueue, { once: true });",
+              "const SHOULD_PRELOAD_ACTIVE_PORTAL = !IS_LEADER_PORTAL;",
+              "view.preload = view.preload === true;"
+          ]
+          for value in required:
+              if value not in text:
+                  raise RuntimeError(f"Missing required portal behavior: {value}")
+
+          path.write_text(text, encoding="utf-8")
+
+          scripts = re.findall(r"<script[^>]*>([\s\S]*?)</script>", text, flags=re.I)
+          if not scripts:
+              raise RuntimeError("No inline scripts were found.")
+
+          for index, script in enumerate(scripts):
+              script_path = Path(f"/tmp/hr-portal-script-{index}.js")
+              script_path.write_text(script, encoding="utf-8")
+              subprocess.run(["node", "--check", str(script_path)], check=True)
+
+      - name: Commit validated fix and remove one-time files
+        shell: bash
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add index.html
+          git rm -f .portal-loading-fix-trigger
+          git rm -f .github/workflows/fix-smartsheet-loading.yml
+          git commit -m "Fix Smartsheet loading and portal validation"
+          git push
