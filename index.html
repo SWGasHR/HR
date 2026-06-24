@@ -6,6 +6,9 @@ permalink: /index.html
 {% assign portal = portal | replace: 'logoFileName: "swgas-', 'logoFileName: "images/swgas-' %}
 {% assign portal = portal | replace: 'src="swgas-', 'src="images/swgas-' %}
 {% assign portal = portal | replace: 'embedSrc: "INSERT_LINK_HERE", visible: true', 'embedSrc: "INSERT_LINK_HERE", visible: false' %}
+{% assign portal = portal | replace: 'departmentName: "HR Change Management",', 'departmentName: "HRCM",' %}
+{% assign portal = portal | replace: 'portalTitle: "HR Change Management Project Portal",', 'portalTitle: "HRCM Project Portal",' %}
+{% assign portal = portal | replace: 'data-department-key="hrcm">HR Change Management</a>', 'data-department-key="hrcm">HRCM</a>' %}
 
 {% capture old_logo_css %}    .swgas-logo {
       height: 60px;
@@ -29,11 +32,23 @@ permalink: /index.html
       max-width: 220px !important;
       max-height: 42px !important;
       object-fit: contain !important;
+      transform-origin: center right;
+    }
+
+    #departmentLogo[src$="swgas-ex.png"],
+    #departmentLogo[src$="swgas-hrbp.png"],
+    #departmentLogo[src$="swgas-hrcm.png"],
+    #departmentLogo[src$="swgas-hrs.png"],
+    #departmentLogo[src$="swgas-hrss.png"],
+    #departmentLogo[src$="swgas-labor-relations.png"],
+    #departmentLogo[src$="swgas-ta.png"],
+    #departmentLogo[src$="swgas-td.png"] {
+      transform: scale(1.14);
     }
 
     .swgas-logo-link {
-      max-width: 240px;
-      overflow: hidden;
+      max-width: 250px;
+      overflow: visible;
       box-sizing: border-box;
     }{% endcapture %}
 {% assign portal = portal | replace: old_logo_css, new_logo_css %}
