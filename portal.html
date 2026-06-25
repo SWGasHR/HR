@@ -34,6 +34,20 @@
   3. Keep 404.html in the repository root so clean URLs and refreshes work.
   4. Open each portal URL and confirm
      window.PORTAL_CONFIG_VALIDATION.valid is true.
+
+  ============================================================
+  EVERYDAY EDITS — ADD A PROJECT OR AN FAQ
+  ============================================================
+  The two things you change most often each have a step-by-step guide
+  inside this file. On GitHub, click the pencil to edit, then use your
+  browser's Find (Ctrl+F / Cmd+F) to jump straight to the guide:
+
+    • To add a project:  search for   HOW TO ADD A PROJECT
+    • To add an FAQ:      search for   HOW TO ADD AN FAQ
+
+  After you save your edit, bump the ?v= number in index.html and
+  404.html (for example v=20260625-1 -> v=20260625-2) so everyone's
+  browser loads your update instead of an older cached copy.
 -->
 <html lang="en">
 <head>
@@ -2160,6 +2174,43 @@
     }
 
     .portal-nav-hidden, .portal-nav-separator-hidden { display: none !important; }
+
+    /* ============================================================
+       DEPARTMENT-SWITCH CHROME TRANSITION
+       When you switch department/leader, the top-nav contents (home
+       icon, the view links + dropdowns, the action buttons/reminder,
+       and the logo) slide up and fade out, then the next portal's
+       chrome slides down and fades back in after it loads.
+       ============================================================ */
+    .top-nav > * {
+      transition:
+        transform 0.34s cubic-bezier(0.22, 1, 0.36, 1),
+        opacity 0.26s ease;
+    }
+
+    /* Leaving the current portal: lift the chrome up and fade it out. */
+    body.dept-switching .top-nav > * {
+      opacity: 0;
+      transform: translateY(-12px);
+      pointer-events: none;
+    }
+
+    /* Arriving at the next portal: start lifted + transparent so the
+       chrome can settle downward into place once the class is removed. */
+    body.dept-arriving .top-nav > * {
+      opacity: 0;
+      transform: translateY(-12px);
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      .top-nav > *,
+      body.dept-switching .top-nav > *,
+      body.dept-arriving .top-nav > * {
+        transition: none !important;
+        opacity: 1 !important;
+        transform: none !important;
+      }
+    }
   </style>
 
         <style id="portal-polish-overrides">
@@ -2335,6 +2386,31 @@
         </style>
 </head>
 <body>
+
+  <script>
+    /*
+      Department-switch arrival: if we just left another portal, mark the body
+      BEFORE the top nav paints so its chrome starts lifted + transparent and
+      can slide/fade down into place once the page has loaded. Runs as the very
+      first thing in <body> so the entrance state is applied without a flash.
+    */
+    (function () {
+      try {
+        if (window.sessionStorage.getItem("hrDeptArrive") === "1") {
+          window.sessionStorage.removeItem("hrDeptArrive");
+          document.body.classList.add("dept-arriving");
+
+          /* Safety net: never let the chrome stay hidden if the normal
+             arrival handler does not run for any reason. */
+          window.setTimeout(function () {
+            document.body.classList.remove("dept-arriving");
+          }, 1500);
+        }
+      } catch (error) {
+        /* Storage may be unavailable in strict privacy modes; load normally. */
+      }
+    })();
+  </script>
 
   <div class="top-nav reminder-collapsed">
 
@@ -3348,6 +3424,32 @@
         - faqVideoFolder is relative to this index.html.
         - Questions and videos are shared across every department and leader portal.
         - Videos remain lazy-loaded until a question is expanded.
+
+        --------------------------------------------------------
+        HOW TO ADD AN FAQ
+        --------------------------------------------------------
+        Add a new entry to the  smartsheetFaqs: [ ... ]  list below. Copy an
+        existing entry and edit it. A text-answer FAQ looks like this:
+
+            {
+              id: "how-do-i-share-a-sheet",
+              question: "How do I share a sheet?",
+              visible: true,
+              answerHtml: "<p>Open the sheet, click <strong>Share</strong>, " +
+                          "enter the person's email, then click Share again.</p>",
+              video: false,
+              videoFileName: "",
+              repeat: false
+            },
+
+          • question   = the question text shown in the FAQ panel
+          • answerHtml = the answer; basic HTML is allowed (<p>, <strong>,
+                         <a href="...">, <ul><li>, etc.). Leave "" for none.
+          • visible    = true to show it, false to hide it
+          • video      = set true and put an .mp4 file name in videoFileName
+                         to show a how-to video instead of (or with) text.
+
+        Keep the comma after each entry's closing } except the very last one.
       */
       faqVideoFolder: "",
 
@@ -3418,6 +3520,33 @@
          Department portals automatically open and preload their assigned group.
          HR leader portals keep every group collapsed and load projects on click.
          Do not manually switch these values for each portal.
+
+         --------------------------------------------------------
+         HOW TO ADD A PROJECT  (you only edit this one list)
+         --------------------------------------------------------
+         1. Find the group you want below by its  label:  — the groups are:
+              Benefits, Compensation, DE&I, Employee Experience, HRBP,
+              HRCM, HRS, HRSS, Labor Relations, Talent Acquisition,
+              Talent Development.
+         2. Inside that group's  projects: [ ... ]  list, either:
+              (a) fill in one of the ready-made "Project Template" lines —
+                  change its label, paste your link into embedSrc, and set
+                  visible: true ; OR
+              (b) copy an existing line and edit it.
+         3. A project line looks like this (keep the commas and braces):
+
+              { id: "open-enrollment-2027", label: "Open Enrollment 2027", embedSrc: "https://app.smartsheet.com/b/publish?EQBCT=PASTE_YOURS", visible: true },
+
+            • id      = any short unique name, lowercase-with-dashes
+            • label   = the text shown in the menu
+            • embedSrc = the Smartsheet "Publish" link
+            • visible = true to show it, false to hide it
+         4. To put a project under "Archive" instead, add it to that group's
+            archiveProjects: [ ... ]  list the same way.
+
+         TIP: every item in a list except the last ends with a comma. If the
+         portal ever looks blank after an edit, a missing comma or a missing
+         " quote is the usual cause — undo your last change and try again.
          ======================================================== */
       projectGroups: [
 {
@@ -5972,6 +6101,16 @@
 
     let portalSwitchInProgress = false;
 
+    /* How long the leaving chrome animates before the page actually navigates. */
+    const DEPT_SWITCH_LEAVE_MS = 230;
+
+    function prefersReducedMotion() {
+      return Boolean(
+        window.matchMedia &&
+        window.matchMedia("(prefers-reduced-motion: reduce)").matches
+      );
+    }
+
     function navigateToPortalWithFade(href) {
       if (!href || portalSwitchInProgress) {
         return;
@@ -5979,12 +6118,40 @@
 
       portalSwitchInProgress = true;
       suppressUnsavedBeforeUnload = true;
-      window.location.assign(href);
+
+      /* No animation when the visitor prefers reduced motion: go straight there. */
+      if (prefersReducedMotion()) {
+        window.location.assign(href);
+        return;
+      }
+
+      /* Flag the next page so it can play the matching slide/fade-in on arrival. */
+      try {
+        window.sessionStorage.setItem("hrDeptArrive", "1");
+      } catch (error) {
+        /* Continue without the arrival effect if storage is unavailable. */
+      }
+
+      /* Lift + fade the current chrome, then navigate once it has played. */
+      document.body.classList.add("dept-switching");
+      window.setTimeout(function () {
+        window.location.assign(href);
+      }, DEPT_SWITCH_LEAVE_MS);
     }
 
     function finishPortalArrival() {
       portalSwitchInProgress = false;
       suppressUnsavedBeforeUnload = false;
+      document.body.classList.remove("dept-switching");
+
+      /* Drop the entrance state on the next frames so the chrome eases in. */
+      if (document.body.classList.contains("dept-arriving")) {
+        requestAnimationFrame(function () {
+          requestAnimationFrame(function () {
+            document.body.classList.remove("dept-arriving");
+          });
+        });
+      }
     }
 
     window.addEventListener("pageshow", finishPortalArrival);
