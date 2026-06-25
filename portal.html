@@ -2412,6 +2412,91 @@
     })();
   </script>
 
+  <!--
+    RECOVERY MESSAGE + WATCHDOG
+    If a typo in the main script below stops the portal from starting, this
+    block shows a friendly explanation instead of a blank page. It lives in
+    its own <script> so a syntax error further down cannot disable it.
+  -->
+  <div id="hrPortalRecovery" role="alert">
+    <div class="hr-recovery-card">
+      <h1>This portal didn't load correctly</h1>
+      <p>
+        If you just edited <strong>portal.html</strong>, your most recent
+        change very likely has a small typo &mdash; usually a missing comma
+        or a missing <strong>"</strong> quote on the line you added.
+      </p>
+      <p>On GitHub, undo that one change (or fix the typo) and save again.</p>
+      <button type="button" onclick="window.location.reload();">Reload this page</button>
+    </div>
+  </div>
+
+  <style>
+    #hrPortalRecovery {
+      display: none;
+      position: fixed;
+      inset: 0;
+      z-index: 4000;
+      place-items: center;
+      padding: 24px;
+      box-sizing: border-box;
+      background: #f7f8fc;
+      font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+      color: #252763;
+    }
+    #hrPortalRecovery.show { display: grid; }
+    #hrPortalRecovery .hr-recovery-card {
+      max-width: 520px;
+      text-align: center;
+      background: #ffffff;
+      border: 1px solid #e2e4f0;
+      border-radius: 14px;
+      padding: 28px 30px;
+      box-shadow: 0 10px 30px rgba(37, 39, 99, 0.12);
+    }
+    #hrPortalRecovery h1 { font-size: 20px; margin: 0 0 12px; }
+    #hrPortalRecovery p { font-size: 15px; line-height: 1.5; margin: 0 0 12px; }
+    #hrPortalRecovery button {
+      margin-top: 6px;
+      padding: 9px 18px;
+      font-size: 15px;
+      color: #ffffff;
+      background: #252763;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+    }
+    #hrPortalRecovery button:hover { background: #1c1e4f; }
+  </style>
+
+  <script>
+    /* Watchdog: if the main portal script never sets __hrPortalBooted (because
+       a typo stopped it from running), reveal the recovery message. Its own
+       <script> tag, so a syntax error in the main script cannot disable it. */
+    (function () {
+      function showRecovery() {
+        if (window.__hrRecoveryShown || window.__hrPortalBooted) {
+          return;
+        }
+        window.__hrRecoveryShown = true;
+        var panel = document.getElementById("hrPortalRecovery");
+        if (panel) {
+          panel.classList.add("show");
+        }
+      }
+
+      /* Primary, reliable signal: the boot flag is still unset after load. */
+      window.setTimeout(showRecovery, 6000);
+
+      /* Faster path: an uncaught error fired before the portal booted. */
+      window.addEventListener("error", function () {
+        if (!window.__hrPortalBooted) {
+          window.setTimeout(showRecovery, 50);
+        }
+      });
+    })();
+  </script>
+
   <div class="top-nav reminder-collapsed">
 
     <a class="nav-home portal-view-link active"
@@ -2829,6 +2914,12 @@
   </div>
 
   <script>
+    /* If this whole script fails to run because of a typo somewhere below
+       (most often a missing comma or a missing " quote in a project or FAQ),
+       this line never executes, the recovery watchdog above notices, and a
+       friendly message appears instead of a blank page. */
+    window.__hrPortalBooted = true;
+
     /* ==========================================================
        SHARED PORTAL SETTINGS
        These stay the same across the single repository.
