@@ -104,19 +104,19 @@
           }
 
           /*
-            Keep the message bubble in the normal flex layout. When a message
-            appears, it reserves its own room and the topic navigation becomes
-            scrollable sooner instead of squeezing or covering the bubble.
+            Size the reminder slot to whichever bubble is currently visible.
+            Longer messages can grow up to 300px, while shorter messages no
+            longer inherit a wide fixed box with blank space on both sides.
           */
           #navReminderSlot,
           .top-nav.reminder-visible #navReminderSlot {
             position: relative !important;
             left: auto !important;
             right: auto !important;
-            width: clamp(245px, 20vw, 300px) !important;
-            min-width: 245px !important;
+            width: auto !important;
+            min-width: 0 !important;
             max-width: 300px !important;
-            flex: 0 0 clamp(245px, 20vw, 300px) !important;
+            flex: 0 1 auto !important;
             padding: 0 3px !important;
             margin: 0 !important;
             overflow: visible !important;
@@ -135,10 +135,11 @@
 
           .nav-refresh-popover,
           .nav-project-action {
-            width: 100% !important;
-            max-width: 100% !important;
+            width: fit-content !important;
+            max-width: 300px !important;
             min-width: 0 !important;
             box-sizing: border-box !important;
+            justify-self: center !important;
           }
 
           .nav-refresh-popover {
@@ -146,12 +147,12 @@
             max-height: none !important;
             height: auto !important;
             padding: 6px 20px 6px 10px !important;
-            flex: 1 1 auto !important;
+            flex: 0 1 auto !important;
             white-space: normal !important;
           }
 
           .nav-refresh-text {
-            width: 100% !important;
+            width: auto !important;
             white-space: normal !important;
             overflow: visible !important;
             line-height: 1.15 !important;
@@ -163,19 +164,20 @@
             height: auto !important;
             padding: 5px 28px 5px 7px !important;
             gap: 8px !important;
-            flex: 1 1 auto !important;
+            flex: 0 1 auto !important;
           }
 
           .nav-project-action-copy {
             min-width: 0 !important;
-            flex: 1 1 auto !important;
+            width: auto !important;
+            flex: 0 1 auto !important;
             overflow: visible !important;
             white-space: normal !important;
           }
 
           .nav-project-action-title,
           .nav-project-action-subtitle {
-            width: 100% !important;
+            width: auto !important;
             overflow: visible !important;
             text-overflow: clip !important;
             white-space: normal !important;
@@ -197,10 +199,12 @@
           @media (max-width: 1180px) {
             #navReminderSlot,
             .top-nav.reminder-visible #navReminderSlot {
-              width: 235px !important;
-              min-width: 235px !important;
-              max-width: 235px !important;
-              flex-basis: 235px !important;
+              max-width: 270px !important;
+            }
+
+            .nav-refresh-popover,
+            .nav-project-action {
+              max-width: 270px !important;
             }
           }
         </style>`;
