@@ -103,44 +103,82 @@
             max-height: 53px !important;
           }
 
-          .nav-reminder-slot,
-          .top-nav.reminder-visible .nav-reminder-slot {
-            min-width: 0 !important;
-            max-width: none !important;
-            padding: 0 !important;
+          /*
+            Keep the message bubble in the normal flex layout. When a message
+            appears, it reserves its own room and the topic navigation becomes
+            scrollable sooner instead of squeezing or covering the bubble.
+          */
+          #navReminderSlot,
+          .top-nav.reminder-visible #navReminderSlot {
+            position: relative !important;
+            left: auto !important;
+            right: auto !important;
+            width: clamp(300px, 26vw, 370px) !important;
+            min-width: 300px !important;
+            max-width: 370px !important;
+            flex: 0 0 clamp(300px, 26vw, 370px) !important;
+            padding: 0 10px !important;
+            margin: 0 !important;
             overflow: visible !important;
+            box-sizing: border-box !important;
+          }
+
+          #navReminderSlot.collapsed {
+            display: none !important;
+            width: 0 !important;
+            min-width: 0 !important;
+            max-width: 0 !important;
+            flex: 0 0 0 !important;
+            padding: 0 !important;
+            overflow: hidden !important;
+          }
+
+          .nav-refresh-popover,
+          .nav-project-action {
+            width: 100% !important;
+            max-width: 100% !important;
+            min-width: 0 !important;
+            box-sizing: border-box !important;
           }
 
           .nav-refresh-popover {
-            width: auto !important;
-            max-width: 100% !important;
-            min-width: 0 !important;
             min-height: 38px !important;
+            max-height: none !important;
             height: auto !important;
             padding: 8px 30px 8px 16px !important;
-            flex: 0 0 auto !important;
-            white-space: nowrap !important;
+            flex: 1 1 auto !important;
+            white-space: normal !important;
           }
 
           .nav-refresh-text {
-            width: auto !important;
-            white-space: nowrap !important;
+            width: 100% !important;
+            white-space: normal !important;
+            overflow: visible !important;
+            line-height: 1.15 !important;
           }
 
           .nav-project-action {
-            width: auto !important;
-            max-width: 100% !important;
-            min-width: 0 !important;
-            min-height: 40px !important;
+            min-height: 42px !important;
+            max-height: none !important;
             height: auto !important;
-            padding: 8px 36px 8px 12px !important;
+            padding: 7px 36px 7px 10px !important;
             gap: 8px !important;
-            flex: 0 0 auto !important;
+            flex: 1 1 auto !important;
           }
 
           .nav-project-action-copy {
-            flex: 0 1 auto !important;
+            min-width: 0 !important;
+            flex: 1 1 auto !important;
             overflow: visible !important;
+            white-space: normal !important;
+          }
+
+          .nav-project-action-title,
+          .nav-project-action-subtitle {
+            width: 100% !important;
+            overflow: visible !important;
+            text-overflow: clip !important;
+            white-space: normal !important;
           }
 
           .nav-project-action-icon {
@@ -155,57 +193,95 @@
             width: 17px !important;
             height: 17px !important;
           }
+
+          @media (max-width: 1180px) {
+            #navReminderSlot,
+            .top-nav.reminder-visible #navReminderSlot {
+              width: 280px !important;
+              min-width: 280px !important;
+              max-width: 280px !important;
+              flex-basis: 280px !important;
+            }
+          }
         </style>`;
 
       const portalEnhancementScript = `
-        <script id="portal-navigation-alignment">
+        <script id="portal-adaptive-navigation">
           (function () {
             "use strict";
 
-            function alignReminderSlot() {
-              const topNav = document.querySelector(".top-nav");
-              const reminderSlot = document.getElementById("navReminderSlot");
-              const logoLink = document.getElementById("departmentSharePointLink");
-              const supportDropdown = Array.from(document.querySelectorAll(".dropdown")).find(function(dropdown) {
-                const toggle = dropdown.querySelector(".dropdown-toggle");
-                return toggle && toggle.textContent.trim().startsWith("Support");
-              });
+            const reminderSlot = document.getElementById("navReminderSlot");
+            const navScrollRegion = document.getElementById("navScrollRegion");
+            let layoutTimer = null;
 
-              if (!topNav || !reminderSlot || !logoLink || !supportDropdown) {
+            function shortenBlueBarDepartmentName() {
+              const blueBarLinks = Array.from(
+                document.querySelectorAll(".top-nav .nav-item.portal-view-link")
+              );
+              const blueBarText = blueBarLinks.map(function(link) {
+                return String(link.textContent || "");
+              }).join(" ");
+              let fullName = "";
+              let shortName = "";
+
+              if (blueBarText.includes("Employee Experience")) {
+                fullName = "Employee Experience";
+                shortName = "EX";
+              } else if (blueBarText.includes("Labor Relations")) {
+                fullName = "Labor Relations";
+                shortName = "LR";
+              }
+
+              if (!fullName) {
                 return;
               }
 
-              const navRect = topNav.getBoundingClientRect();
-              const supportRect = supportDropdown.getBoundingClientRect();
-              const logoRect = logoLink.getBoundingClientRect();
-              const gap = 6;
+              blueBarLinks.forEach(function(link) {
+                const currentText = String(link.textContent || "").trim();
+                const currentLabel = String(link.getAttribute("aria-label") || "");
 
-              reminderSlot.style.position = "absolute";
-              reminderSlot.style.left = Math.max(0, supportRect.right - navRect.left + gap) + "px";
-              reminderSlot.style.right = Math.max(0, navRect.right - logoRect.left + gap) + "px";
-              reminderSlot.style.width = "auto";
-              reminderSlot.style.padding = "0";
-              reminderSlot.style.margin = "0";
-              reminderSlot.style.justifyItems = "center";
-              reminderSlot.style.alignItems = "center";
-              reminderSlot.style.zIndex = "25";
-              reminderSlot.style.display = reminderSlot.classList.contains("collapsed") ? "none" : "grid";
+                if (currentText.includes(fullName)) {
+                  link.textContent = currentText.split(fullName).join(shortName);
+                }
+
+                if (currentLabel.includes(fullName)) {
+                  link.setAttribute("aria-label", currentLabel.split(fullName).join(shortName));
+                }
+              });
             }
 
-            const reminderSlot = document.getElementById("navReminderSlot");
+            function refreshAdaptiveNavigation() {
+              clearTimeout(layoutTimer);
+
+              const runRefresh = function() {
+                if (typeof updateNavScrollControlsSoon === "function") {
+                  updateNavScrollControlsSoon();
+                }
+              };
+
+              requestAnimationFrame(function() {
+                runRefresh();
+                layoutTimer = setTimeout(runRefresh, 120);
+                setTimeout(runRefresh, 360);
+              });
+            }
+
+            shortenBlueBarDepartmentName();
+            refreshAdaptiveNavigation();
+
             if (reminderSlot) {
-              new MutationObserver(alignReminderSlot).observe(reminderSlot, {
+              new MutationObserver(refreshAdaptiveNavigation).observe(reminderSlot, {
                 attributes: true,
                 attributeFilter: ["class"],
                 subtree: true
               });
             }
 
-            window.addEventListener("resize", alignReminderSlot);
-            window.addEventListener("load", alignReminderSlot);
-            requestAnimationFrame(alignReminderSlot);
-            setTimeout(alignReminderSlot, 100);
-            setTimeout(alignReminderSlot, 500);
+            window.addEventListener("resize", refreshAdaptiveNavigation);
+            window.addEventListener("load", function() {
+              shortenBlueBarDepartmentName();
+              refreshAdaptiveNavigation();
+            });
           })();
         <\/script>`;
 
@@ -341,7 +417,7 @@
         if (
           !html.includes('images/swgas-benefits.png') ||
           !html.includes('departmentName: "HRCM"') ||
-          !html.includes("portal-navigation-alignment") ||
+          !html.includes("portal-adaptive-navigation") ||
           html.includes("portal-switching") ||
           html.includes("@view-transition")
         ) {
