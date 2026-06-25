@@ -4115,64 +4115,21 @@
       return Array.from(uniqueLabels);
     }
 
-    const ACTIVE_DEPARTMENT_KEY = getRequestedDepartmentKey();
-    const ACTIVE_DEPARTMENT = DEPARTMENT_PORTALS[ACTIVE_DEPARTMENT_KEY];
+    /*
+      These describe the currently active department. They are reassigned by
+      applyActiveDepartment so the portal can switch department in place,
+      without a full page reload.
+    */
+    let ACTIVE_DEPARTMENT_KEY = getRequestedDepartmentKey();
+    let ACTIVE_DEPARTMENT = DEPARTMENT_PORTALS[ACTIVE_DEPARTMENT_KEY];
 
     if (!ACTIVE_DEPARTMENT) {
       throw new Error("No valid department is configured in DEPARTMENT_PORTALS.");
     }
 
-    synchronizeCleanPortalUrl(ACTIVE_DEPARTMENT_KEY);
-
-    PORTAL_CONFIG.portalTitle = ACTIVE_DEPARTMENT.portalTitle;
-    PORTAL_CONFIG.departmentName = ACTIVE_DEPARTMENT.departmentName;
-    PORTAL_CONFIG.departmentSharePointUrl = ACTIVE_DEPARTMENT.departmentSharePointUrl;
-    PORTAL_CONFIG.defaultViewId = ACTIVE_DEPARTMENT.defaultViewId || "home";
-    PORTAL_CONFIG.views = clonePortalViews(ACTIVE_DEPARTMENT.views);
-
-    SHARED_PORTAL_SETTINGS.logoFileName = ACTIVE_DEPARTMENT.logoFileName;
-
-    /*
-      The browser-tab icon is intentionally shared across every portal.
-      Department and leader selection changes only the top-right logo.
-    */
-    SHARED_PORTAL_SETTINGS.faviconFileName = "department.png";
-
-    const ACTIVE_PROJECT_GROUP_LABELS = getConfiguredProjectGroupLabels(ACTIVE_DEPARTMENT);
-    const IS_LEADER_PORTAL = ACTIVE_DEPARTMENT.portalType === "leader";
-    const SHOULD_PRELOAD_ACTIVE_PORTAL = !IS_LEADER_PORTAL;
-
-    /*
-      Department portals automatically open and preload only their assigned
-      department group. HR leader portals keep every project group collapsed
-      and do not preload any project iframe; projects remain available on click.
-    */
-    (PORTAL_CONFIG.projectGroups || []).forEach(function(group) {
-      const groupLabel = String(group && group.label || "").trim();
-      const isActivePortalGroup = ACTIVE_PROJECT_GROUP_LABELS.includes(groupLabel);
-      const shouldAutoLoadGroup = SHOULD_PRELOAD_ACTIVE_PORTAL && isActivePortalGroup;
-
-      group.openByDefault = shouldAutoLoadGroup;
-      group.preload = shouldAutoLoadGroup;
-
-      /* Assigned groups must remain embeddable so projects can load on click. */
-      if (isActivePortalGroup) {
-        group.embed = true;
-      }
-    });
-
-    /*
-      Every portal preloads its three primary views: Home, Main Initiatives,
-      and All Projects (View Only). HR leader project groups still remain
-      collapsed and do not preload any individual project iframe.
-    */
-    Object.keys(PORTAL_CONFIG.views || {}).forEach(function(viewId) {
-      const view = PORTAL_CONFIG.views[viewId];
-
-      if (view && typeof view === "object") {
-        view.preload = view.preload === true;
-      }
-    });
+    let ACTIVE_PROJECT_GROUP_LABELS = [];
+    let IS_LEADER_PORTAL = false;
+    let SHOULD_PRELOAD_ACTIVE_PORTAL = true;
 
     /*
       Derive the department name from the active portal title as an additional
@@ -4185,13 +4142,76 @@
       return titleMatch ? titleMatch[1].trim() : "";
     }
 
-    const DERIVED_DEPARTMENT_NAME = deriveDepartmentNameFromPortalTitle(
-      PORTAL_CONFIG.portalTitle
-    );
+    /*
+      Applies every department-specific setting for a department key. Runs once
+      at startup, and again (in place) each time the visitor switches department,
+      so the portal does not need to reload the whole page to change department.
+      Every project group is reset on each call so a previous department's
+      open/preload flags never carry over.
+    */
+    function applyActiveDepartment(departmentKey) {
+      ACTIVE_DEPARTMENT_KEY = departmentKey;
+      ACTIVE_DEPARTMENT = DEPARTMENT_PORTALS[departmentKey];
 
-    if (DERIVED_DEPARTMENT_NAME) {
-      PORTAL_CONFIG.departmentName = DERIVED_DEPARTMENT_NAME;
+      PORTAL_CONFIG.portalTitle = ACTIVE_DEPARTMENT.portalTitle;
+      PORTAL_CONFIG.departmentName = ACTIVE_DEPARTMENT.departmentName;
+      PORTAL_CONFIG.departmentSharePointUrl = ACTIVE_DEPARTMENT.departmentSharePointUrl;
+      PORTAL_CONFIG.defaultViewId = ACTIVE_DEPARTMENT.defaultViewId || "home";
+      PORTAL_CONFIG.views = clonePortalViews(ACTIVE_DEPARTMENT.views);
+
+      SHARED_PORTAL_SETTINGS.logoFileName = ACTIVE_DEPARTMENT.logoFileName;
+
+      /*
+        The browser-tab icon is intentionally shared across every portal.
+        Department and leader selection changes only the top-right logo.
+      */
+      SHARED_PORTAL_SETTINGS.faviconFileName = "department.png";
+
+      ACTIVE_PROJECT_GROUP_LABELS = getConfiguredProjectGroupLabels(ACTIVE_DEPARTMENT);
+      IS_LEADER_PORTAL = ACTIVE_DEPARTMENT.portalType === "leader";
+      SHOULD_PRELOAD_ACTIVE_PORTAL = !IS_LEADER_PORTAL;
+
+      /*
+        Department portals automatically open and preload only their assigned
+        department group. HR leader portals keep every project group collapsed
+        and do not preload any project iframe; projects remain available on click.
+      */
+      (PORTAL_CONFIG.projectGroups || []).forEach(function(group) {
+        const groupLabel = String(group && group.label || "").trim();
+        const isActivePortalGroup = ACTIVE_PROJECT_GROUP_LABELS.includes(groupLabel);
+        const shouldAutoLoadGroup = SHOULD_PRELOAD_ACTIVE_PORTAL && isActivePortalGroup;
+
+        group.openByDefault = shouldAutoLoadGroup;
+        group.preload = shouldAutoLoadGroup;
+
+        /* Assigned groups must remain embeddable so projects can load on click. */
+        if (isActivePortalGroup) {
+          group.embed = true;
+        }
+      });
+
+      /*
+        Every portal preloads its three primary views: Home, Main Initiatives,
+        and All Projects (View Only). HR leader project groups still remain
+        collapsed and do not preload any individual project iframe.
+      */
+      Object.keys(PORTAL_CONFIG.views || {}).forEach(function(viewId) {
+        const view = PORTAL_CONFIG.views[viewId];
+
+        if (view && typeof view === "object") {
+          view.preload = view.preload === true;
+        }
+      });
+
+      const derivedDepartmentName = deriveDepartmentNameFromPortalTitle(PORTAL_CONFIG.portalTitle);
+
+      if (derivedDepartmentName) {
+        PORTAL_CONFIG.departmentName = derivedDepartmentName;
+      }
     }
+
+    synchronizeCleanPortalUrl(ACTIVE_DEPARTMENT_KEY);
+    applyActiveDepartment(ACTIVE_DEPARTMENT_KEY);
 
     /* ==========================================================
        MAIN PORTAL SCRIPT
@@ -6370,6 +6390,142 @@
       }
     }
 
+    /* ==========================================================
+       NO-RELOAD DEPARTMENT SWITCH
+       Switches department in place. If anything fails it falls back to a
+       normal reloading navigation, so it can never leave the portal broken.
+       ========================================================== */
+    let inPlaceSwitchInProgress = false;
+
+    function browserSupportsInPlaceSwitch() {
+      return Boolean(window.history && typeof window.history.pushState === "function");
+    }
+
+    /* Keep the blue-bar labels for these two long names abbreviated after a
+       rebuild, matching the startup behavior. */
+    function shortenActiveBlueBarNames() {
+      const replacements = [["Employee Experience", "EX"], ["Labor Relations", "LR"]];
+
+      document.querySelectorAll(".top-nav .nav-item.portal-view-link").forEach(function(link) {
+        replacements.forEach(function(pair) {
+          if (String(link.textContent || "").includes(pair[0])) {
+            link.textContent = link.textContent.split(pair[0]).join(pair[1]);
+          }
+
+          const label = link.getAttribute("aria-label") || "";
+          if (label.includes(pair[0])) {
+            link.setAttribute("aria-label", label.split(pair[0]).join(pair[1]));
+          }
+        });
+      });
+    }
+
+    function rebuildPortalForDepartment(departmentKey) {
+      applyActiveDepartment(departmentKey);
+
+      /* Tear down the previous department's Smartsheet iframes. */
+      if (iframePool) {
+        iframePool.innerHTML = "";
+      }
+      iframeRegistry = {};
+      currentViewKey = null;
+      preloadStarted = false;
+
+      /* Clear any transient UI carried over from the previous department. */
+      hideSlowEmbedNotice();
+      closeFaqPanel(false);
+      hideWarningBar();
+
+      /* Point the address bar at the new department, at its Home view. */
+      const targetUrl = buildCleanPortalPath(departmentKey) + "#home";
+      try {
+        window.history.pushState({ department: departmentKey }, "", targetUrl);
+      } catch (error) {
+        /* If history is unavailable, the content still updates correctly. */
+      }
+      currentRouteHash = "#home";
+
+      /* Rebuild chrome + project list, then load the new department's Home. */
+      applyConfigToNavigation();
+      renderProjectLinks();
+      loadInitialRoute();
+      shortenActiveBlueBarNames();
+      updateNavScrollControlsSoon();
+    }
+
+    /*
+      Returns true when the switch has been handled in place (or is a no-op),
+      false when the caller should fall back to a normal reloading navigation.
+    */
+    function switchDepartmentInPlace(departmentKey) {
+      const resolvedKey = resolveDepartmentKey(departmentKey);
+
+      if (!resolvedKey || !DEPARTMENT_PORTALS[resolvedKey] || !browserSupportsInPlaceSwitch()) {
+        return false;
+      }
+
+      if (resolvedKey === ACTIVE_DEPARTMENT_KEY || inPlaceSwitchInProgress) {
+        return true;
+      }
+
+      const reduceMotion = prefersReducedMotion();
+
+      const finishSwitch = function() {
+        try {
+          rebuildPortalForDepartment(resolvedKey);
+        } catch (error) {
+          /* Safety net: reload to the department so a failure is never visible
+             as a broken page. */
+          console.error("In-place department switch failed; reloading instead.", error);
+          inPlaceSwitchInProgress = false;
+          document.body.classList.remove("dept-switching");
+          navigateToPortalWithFade(buildDepartmentPortalLoadHref(resolvedKey));
+          return;
+        }
+
+        inPlaceSwitchInProgress = false;
+        document.body.classList.remove("dept-switching");
+
+        if (!reduceMotion) {
+          document.body.classList.add("dept-arriving");
+          requestAnimationFrame(function() {
+            requestAnimationFrame(function() {
+              document.body.classList.remove("dept-arriving");
+            });
+          });
+        }
+      };
+
+      inPlaceSwitchInProgress = true;
+
+      if (reduceMotion) {
+        finishSwitch();
+        return true;
+      }
+
+      /* Animate the current chrome up and out, then rebuild and ease it in. */
+      document.body.classList.add("dept-switching");
+      window.setTimeout(finishSwitch, DEPT_SWITCH_LEAVE_MS);
+      return true;
+    }
+
+    /*
+      Back/forward across departments: render the target department cleanly via
+      a reload (the proven path). A same-department view change is left to the
+      hashchange handler.
+    */
+    window.addEventListener("popstate", function() {
+      try {
+        const urlKey = resolveDepartmentKey(getRequestedDepartmentKey());
+
+        if (urlKey && urlKey !== ACTIVE_DEPARTMENT_KEY) {
+          window.location.reload();
+        }
+      } catch (error) {
+        window.location.reload();
+      }
+    });
+
     window.addEventListener("pageshow", finishPortalArrival);
 
     if (document.readyState === "loading") {
@@ -6739,7 +6895,10 @@
         );
 
         runWithSaveCheck(function() {
-          navigateToPortalWithFade(buildDepartmentPortalLoadHref(requestedPortalKey));
+          /* Prefer the seamless in-place switch; fall back to a reload. */
+          if (!switchDepartmentInPlace(requestedPortalKey)) {
+            navigateToPortalWithFade(buildDepartmentPortalLoadHref(requestedPortalKey));
+          }
         });
         return;
       }
