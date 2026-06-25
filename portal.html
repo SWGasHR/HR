@@ -2,18 +2,23 @@
 <!--
   HR PROJECT PORTAL — SINGLE REPOSITORY VERSION
 
+  THIS FILE IS THE PORTAL. index.html and 404.html are tiny loaders that just
+  fetch this file and render it; all of the real content, configuration, and
+  behavior lives here. Edit this file directly, then bump the ?v= number in
+  index.html / 404.html so browsers pick up your change.
+
   HOW PORTAL SWITCHING WORKS:
-  • One root index.html serves every department and HR leader.
+  • index.html (the root) and 404.html both load this portal. 404.html is what
+    makes clean URLs and refreshes work on GitHub Pages — GitHub serves it for
+    any path that is not a real file.
   • Albert Taylor is the default portal at:
       https://swgashr.github.io/HR/
-  • Every other portal has a clean path in the same repository:
-      /HR/benefits/
-      /HR/talent-development/
-      /HR/gail-carmona/
-  • Navigation links point back to this same file and use a polished cross-slide transition.
+  • Switching department/leader navigates to the root with a ?department= query
+    (for example /HR/?department=benefits#home); the older clean paths such as
+    /HR/benefits/ still resolve if visited directly, via 404.html.
   • The active portal automatically controls:
       - Browser/page title
-      - Department or leader top-right logo
+      - Department or leader top-right logo (from images/)
       - One permanent department.png favicon for every portal
       - SharePoint destination
       - Home, Main Initiatives, and All Projects views
@@ -25,7 +30,7 @@
 
   REQUIRED BEFORE PUBLISHING:
   1. In DEPARTMENT_PORTALS, replace each INSERT_... SharePoint/view link.
-  2. Upload each department and leader logo using the configured file name.
+  2. Put each department and leader logo in images/ using the configured file name.
   3. Keep 404.html in the repository root so clean URLs and refreshes work.
   4. Open each portal URL and confirm
      window.PORTAL_CONFIG_VALIDATION.valid is true.
@@ -2154,190 +2159,182 @@
       }
     }
 
-    /* --- SINGLE-REPOSITORY PORTAL SWITCH TRANSITION --- */
-    .portal-nav-hidden,
-    .portal-nav-separator-hidden {
-      display: none !important;
-    }
-
-    /*
-      Modern Chromium browsers use a true cross-document transition. The page
-      itself stays still while the portal chrome softly cross-slides into the
-      next department or leader. This avoids the previous full disappearance.
-    */
-    @view-transition {
-      navigation: auto;
-    }
-
-    .top-nav {
-      view-transition-name: portal-top-navigation;
-    }
-
-    .header-bar {
-      view-transition-name: portal-guidance-bar;
-    }
-
-    .view-only-note {
-      view-transition-name: portal-view-note;
-    }
-
-    .auth-refresh-banner {
-      view-transition-name: portal-auth-banner;
-    }
-
-    ::view-transition-old(root),
-    ::view-transition-new(root) {
-      animation: none;
-      mix-blend-mode: normal;
-    }
-
-    ::view-transition-group(portal-top-navigation),
-    ::view-transition-group(portal-guidance-bar),
-    ::view-transition-group(portal-view-note),
-    ::view-transition-group(portal-auth-banner) {
-      animation-duration: 0.34s;
-      animation-timing-function: cubic-bezier(0.22, 1, 0.36, 1);
-      z-index: 2200;
-    }
-
-    ::view-transition-old(portal-top-navigation),
-    ::view-transition-old(portal-guidance-bar),
-    ::view-transition-old(portal-view-note),
-    ::view-transition-old(portal-auth-banner) {
-      animation: portalChromeSlideOut 0.15s ease-out both;
-      mix-blend-mode: normal;
-    }
-
-    ::view-transition-new(portal-top-navigation),
-    ::view-transition-new(portal-guidance-bar),
-    ::view-transition-new(portal-view-note),
-    ::view-transition-new(portal-auth-banner) {
-      animation: portalChromeSlideIn 0.32s cubic-bezier(0.22, 1, 0.36, 1) both;
-      mix-blend-mode: normal;
-    }
-
-    @keyframes portalChromeSlideOut {
-      to {
-        opacity: 0.35;
-        transform: translateY(-3px) scale(0.998);
-        filter: blur(1.4px);
-      }
-    }
-
-    @keyframes portalChromeSlideIn {
-      from {
-        opacity: 0;
-        transform: translateY(7px) scale(0.998);
-        filter: blur(3px);
-      }
-      to {
-        opacity: 1;
-        transform: translateY(0) scale(1);
-        filter: blur(0);
-      }
-    }
-
-    /*
-      Fallback for browsers without cross-document View Transitions. The blue
-      navigation stays visible; only a subtle blur and glass-light sweep occur.
-    */
-    .top-nav,
-    .header-bar,
-    .view-only-note,
-    .auth-refresh-banner {
-      transition:
-        opacity 0.18s ease,
-        transform 0.24s cubic-bezier(0.22, 1, 0.36, 1),
-        filter 0.18s ease;
-    }
-
-    body.portal-switching .top-nav,
-    body.portal-switching .header-bar,
-    body.portal-switching .view-only-note,
-    body.portal-switching .auth-refresh-banner {
-      opacity: 0.82;
-      transform: translateY(-2px) scale(0.999);
-      filter: blur(1.2px) saturate(0.92);
-      pointer-events: none;
-    }
-
-    body.portal-arriving .top-nav,
-    body.portal-arriving .header-bar,
-    body.portal-arriving .view-only-note,
-    body.portal-arriving .auth-refresh-banner {
-      opacity: 0.35;
-      transform: translateY(6px) scale(0.999);
-      filter: blur(2.5px);
-    }
-
-    body.portal-switching::after,
-    body.portal-arriving::after {
-      content: "";
-      position: fixed;
-      top: 0;
-      left: -42vw;
-      width: 38vw;
-      height: 56px;
-      z-index: 2300;
-      pointer-events: none;
-      background: linear-gradient(
-        100deg,
-        rgba(255,255,255,0) 0%,
-        rgba(255,255,255,0.08) 28%,
-        rgba(255,255,255,0.42) 50%,
-        rgba(255,255,255,0.08) 72%,
-        rgba(255,255,255,0) 100%
-      );
-      transform: skewX(-15deg);
-      animation: portalChromeLightSweep 0.38s cubic-bezier(0.22, 1, 0.36, 1) both;
-    }
-
-    body.portal-arriving::after {
-      animation-direction: reverse;
-      opacity: 0.72;
-    }
-
-    @keyframes portalChromeLightSweep {
-      from {
-        left: -42vw;
-      }
-      to {
-        left: 112vw;
-      }
-    }
-
-    @media (prefers-reduced-motion: reduce) {
-      .top-nav,
-      .header-bar,
-      .view-only-note,
-      .auth-refresh-banner {
-        animation: none !important;
-        transition: none !important;
-        filter: none !important;
-        transform: none !important;
-      }
-
-      body.portal-switching::after,
-      body.portal-arriving::after {
-        display: none !important;
-      }
-    }
+    .portal-nav-hidden, .portal-nav-separator-hidden { display: none !important; }
   </style>
+
+        <style id="portal-polish-overrides">
+          .top-nav {
+            padding-right: 8px !important;
+          }
+
+          .swgas-logo-link {
+            position: relative !important;
+            display: inline-flex !important;
+            align-items: center !important;
+            justify-content: center !important;
+            height: 54px !important;
+            padding: 1px 10px !important;
+            margin-left: auto !important;
+            margin-right: -2px !important;
+            border-radius: 10px !important;
+            box-sizing: border-box !important;
+            overflow: hidden !important;
+            background: transparent !important;
+            isolation: isolate;
+          }
+
+          .swgas-logo-link::before {
+            content: "";
+            position: absolute;
+            z-index: 0;
+            inset: 2px 0;
+            border-radius: 8px;
+            background: rgba(255,255,255,0.14);
+            opacity: 0;
+            transition: opacity 0.18s ease;
+            pointer-events: none;
+          }
+
+          .swgas-logo-link:hover,
+          .swgas-logo-link:focus {
+            background: transparent !important;
+            outline: none;
+          }
+
+          .swgas-logo-link:hover::before,
+          .swgas-logo-link:focus::before {
+            opacity: 1;
+          }
+
+          #departmentLogo {
+            position: relative;
+            z-index: 1;
+            width: auto !important;
+            height: 50px !important;
+            max-width: 250px !important;
+            max-height: 50px !important;
+            object-fit: contain !important;
+          }
+
+          #departmentLogo[src$="swgas-ex.png"],
+          #departmentLogo[src$="swgas-hrbp.png"],
+          #departmentLogo[src$="swgas-hrcm.png"],
+          #departmentLogo[src$="swgas-hrs.png"],
+          #departmentLogo[src$="swgas-hrss.png"],
+          #departmentLogo[src$="swgas-labor-relations.png"],
+          #departmentLogo[src$="swgas-ta.png"],
+          #departmentLogo[src$="swgas-td.png"] {
+            height: 53px !important;
+            max-height: 53px !important;
+          }
+
+          /*
+            Size the reminder slot to whichever bubble is currently visible.
+            Longer messages can grow up to 300px, while shorter messages no
+            longer inherit a wide fixed box with blank space on both sides.
+          */
+          #navReminderSlot,
+          .top-nav.reminder-visible #navReminderSlot {
+            position: relative !important;
+            left: auto !important;
+            right: auto !important;
+            width: auto !important;
+            min-width: 0 !important;
+            max-width: 300px !important;
+            flex: 0 1 auto !important;
+            padding: 0 3px !important;
+            margin: 0 !important;
+            overflow: visible !important;
+            box-sizing: border-box !important;
+          }
+
+          #navReminderSlot.collapsed {
+            display: none !important;
+            width: 0 !important;
+            min-width: 0 !important;
+            max-width: 0 !important;
+            flex: 0 0 0 !important;
+            padding: 0 !important;
+            overflow: hidden !important;
+          }
+
+          .nav-refresh-popover,
+          .nav-project-action {
+            width: fit-content !important;
+            max-width: 300px !important;
+            min-width: 0 !important;
+            box-sizing: border-box !important;
+            justify-self: center !important;
+          }
+
+          .nav-refresh-popover {
+            min-height: 38px !important;
+            max-height: none !important;
+            height: auto !important;
+            padding: 6px 20px 6px 10px !important;
+            flex: 0 1 auto !important;
+            white-space: normal !important;
+          }
+
+          .nav-refresh-text {
+            width: auto !important;
+            white-space: normal !important;
+            overflow: visible !important;
+            line-height: 1.15 !important;
+          }
+
+          .nav-project-action {
+            min-height: 42px !important;
+            max-height: none !important;
+            height: auto !important;
+            padding: 5px 28px 5px 7px !important;
+            gap: 8px !important;
+            flex: 0 1 auto !important;
+          }
+
+          .nav-project-action-copy {
+            min-width: 0 !important;
+            width: auto !important;
+            flex: 0 1 auto !important;
+            overflow: visible !important;
+            white-space: normal !important;
+          }
+
+          .nav-project-action-title,
+          .nav-project-action-subtitle {
+            width: auto !important;
+            overflow: visible !important;
+            text-overflow: clip !important;
+            white-space: normal !important;
+          }
+
+          .nav-project-action-icon {
+            width: 29px !important;
+            height: 29px !important;
+            flex: 0 0 29px !important;
+            border-radius: 8px !important;
+          }
+
+          .nav-project-action-arrow {
+            right: 10px !important;
+            width: 17px !important;
+            height: 17px !important;
+          }
+
+          @media (max-width: 1180px) {
+            #navReminderSlot,
+            .top-nav.reminder-visible #navReminderSlot {
+              max-width: 270px !important;
+            }
+
+            .nav-refresh-popover,
+            .nav-project-action {
+              max-width: 270px !important;
+            }
+          }
+        </style>
 </head>
 <body>
-  <script>
-    /* Apply the fallback arrival state before the portal chrome is parsed. */
-    (function() {
-      try {
-        if (window.sessionStorage.getItem("hrPortalFallbackArrival") === "1") {
-          document.body.classList.add("portal-arriving");
-          window.sessionStorage.removeItem("hrPortalFallbackArrival");
-        }
-      } catch (error) {
-        /* Storage can be unavailable in strict privacy modes; continue normally. */
-      }
-    })();
-  </script>
 
   <div class="top-nav reminder-collapsed">
 
@@ -2596,7 +2593,7 @@
        target="_blank"
        rel="noopener noreferrer"
        title="Department SharePoint">
-      <img id="departmentLogo" src="swgas-benefits.png" alt="Department logo" class="swgas-logo" onerror="this.onerror=null;this.src='/HR/department.png';">
+      <img id="departmentLogo" src="images/swgas-benefits.png" alt="Department logo" class="swgas-logo" onerror="this.onerror=null;this.src='/HR/department.png';">
     </a>
   </div>
 
@@ -2765,7 +2762,7 @@
       defaultDepartmentKey: "albert-taylor",
       siteBasePath: "/HR/",
       faviconFileName: "department.png",
-      logoFileName: "swgas-benefits.png",
+      logoFileName: "images/swgas-benefits.png",
       contactEmail: "Benjamin.Bell@swgas.com",
       allHrPersonalTasksUrl: "https://workapps.smartsheet.com/app/wJm2VpWWq27w5cPQ5rc399qrFc",
 
@@ -2800,7 +2797,7 @@
         departmentName: "Benefits",
         portalTitle: "Benefits Project Portal",
         projectGroupLabel: "Benefits",
-        logoFileName: "swgas-benefits.png",
+        logoFileName: "images/swgas-benefits.png",
         departmentSharePointUrl: "https://swgas.sharepoint.com/sites/Benefits",
         defaultViewId: "home",
         views: {
@@ -2832,7 +2829,7 @@
         departmentName: "Compensation",
         portalTitle: "Compensation Project Portal",
         projectGroupLabel: "Compensation",
-        logoFileName: "swgas-compensation.png",
+        logoFileName: "images/swgas-compensation.png",
         departmentSharePointUrl: "https://swgas.sharepoint.com/sites/HR/SitePages/Compensation.aspx",
         defaultViewId: "home",
         views: {
@@ -2864,7 +2861,7 @@
         departmentName: "DE&I",
         portalTitle: "DE&I Project Portal",
         projectGroupLabel: "DE&I",
-        logoFileName: "swgas-dei.png",
+        logoFileName: "images/swgas-dei.png",
         departmentSharePointUrl: "https://swgas.sharepoint.com/sites/dei/SitePages/VolunteerCenter.aspx",
         defaultViewId: "home",
         views: {
@@ -2896,7 +2893,7 @@
         departmentName: "Employee Experience",
         portalTitle: "Employee Experience Project Portal",
         projectGroupLabel: "Employee Experience",
-        logoFileName: "swgas-ex.png",
+        logoFileName: "images/swgas-ex.png",
         departmentSharePointUrl: "https://swgas.sharepoint.com/sites/EmployeeExperience",
         defaultViewId: "home",
         views: {
@@ -2928,7 +2925,7 @@
         departmentName: "HRBP",
         portalTitle: "HRBP Project Portal",
         projectGroupLabel: "HRBP",
-        logoFileName: "swgas-hrbp.png",
+        logoFileName: "images/swgas-hrbp.png",
         departmentSharePointUrl: "https://swgas.sharepoint.com/sites/HR/SitePages/HRBP.aspx",
         defaultViewId: "home",
         views: {
@@ -2957,10 +2954,10 @@
       },
 
       hrcm: {
-        departmentName: "HR Change Management",
-        portalTitle: "HR Change Management Project Portal",
-        projectGroupLabel: "HR Change Management",
-        logoFileName: "swgas-hrcm.png",
+        departmentName: "HRCM",
+        portalTitle: "HRCM Project Portal",
+        projectGroupLabel: "HRCM",
+        logoFileName: "images/swgas-hrcm.png",
         departmentSharePointUrl: "https://swgas.sharepoint.com/sites/ocm",
         defaultViewId: "home",
         views: {
@@ -2992,7 +2989,7 @@
         departmentName: "HRS",
         portalTitle: "HRS Project Portal",
         projectGroupLabel: "HRS",
-        logoFileName: "swgas-hrs.png",
+        logoFileName: "images/swgas-hrs.png",
         departmentSharePointUrl: "https://swgas.sharepoint.com/sites/HR/SitePages/SWGreat!-Employee-Connect.aspx?source=SiteSettings",
         defaultViewId: "home",
         views: {
@@ -3024,7 +3021,7 @@
         departmentName: "HRSS",
         portalTitle: "HRSS Project Portal",
         projectGroupLabel: "HRSS",
-        logoFileName: "swgas-hrss.png",
+        logoFileName: "images/swgas-hrss.png",
         departmentSharePointUrl: "https://swgas.sharepoint.com/sites/HR/SitePages/HRSS%20Homepage.aspx",
         defaultViewId: "home",
         views: {
@@ -3056,7 +3053,7 @@
         departmentName: "Labor Relations",
         portalTitle: "Labor Relations Project Portal",
         projectGroupLabel: "Labor Relations",
-        logoFileName: "swgas-labor-relations.png",
+        logoFileName: "images/swgas-labor-relations.png",
         departmentSharePointUrl: "https://swgas.sharepoint.com/sites/HR",
         defaultViewId: "home",
         views: {
@@ -3088,7 +3085,7 @@
         departmentName: "Talent Acquisition",
         portalTitle: "Talent Acquisition Project Portal",
         projectGroupLabel: "Talent Acquisition",
-        logoFileName: "swgas-ta.png",
+        logoFileName: "images/swgas-ta.png",
         departmentSharePointUrl: "https://swgas.sharepoint.com/sites/HR/SitePages/Talent-Acquisition(1).aspx",
         defaultViewId: "home",
         views: {
@@ -3120,7 +3117,7 @@
         departmentName: "Talent Development",
         portalTitle: "Talent Development Project Portal",
         projectGroupLabel: "Talent Development",
-        logoFileName: "swgas-td.png",
+        logoFileName: "images/swgas-td.png",
         departmentSharePointUrl: "https://swgas.sharepoint.com/sites/TalentDevelopment",
         defaultViewId: "home",
         views: {
@@ -3158,14 +3155,14 @@
         "DE&I",
         "Employee Experience",
         "HRBP",
-        "HR Change Management",
+        "HRCM",
         "HRS",
         "HRSS",
         "Labor Relations",
         "Talent Acquisition",
         "Talent Development"
       ],
-      logoFileName: "swgas-albert-taylor.png",
+      logoFileName: "images/swgas-albert-taylor.png",
       departmentSharePointUrl: "https://swgas.sharepoint.com/sites/HR",
       defaultViewId: "home",
       views: {
@@ -3199,11 +3196,11 @@
       portalTitle: "HR Operations Project Portal",
       projectGroupLabels: [
         "HRBP",
-        "HR Change Management",
+        "HRCM",
         "HRSS",
         "Labor Relations"
       ],
-      logoFileName: "swgas-gail-carmona.png",
+      logoFileName: "images/swgas-gail-carmona.png",
       departmentSharePointUrl: "https://swgas.sharepoint.com/sites/HR",
       defaultViewId: "home",
       views: {
@@ -3240,7 +3237,7 @@
         "Compensation",
         "HRS"
       ],
-      logoFileName: "swgas-mike-bryant.png",
+      logoFileName: "images/swgas-mike-bryant.png",
       departmentSharePointUrl: "https://swgas.sharepoint.com/sites/HR",
       defaultViewId: "home",
       views: {
@@ -3277,7 +3274,7 @@
         "Employee Experience",
         "Talent Acquisition"
       ],
-      logoFileName: "swgas-courtney-moore.png",
+      logoFileName: "images/swgas-courtney-moore.png",
       departmentSharePointUrl: "https://swgas.sharepoint.com/sites/HR",
       defaultViewId: "home",
       views: {
@@ -3437,7 +3434,7 @@
             { id: "benefits-project-template-4", label: "Project Template 4", embedSrc: "INSERT_BENEFITS_PROJECT_TEMPLATE_4_EMBED_LINK_HERE", visible: false }
           ],
           archiveProjects: [
-            { id: "short-term-projects-archive-benefits", label: "Short-Term Projects Archive (Benefits)", embedSrc: "INSERT_LINK_HERE", visible: true },
+            { id: "short-term-projects-archive-benefits", label: "Short-Term Projects Archive (Benefits)", embedSrc: "INSERT_LINK_HERE", visible: false },
             { id: "open enrollment 2025", label: "Open Enrollment 2025", embedSrc: "https://app.smartsheet.com/b/publish?EQBCT=e606315264984f84bd6e288a6871ec5a", visible: true },
             { id: "benefits-archive-template-2", label: "Project Template 2", embedSrc: "INSERT_BENEFITS_ARCHIVE_TEMPLATE_2_EMBED_LINK_HERE", visible: false},
             { id: "benefits-archive-template-3", label: "Project Template 3", embedSrc: "INSERT_BENEFITS_ARCHIVE_TEMPLATE_3_EMBED_LINK_HERE", visible: false },
@@ -3458,7 +3455,7 @@
             { id: "compensation-project-template-4", label: "Project Template 4", embedSrc: "INSERT_COMPENSATION_PROJECT_TEMPLATE_4_EMBED_LINK_HERE", visible: false }
           ],
           archiveProjects: [
-            { id: "short-term-projects-archive-compensation", label: "Short-Term Projects Archive (Compensation)", embedSrc: "INSERT_LINK_HERE", visible: true },
+            { id: "short-term-projects-archive-compensation", label: "Short-Term Projects Archive (Compensation)", embedSrc: "INSERT_LINK_HERE", visible: false },
             { id: "compensation-archive-template-2", label: "Project Template 2", embedSrc: "INSERT_COMPENSATION_ARCHIVE_TEMPLATE_2_EMBED_LINK_HERE", visible: false },
             { id: "compensation-archive-template-3", label: "Project Template 3", embedSrc: "INSERT_COMPENSATION_ARCHIVE_TEMPLATE_3_EMBED_LINK_HERE", visible: false },
             { id: "compensation-archive-template-4", label: "Project Template 4", embedSrc: "INSERT_COMPENSATION_ARCHIVE_TEMPLATE_4_EMBED_LINK_HERE", visible: false },
@@ -3478,7 +3475,7 @@
             { id: "dei-project-template-4", label: "Project Template 4", embedSrc: "INSERT_DEI_PROJECT_TEMPLATE_4_EMBED_LINK_HERE", visible: false }
           ],
           archiveProjects: [
-            { id: "short-term-projects-archive-dei", label: "Short-Term Projects Archive (DE&I)", embedSrc: "INSERT_LINK_HERE", visible: true },
+            { id: "short-term-projects-archive-dei", label: "Short-Term Projects Archive (DE&I)", embedSrc: "INSERT_LINK_HERE", visible: false },
             { id: "dei-archive-template-2", label: "Project Template 2", embedSrc: "INSERT_DEI_ARCHIVE_TEMPLATE_2_EMBED_LINK_HERE", visible: false },
             { id: "dei-archive-template-3", label: "Project Template 3", embedSrc: "INSERT_DEI_ARCHIVE_TEMPLATE_3_EMBED_LINK_HERE", visible: false },
             { id: "dei-archive-template-4", label: "Project Template 4", embedSrc: "INSERT_DEI_ARCHIVE_TEMPLATE_4_EMBED_LINK_HERE", visible: false },
@@ -3499,7 +3496,7 @@
             { id: "employee-experience-project-template-4", label: "Project Template 4", embedSrc: "INSERT_EMPLOYEE_EXPERIENCE_PROJECT_TEMPLATE_4_EMBED_LINK_HERE", visible: false }
           ],
           archiveProjects: [
-            { id: "short-term-projects-archive-ex", label: "Short-Term Projects Archive (EX)", embedSrc: "INSERT_LINK_HERE", visible: true },
+            { id: "short-term-projects-archive-ex", label: "Short-Term Projects Archive (EX)", embedSrc: "INSERT_LINK_HERE", visible: false },
             { id: "tyctwd-2026", label: "TYCTWD (2026)", embedSrc: "https://app.smartsheet.com/b/publish?EQBCT=d47cd6a5a19f4c5f92e94a813dcc3be0", visible: true },
             { id: "employee-experience-archive-template-3", label: "Project Template 3", embedSrc: "INSERT_EMPLOYEE_EXPERIENCE_ARCHIVE_TEMPLATE_3_EMBED_LINK_HERE", visible: false },
             { id: "employee-experience-archive-template-4", label: "Project Template 4", embedSrc: "INSERT_EMPLOYEE_EXPERIENCE_ARCHIVE_TEMPLATE_4_EMBED_LINK_HERE", visible: false },
@@ -3519,7 +3516,7 @@
             { id: "hrbp-project-template-4", label: "Project Template 4", embedSrc: "INSERT_HRBP_PROJECT_TEMPLATE_4_EMBED_LINK_HERE", visible: false }
           ],
           archiveProjects: [
-            { id: "short-term-projects-archive-hrbp", label: "Short-Term Projects Archive (HRBP)", embedSrc: "INSERT_LINK_HERE", visible: true },
+            { id: "short-term-projects-archive-hrbp", label: "Short-Term Projects Archive (HRBP)", embedSrc: "INSERT_LINK_HERE", visible: false },
             { id: "hrbp-archive-template-2", label: "Project Template 2", embedSrc: "INSERT_HRBP_ARCHIVE_TEMPLATE_2_EMBED_LINK_HERE", visible: false },
             { id: "hrbp-archive-template-3", label: "Project Template 3", embedSrc: "INSERT_HRBP_ARCHIVE_TEMPLATE_3_EMBED_LINK_HERE", visible: false },
             { id: "hrbp-archive-template-4", label: "Project Template 4", embedSrc: "INSERT_HRBP_ARCHIVE_TEMPLATE_4_EMBED_LINK_HERE", visible: false },
@@ -3527,7 +3524,7 @@
           ]
         },
 {
-          label: "HR Change Management",
+          label: "HRCM",
           openByDefault: false,
           embed: true,
           preload: false,
@@ -3540,7 +3537,7 @@
             { id: "hr-change-management-project-template-4", label: "Project Template 4", embedSrc: "INSERT_HR_CHANGE_MANAGEMENT_PROJECT_TEMPLATE_4_EMBED_LINK_HERE", visible: false }
           ],
           archiveProjects: [
-            { id: "short-term-projects-archive-hrcm", label: "Short-Term Projects Archive (HRCM)", embedSrc: "INSERT_LINK_HERE", visible: true },
+            { id: "short-term-projects-archive-hrcm", label: "Short-Term Projects Archive (HRCM)", embedSrc: "INSERT_LINK_HERE", visible: false },
             { id: "hr-change-management-archive-template-2", label: "Project Template 2", embedSrc: "INSERT_HR_CHANGE_MANAGEMENT_ARCHIVE_TEMPLATE_2_EMBED_LINK_HERE", visible: false },
             { id: "hr-change-management-archive-template-3", label: "Project Template 3", embedSrc: "INSERT_HR_CHANGE_MANAGEMENT_ARCHIVE_TEMPLATE_3_EMBED_LINK_HERE", visible: false },
             { id: "hr-change-management-archive-template-4", label: "Project Template 4", embedSrc: "INSERT_HR_CHANGE_MANAGEMENT_ARCHIVE_TEMPLATE_4_EMBED_LINK_HERE", visible: false },
@@ -3560,7 +3557,7 @@
             { id: "hrs-project-template-4", label: "Project Template 4", embedSrc: "INSERT_HRS_PROJECT_TEMPLATE_4_EMBED_LINK_HERE", visible: false }
           ],
           archiveProjects: [
-            { id: "short-term-projects-archive-hrs", label: "Short-Term Projects Archive (HRS)", embedSrc: "INSERT_LINK_HERE", visible: true },
+            { id: "short-term-projects-archive-hrs", label: "Short-Term Projects Archive (HRS)", embedSrc: "INSERT_LINK_HERE", visible: false },
             { id: "hrs-archive-template-2", label: "Project Template 2", embedSrc: "INSERT_HRS_ARCHIVE_TEMPLATE_2_EMBED_LINK_HERE", visible: false },
             { id: "hrs-archive-template-3", label: "Project Template 3", embedSrc: "INSERT_HRS_ARCHIVE_TEMPLATE_3_EMBED_LINK_HERE", visible: false },
             { id: "hrs-archive-template-4", label: "Project Template 4", embedSrc: "INSERT_HRS_ARCHIVE_TEMPLATE_4_EMBED_LINK_HERE", visible: false },
@@ -3582,7 +3579,7 @@
             { id: "hrss-project-template-4", label: "Project Template 4", embedSrc: "INSERT_HRSS_PROJECT_TEMPLATE_4_EMBED_LINK_HERE", visible: false }
           ],
           archiveProjects: [
-            { id: "short-term-projects-archive-hrss", label: "Short-Term Projects Archive (HRSS)", embedSrc: "INSERT_LINK_HERE", visible: true },
+            { id: "short-term-projects-archive-hrss", label: "Short-Term Projects Archive (HRSS)", embedSrc: "INSERT_LINK_HERE", visible: false },
             { id: "hrss-archive-template-2", label: "Project Template 2", embedSrc: "INSERT_HRSS_ARCHIVE_TEMPLATE_2_EMBED_LINK_HERE", visible: false },
             { id: "hrss-archive-template-3", label: "Project Template 3", embedSrc: "INSERT_HRSS_ARCHIVE_TEMPLATE_3_EMBED_LINK_HERE", visible: false },
             { id: "hrss-archive-template-4", label: "Project Template 4", embedSrc: "INSERT_HRSS_ARCHIVE_TEMPLATE_4_EMBED_LINK_HERE", visible: false },
@@ -3603,7 +3600,7 @@
             { id: "labor-relations-project-template-4", label: "Project Template 4", embedSrc: "INSERT_LABOR_RELATIONS_PROJECT_TEMPLATE_4_EMBED_LINK_HERE", visible: false }
           ],
           archiveProjects: [
-            { id: "short-term-projects-archive-lr", label: "Short-Term Projects Archive (LR)", embedSrc: "INSERT_LINK_HERE", visible: true },
+            { id: "short-term-projects-archive-lr", label: "Short-Term Projects Archive (LR)", embedSrc: "INSERT_LINK_HERE", visible: false },
             { id: "labor-relations-archive-template-2", label: "Project Template 2", embedSrc: "INSERT_LABOR_RELATIONS_ARCHIVE_TEMPLATE_2_EMBED_LINK_HERE", visible: false },
             { id: "labor-relations-archive-template-3", label: "Project Template 3", embedSrc: "INSERT_LABOR_RELATIONS_ARCHIVE_TEMPLATE_3_EMBED_LINK_HERE", visible: false },
             { id: "labor-relations-archive-template-4", label: "Project Template 4", embedSrc: "INSERT_LABOR_RELATIONS_ARCHIVE_TEMPLATE_4_EMBED_LINK_HERE", visible: false },
@@ -3624,7 +3621,7 @@
             { id: "talent-acquisition-project-template-4", label: "Project Template 4", embedSrc: "INSERT_TALENT_ACQUISITION_PROJECT_TEMPLATE_4_EMBED_LINK_HERE", visible: false }
           ],
           archiveProjects: [
-            { id: "short-term-projects-archive-ta", label: "Short-Term Projects Archive (TA)", embedSrc: "INSERT_LINK_HERE", visible: true },
+            { id: "short-term-projects-archive-ta", label: "Short-Term Projects Archive (TA)", embedSrc: "INSERT_LINK_HERE", visible: false },
             { id: "talent-acquisition-archive-template-2", label: "Project Template 2", embedSrc: "INSERT_TALENT_ACQUISITION_ARCHIVE_TEMPLATE_2_EMBED_LINK_HERE", visible: false },
             { id: "talent-acquisition-archive-template-3", label: "Project Template 3", embedSrc: "INSERT_TALENT_ACQUISITION_ARCHIVE_TEMPLATE_3_EMBED_LINK_HERE", visible: false },
             { id: "talent-acquisition-archive-template-4", label: "Project Template 4", embedSrc: "INSERT_TALENT_ACQUISITION_ARCHIVE_TEMPLATE_4_EMBED_LINK_HERE", visible: false },
@@ -3646,7 +3643,7 @@
             { id: "talent-development-project-template-4", label: "Project Template 4", embedSrc: "INSERT_TALENT_DEVELOPMENT_PROJECT_TEMPLATE_4_EMBED_LINK_HERE", visible: false }
           ],
           archiveProjects: [
-            { id: "short-term-projects-archive-td", label: "Short-Term Projects Archive (TD)", embedSrc: "INSERT_LINK_HERE", visible: true },
+            { id: "short-term-projects-archive-td", label: "Short-Term Projects Archive (TD)", embedSrc: "INSERT_LINK_HERE", visible: false },
             { id: "elo transition plan", label: "ELO Transition Plan", embedSrc: "https://app.smartsheet.com/b/publish?EQBCT=46376cb1ff6e47bf9b7ed1e62019ecd7", visible: true },
             { id: "talent-development-archive-template-3", label: "Project Template 3", embedSrc: "INSERT_TALENT_DEVELOPMENT_ARCHIVE_TEMPLATE_3_EMBED_LINK_HERE", visible: false },
             { id: "talent-development-archive-template-4", label: "Project Template 4", embedSrc: "INSERT_TALENT_DEVELOPMENT_ARCHIVE_TEMPLATE_4_EMBED_LINK_HERE", visible: false },
@@ -3984,8 +3981,9 @@
       the first view opens. The small stagger prevents the browser from trying
       to load every Smartsheet page at the exact same second.
     */
-    const PRELOAD_START_DELAY_MS = 900;
-    const PRELOAD_STAGGER_MS = 250;
+    const PRELOAD_START_DELAY_MS = 650;
+    const PRELOAD_ACTIVE_VIEW_FALLBACK_MS = 10000;
+    const PRELOAD_STAGGER_MS = 1200;
 
     /* Top-navigation project support sequence. */
     const NAV_MESSAGE_FADE_MS = 420;
@@ -4186,6 +4184,7 @@
       preloadStarted = true;
 
       const activeKey = activeRoute ? routeKey(activeRoute) : "";
+      const activeIframeRecord = activeKey ? iframeRegistry[activeKey] : null;
       const routesToPreload = getAllEmbeddableRoutes().filter(function(route) {
         const embedData = getEmbedDataForRoute(route);
 
@@ -4197,6 +4196,8 @@
       });
 
       let routeIndex = 0;
+      let preloadQueueStarted = false;
+      let activeViewFallbackTimer = null;
 
       function preloadNextRoute() {
         if (routeIndex >= routesToPreload.length) {
@@ -4205,11 +4206,31 @@
 
         getOrCreateIframeForRoute(routesToPreload[routeIndex]);
         routeIndex += 1;
-
         setTimeout(preloadNextRoute, PRELOAD_STAGGER_MS);
       }
 
-      setTimeout(preloadNextRoute, PRELOAD_START_DELAY_MS);
+      function beginPreloadQueue() {
+        if (preloadQueueStarted) {
+          return;
+        }
+
+        preloadQueueStarted = true;
+
+        if (activeViewFallbackTimer) {
+          clearTimeout(activeViewFallbackTimer);
+          activeViewFallbackTimer = null;
+        }
+
+        setTimeout(preloadNextRoute, PRELOAD_START_DELAY_MS);
+      }
+
+      if (!activeIframeRecord || activeIframeRecord.isLoaded) {
+        beginPreloadQueue();
+        return;
+      }
+
+      activeIframeRecord.frame.addEventListener("load", beginPreloadQueue, { once: true });
+      activeViewFallbackTimer = setTimeout(beginPreloadQueue, PRELOAD_ACTIVE_VIEW_FALLBACK_MS);
     }
 
     function notePossibleIframeInteraction() {
@@ -5949,17 +5970,7 @@
       return basePath + "?department=" + encodeURIComponent(configuredKey) + "#home";
     }
 
-    const PORTAL_SWITCH_FALLBACK_MS = 175;
     let portalSwitchInProgress = false;
-
-    function browserSupportsPortalViewTransitions() {
-      return Boolean(
-        typeof document.startViewTransition === "function" &&
-        window.CSS &&
-        typeof window.CSS.supports === "function" &&
-        window.CSS.supports("view-transition-name: portal-top-navigation")
-      );
-    }
 
     function navigateToPortalWithFade(href) {
       if (!href || portalSwitchInProgress) {
@@ -5968,47 +5979,12 @@
 
       portalSwitchInProgress = true;
       suppressUnsavedBeforeUnload = true;
-
-      const reduceMotion = window.matchMedia &&
-        window.matchMedia("(prefers-reduced-motion: reduce)").matches;
-      const useNativePortalTransition = !reduceMotion && browserSupportsPortalViewTransitions();
-
-      /*
-        The CSS @view-transition rule handles supported browsers automatically.
-        Navigate immediately so the browser can capture the current and next
-        portal chrome as a seamless cross-document transition.
-      */
-      if (useNativePortalTransition || reduceMotion) {
-        window.location.assign(href);
-        return;
-      }
-
-      /* Polished fallback: retain the header, sweep it, then reveal the new one. */
-      document.body.classList.add("portal-switching");
-
-      try {
-        window.sessionStorage.setItem("hrPortalFallbackArrival", "1");
-      } catch (error) {
-        /* Continue without the arrival effect if storage is unavailable. */
-      }
-
-      window.setTimeout(function() {
-        window.location.assign(href);
-      }, PORTAL_SWITCH_FALLBACK_MS);
+      window.location.assign(href);
     }
 
     function finishPortalArrival() {
       portalSwitchInProgress = false;
       suppressUnsavedBeforeUnload = false;
-      document.body.classList.remove("portal-switching");
-
-      if (document.body.classList.contains("portal-arriving")) {
-        requestAnimationFrame(function() {
-          requestAnimationFrame(function() {
-            document.body.classList.remove("portal-arriving");
-          });
-        });
-      }
     }
 
     window.addEventListener("pageshow", finishPortalArrival);
@@ -6031,7 +6007,7 @@
           return;
         }
 
-        link.href = buildDepartmentPortalHref(configuredKey);
+        link.href = buildDepartmentPortalLoadHref(configuredKey);
         link.classList.toggle("active", isActive);
 
         if (isActive) {
@@ -7067,5 +7043,84 @@
     updateNavScrollControlsSoon();
   </script>
 
+
+        <script id="portal-adaptive-navigation">
+          (function () {
+            "use strict";
+
+            const reminderSlot = document.getElementById("navReminderSlot");
+            const navScrollRegion = document.getElementById("navScrollRegion");
+            let layoutTimer = null;
+
+            function shortenBlueBarDepartmentName() {
+              const blueBarLinks = Array.from(
+                document.querySelectorAll(".top-nav .nav-item.portal-view-link")
+              );
+              const blueBarText = blueBarLinks.map(function(link) {
+                return String(link.textContent || "");
+              }).join(" ");
+              let fullName = "";
+              let shortName = "";
+
+              if (blueBarText.includes("Employee Experience")) {
+                fullName = "Employee Experience";
+                shortName = "EX";
+              } else if (blueBarText.includes("Labor Relations")) {
+                fullName = "Labor Relations";
+                shortName = "LR";
+              }
+
+              if (!fullName) {
+                return;
+              }
+
+              blueBarLinks.forEach(function(link) {
+                const currentText = String(link.textContent || "").trim();
+                const currentLabel = String(link.getAttribute("aria-label") || "");
+
+                if (currentText.includes(fullName)) {
+                  link.textContent = currentText.split(fullName).join(shortName);
+                }
+
+                if (currentLabel.includes(fullName)) {
+                  link.setAttribute("aria-label", currentLabel.split(fullName).join(shortName));
+                }
+              });
+            }
+
+            function refreshAdaptiveNavigation() {
+              clearTimeout(layoutTimer);
+
+              const runRefresh = function() {
+                if (typeof updateNavScrollControlsSoon === "function") {
+                  updateNavScrollControlsSoon();
+                }
+              };
+
+              requestAnimationFrame(function() {
+                runRefresh();
+                layoutTimer = setTimeout(runRefresh, 120);
+                setTimeout(runRefresh, 360);
+              });
+            }
+
+            shortenBlueBarDepartmentName();
+            refreshAdaptiveNavigation();
+
+            if (reminderSlot) {
+              new MutationObserver(refreshAdaptiveNavigation).observe(reminderSlot, {
+                attributes: true,
+                attributeFilter: ["class"],
+                subtree: true
+              });
+            }
+
+            window.addEventListener("resize", refreshAdaptiveNavigation);
+            window.addEventListener("load", function() {
+              shortenBlueBarDepartmentName();
+              refreshAdaptiveNavigation();
+            });
+          })();
+        </script>
 </body>
 </html>
