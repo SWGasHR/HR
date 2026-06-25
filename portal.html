@@ -1692,6 +1692,55 @@
       color: #1d1f50;
     }
 
+    /* Sits above the loading spinner so it is clearly visible when shown. */
+    .slow-embed-message {
+      z-index: 11;
+    }
+
+    .slow-embed-actions {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      justify-content: center;
+      margin-top: 18px;
+    }
+
+    /* Scoped under .slow-embed-message so these win over the generic
+       .placeholder-box a rule above (which would otherwise hide the text). */
+    .slow-embed-message .slow-embed-button {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      padding: 9px 18px;
+      font: inherit;
+      font-size: 15px;
+      font-weight: 600;
+      border-radius: 8px;
+      border: 1px solid #c9cce4;
+      background: #ffffff;
+      color: #252763;
+      text-decoration: none;
+      cursor: pointer;
+    }
+
+    .slow-embed-message .slow-embed-button:hover,
+    .slow-embed-message .slow-embed-button:focus {
+      background: #f0f1fb;
+      color: #252763;
+    }
+
+    .slow-embed-message .slow-embed-primary {
+      background: #252763;
+      border-color: #252763;
+      color: #ffffff;
+    }
+
+    .slow-embed-message .slow-embed-primary:hover,
+    .slow-embed-message .slow-embed-primary:focus {
+      background: #1c1e4f;
+      color: #ffffff;
+    }
+
     /* --- CUSTOM SAVE MODAL --- */
     .save-modal-overlay {
       position: fixed;
@@ -2878,6 +2927,32 @@
           </a>
           to create a new project.
         </p>
+      </div>
+    </div>
+
+    <!--
+      Shown only if a Smartsheet view is unusually slow to load, so the visitor
+      is never stuck staring at a spinner. Auto-dismisses when the view loads.
+    -->
+    <div class="placeholder-message slow-embed-message hidden" id="slowEmbedMessage">
+      <div class="placeholder-box">
+        <h2>Still loading&hellip;</h2>
+        <p>
+          This Smartsheet view is taking longer than usual. It may just be a
+          slow connection. You can keep waiting, or:
+        </p>
+        <div class="slow-embed-actions">
+          <a class="slow-embed-button slow-embed-primary"
+             id="slowEmbedOpenLink"
+             href="#"
+             target="_blank"
+             rel="noopener noreferrer">
+            Open in a new tab
+          </a>
+          <button type="button" class="slow-embed-button" id="slowEmbedReload">
+            Reload the page
+          </button>
+        </div>
       </div>
     </div>
   </div>
@@ -4131,6 +4206,9 @@
     const saveYesButton = document.getElementById("saveYesButton");
     const loadingMessage = document.getElementById("loadingMessage");
     const placeholderMessage = document.getElementById("placeholderMessage");
+    const slowEmbedMessage = document.getElementById("slowEmbedMessage");
+    const slowEmbedOpenLink = document.getElementById("slowEmbedOpenLink");
+    const slowEmbedReload = document.getElementById("slowEmbedReload");
     const viewOnlyNote = document.getElementById("viewOnlyNote");
     const refreshReminder = document.getElementById("refreshReminder");
     const refreshReminderText = refreshReminder ? refreshReminder.querySelector(".nav-refresh-text") : null;
@@ -4191,10 +4269,17 @@
     let loadingFadeTimer = null;
     let loadingVisibleAt = 0;
 
+    /* Slow-embed fallback: track the view currently loading and a watchdog. */
+    let slowEmbedTimer = null;
+    let currentEmbedSrc = "";
+
     const LOADER_SHOW_DELAY_MS = 350;
     const LOADER_HIDE_AFTER_IFRAME_LOAD_MS = 650;
     const LOADER_FADE_MS = 320;
     const LOADER_MIN_VISIBLE_MS = 900;
+
+    /* How long a Smartsheet view may load before we offer a way out. */
+    const SLOW_EMBED_NOTICE_MS = 15000;
 
     /*
       These settings preload the remaining Smartsheet embeds shortly after
@@ -4372,6 +4457,7 @@
         iframeRecord.isLoaded = true;
 
         if (currentViewKey === key) {
+          hideSlowEmbedNotice();
           scheduleLoadingMessageHide();
         }
       });
@@ -4643,6 +4729,8 @@
       loadingMessage.classList.remove("fading");
       loadingVisibleAt = 0;
 
+      startSlowEmbedWatch();
+
       loadingShowTimer = setTimeout(function() {
         loadingMessage.classList.remove("hidden");
 
@@ -4658,6 +4746,7 @@
       clearTimeout(loadingShowTimer);
       clearTimeout(loadingHideTimer);
       clearTimeout(loadingFadeTimer);
+      hideSlowEmbedNotice();
 
       if (loadingMessage.classList.contains("hidden")) {
         return;
@@ -4682,6 +4771,7 @@
       clearTimeout(loadingShowTimer);
       clearTimeout(loadingHideTimer);
       clearTimeout(loadingFadeTimer);
+      hideSlowEmbedNotice();
 
       loadingMessage.classList.add("hidden");
       loadingMessage.classList.remove("visible");
@@ -4695,6 +4785,40 @@
       loadingHideTimer = setTimeout(function() {
         hideLoadingMessage();
       }, LOADER_HIDE_AFTER_IFRAME_LOAD_MS);
+    }
+
+    /* ----- Slow Smartsheet view fallback ----- */
+    function hideSlowEmbedNotice() {
+      clearTimeout(slowEmbedTimer);
+      slowEmbedTimer = null;
+
+      if (slowEmbedMessage) {
+        slowEmbedMessage.classList.add("hidden");
+      }
+    }
+
+    function showSlowEmbedNotice() {
+      /* Only surfaces while a real view is still loading. */
+      if (!slowEmbedMessage || !currentEmbedSrc) {
+        return;
+      }
+
+      if (slowEmbedOpenLink) {
+        slowEmbedOpenLink.setAttribute("href", currentEmbedSrc);
+      }
+
+      slowEmbedMessage.classList.remove("hidden");
+    }
+
+    function startSlowEmbedWatch() {
+      hideSlowEmbedNotice();
+      slowEmbedTimer = setTimeout(showSlowEmbedNotice, SLOW_EMBED_NOTICE_MS);
+    }
+
+    if (slowEmbedReload) {
+      slowEmbedReload.addEventListener("click", function() {
+        window.location.reload();
+      });
     }
 
     function showPlaceholderMessage() {
@@ -4970,6 +5094,7 @@
 
       hidePlaceholderMessage();
       currentViewKey = viewKey;
+      currentEmbedSrc = newEmbedLink;
 
       const iframeRecord = activateIframeForRoute(route);
 
