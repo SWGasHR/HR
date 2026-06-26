@@ -1714,24 +1714,41 @@
       pointer-events: none;
     }
 
-    /* Skeleton placeholder shown while a Smartsheet view loads, so the area
-       looks like it is forming the dashboard instead of sitting blank. */
+    /* Skeleton placeholder shown while a Smartsheet view loads. Two shapes:
+       one that resembles a status dashboard, one that resembles a project
+       sheet/grid. The matching one is chosen for the view being opened. */
     .skeleton {
       flex: 1 1 auto;
       width: 100%;
-      max-width: 1120px;
-      padding: 26px 30px 8px;
+      padding: 22px 28px 4px;
       box-sizing: border-box;
+      overflow: hidden;
     }
 
-    .skeleton-block {
+    .skeleton-dashboard,
+    .skeleton-sheet {
+      display: none;
+    }
+
+    #loadingMessage.show-dashboard .skeleton-dashboard,
+    #loadingMessage.show-sheet .skeleton-sheet {
+      display: block;
+    }
+
+    /* Default to the sheet shape if no variant has been set yet. */
+    #loadingMessage:not(.show-dashboard):not(.show-sheet) .skeleton-sheet {
+      display: block;
+    }
+
+    /* Shared shimmering block. */
+    .skl {
       position: relative;
       overflow: hidden;
       background: #e9ecf3;
-      border-radius: 8px;
+      border-radius: 7px;
     }
 
-    .skeleton-block::after {
+    .skl::after {
       content: "";
       position: absolute;
       inset: 0;
@@ -1745,11 +1762,33 @@
       animation: skeleton-shimmer 1.3s ease-in-out infinite;
     }
 
-    .skeleton-title { height: 26px; width: 38%; margin-bottom: 26px; }
-    .skeleton-cards { display: flex; gap: 20px; margin-bottom: 28px; }
-    .skeleton-card { height: 130px; flex: 1 1 0; border-radius: 12px; }
-    .skeleton-line { height: 15px; width: 100%; margin-bottom: 14px; }
-    .skeleton-line-short { width: 55%; }
+    /* Dashboard shape: centered title, a status gauge, a grid of donut cards,
+       and a summary row. */
+    .sk-d-title { height: 22px; width: 220px; margin: 4px auto 20px; }
+    .sk-d-gauge { height: 116px; width: 270px; margin: 0 auto 26px; border-radius: 150px 150px 16px 16px; }
+    .sk-d-cards { display: grid; grid-template-columns: repeat(3, 1fr); gap: 18px; margin-bottom: 24px; }
+    .sk-d-card { display: flex; flex-direction: column; align-items: center; gap: 10px; padding: 12px; }
+    .sk-d-donut { height: 80px; width: 80px; border-radius: 50%; }
+    .sk-d-line { height: 11px; width: 78%; }
+    .sk-d-line.short { width: 48%; }
+    .sk-d-summary { display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; }
+    .sk-d-stat { height: 54px; border-radius: 10px; }
+
+    /* Sheet shape: a toolbar, a header row, then grid rows of cells. */
+    .sk-s-toolbar { height: 15px; width: 58%; margin-bottom: 16px; }
+    .sk-s-row {
+      display: flex;
+      gap: 12px;
+      align-items: center;
+      padding: 9px 0;
+      border-bottom: 1px solid #f0f1f6;
+    }
+    .sk-s-row .sk-s-cell { height: 13px; }
+    .sk-s-row.sk-s-head .sk-s-cell { background: #dadeed; }
+    .sk-s-dot { width: 14px; height: 14px; border-radius: 50%; flex: 0 0 auto; }
+    .sk-s-cell.c-name { flex: 2.4 1 0; }
+    .sk-s-cell.c-md { flex: 1 1 0; }
+    .sk-s-cell.c-sm { flex: 0 0 64px; }
 
     .loading-caption {
       flex: 0 0 auto;
@@ -1764,7 +1803,7 @@
     }
 
     @media (prefers-reduced-motion: reduce) {
-      .skeleton-block::after { animation: none; }
+      .skl::after { animation: none; }
     }
 
     /* --- PLACEHOLDER / BROKEN LINK MESSAGE --- */
@@ -3044,17 +3083,49 @@
     <div class="iframe-pool" id="iframePool"></div>
 
     <div class="loading-message hidden" id="loadingMessage">
-      <div class="skeleton" aria-hidden="true">
-        <div class="skeleton-block skeleton-title"></div>
-        <div class="skeleton-cards">
-          <div class="skeleton-block skeleton-card"></div>
-          <div class="skeleton-block skeleton-card"></div>
-          <div class="skeleton-block skeleton-card"></div>
+      <!-- Dashboard shape -->
+      <div class="skeleton skeleton-dashboard" aria-hidden="true">
+        <div class="skl sk-d-title"></div>
+        <div class="skl sk-d-gauge"></div>
+        <div class="sk-d-cards">
+          <div class="sk-d-card"><div class="skl sk-d-donut"></div><div class="skl sk-d-line"></div><div class="skl sk-d-line short"></div></div>
+          <div class="sk-d-card"><div class="skl sk-d-donut"></div><div class="skl sk-d-line"></div><div class="skl sk-d-line short"></div></div>
+          <div class="sk-d-card"><div class="skl sk-d-donut"></div><div class="skl sk-d-line"></div><div class="skl sk-d-line short"></div></div>
+          <div class="sk-d-card"><div class="skl sk-d-donut"></div><div class="skl sk-d-line"></div><div class="skl sk-d-line short"></div></div>
+          <div class="sk-d-card"><div class="skl sk-d-donut"></div><div class="skl sk-d-line"></div><div class="skl sk-d-line short"></div></div>
+          <div class="sk-d-card"><div class="skl sk-d-donut"></div><div class="skl sk-d-line"></div><div class="skl sk-d-line short"></div></div>
         </div>
-        <div class="skeleton-block skeleton-line"></div>
-        <div class="skeleton-block skeleton-line"></div>
-        <div class="skeleton-block skeleton-line skeleton-line-short"></div>
+        <div class="sk-d-summary">
+          <div class="skl sk-d-stat"></div>
+          <div class="skl sk-d-stat"></div>
+          <div class="skl sk-d-stat"></div>
+          <div class="skl sk-d-stat"></div>
+        </div>
       </div>
+
+      <!-- Project sheet / grid shape -->
+      <div class="skeleton skeleton-sheet" aria-hidden="true">
+        <div class="skl sk-s-toolbar"></div>
+        <div class="sk-s-row sk-s-head">
+          <div class="skl sk-s-cell c-name"></div>
+          <div class="skl sk-s-cell c-sm"></div>
+          <div class="skl sk-s-cell c-sm"></div>
+          <div class="skl sk-s-cell c-md"></div>
+          <div class="skl sk-s-cell c-sm"></div>
+          <div class="skl sk-s-cell c-sm"></div>
+        </div>
+        <div class="sk-s-row"><div class="skl sk-s-dot"></div><div class="skl sk-s-cell c-name"></div><div class="skl sk-s-cell c-sm"></div><div class="skl sk-s-cell c-sm"></div><div class="skl sk-s-cell c-md"></div><div class="skl sk-s-cell c-sm"></div><div class="skl sk-s-cell c-sm"></div></div>
+        <div class="sk-s-row"><div class="skl sk-s-dot"></div><div class="skl sk-s-cell c-name"></div><div class="skl sk-s-cell c-sm"></div><div class="skl sk-s-cell c-sm"></div><div class="skl sk-s-cell c-md"></div><div class="skl sk-s-cell c-sm"></div><div class="skl sk-s-cell c-sm"></div></div>
+        <div class="sk-s-row"><div class="skl sk-s-dot"></div><div class="skl sk-s-cell c-name"></div><div class="skl sk-s-cell c-sm"></div><div class="skl sk-s-cell c-sm"></div><div class="skl sk-s-cell c-md"></div><div class="skl sk-s-cell c-sm"></div><div class="skl sk-s-cell c-sm"></div></div>
+        <div class="sk-s-row"><div class="skl sk-s-dot"></div><div class="skl sk-s-cell c-name"></div><div class="skl sk-s-cell c-sm"></div><div class="skl sk-s-cell c-sm"></div><div class="skl sk-s-cell c-md"></div><div class="skl sk-s-cell c-sm"></div><div class="skl sk-s-cell c-sm"></div></div>
+        <div class="sk-s-row"><div class="skl sk-s-dot"></div><div class="skl sk-s-cell c-name"></div><div class="skl sk-s-cell c-sm"></div><div class="skl sk-s-cell c-sm"></div><div class="skl sk-s-cell c-md"></div><div class="skl sk-s-cell c-sm"></div><div class="skl sk-s-cell c-sm"></div></div>
+        <div class="sk-s-row"><div class="skl sk-s-dot"></div><div class="skl sk-s-cell c-name"></div><div class="skl sk-s-cell c-sm"></div><div class="skl sk-s-cell c-sm"></div><div class="skl sk-s-cell c-md"></div><div class="skl sk-s-cell c-sm"></div><div class="skl sk-s-cell c-sm"></div></div>
+        <div class="sk-s-row"><div class="skl sk-s-dot"></div><div class="skl sk-s-cell c-name"></div><div class="skl sk-s-cell c-sm"></div><div class="skl sk-s-cell c-sm"></div><div class="skl sk-s-cell c-md"></div><div class="skl sk-s-cell c-sm"></div><div class="skl sk-s-cell c-sm"></div></div>
+        <div class="sk-s-row"><div class="skl sk-s-dot"></div><div class="skl sk-s-cell c-name"></div><div class="skl sk-s-cell c-sm"></div><div class="skl sk-s-cell c-sm"></div><div class="skl sk-s-cell c-md"></div><div class="skl sk-s-cell c-sm"></div><div class="skl sk-s-cell c-sm"></div></div>
+        <div class="sk-s-row"><div class="skl sk-s-dot"></div><div class="skl sk-s-cell c-name"></div><div class="skl sk-s-cell c-sm"></div><div class="skl sk-s-cell c-sm"></div><div class="skl sk-s-cell c-md"></div><div class="skl sk-s-cell c-sm"></div><div class="skl sk-s-cell c-sm"></div></div>
+        <div class="sk-s-row"><div class="skl sk-s-dot"></div><div class="skl sk-s-cell c-name"></div><div class="skl sk-s-cell c-sm"></div><div class="skl sk-s-cell c-sm"></div><div class="skl sk-s-cell c-md"></div><div class="skl sk-s-cell c-sm"></div><div class="skl sk-s-cell c-sm"></div></div>
+      </div>
+
       <div class="loading-caption">Loading Smartsheet view&hellip;</div>
     </div>
 
@@ -4944,6 +5015,25 @@
       }
     }
 
+    /* Dashboards (Home / Main Initiatives) use the dashboard-shaped skeleton;
+       everything else uses the project-sheet/grid shape. */
+    function isDashboardRoute(route) {
+      return Boolean(
+        route &&
+        route.type === "view" &&
+        (route.id === "home" || route.id === "mainInitiatives")
+      );
+    }
+
+    function setSkeletonVariant(route) {
+      if (!loadingMessage) {
+        return;
+      }
+
+      loadingMessage.classList.remove("show-dashboard", "show-sheet");
+      loadingMessage.classList.add(isDashboardRoute(route) ? "show-dashboard" : "show-sheet");
+    }
+
     function showLoadingMessage() {
       clearTimeout(loadingShowTimer);
       clearTimeout(loadingHideTimer);
@@ -5322,6 +5412,7 @@
       hidePlaceholderMessage();
       currentViewKey = viewKey;
       currentEmbedSrc = newEmbedLink;
+      setSkeletonVariant(route);
 
       const iframeRecord = activateIframeForRoute(route);
 
