@@ -1481,10 +1481,41 @@
       flex-shrink: 0;
       z-index: 11;
       box-shadow: 0 2px 6px rgba(0,0,0,0.08);
+      max-height: 240px;
+      overflow: hidden;
+      opacity: 1;
+      transform: translateY(0);
+      transition:
+        opacity 0.32s ease,
+        transform 0.4s cubic-bezier(0.22, 1, 0.36, 1),
+        max-height 0.4s ease,
+        padding 0.4s ease,
+        border-bottom-width 0.4s ease;
+    }
+
+    /* Animated exit: fade, slide up, and collapse so the content below
+       slides up smoothly to fill the space. */
+    .auth-refresh-banner.dismissing {
+      opacity: 0;
+      transform: translateY(-10px);
+      max-height: 0;
+      padding-top: 0;
+      padding-bottom: 0;
+      border-bottom-width: 0;
+      pointer-events: none;
     }
 
     .auth-refresh-banner.hidden {
       display: none;
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      .auth-refresh-banner {
+        transition: opacity 0.2s ease;
+      }
+      .auth-refresh-banner.dismissing {
+        transform: none;
+      }
     }
 
     .auth-refresh-banner-inner {
@@ -4612,6 +4643,10 @@
 
     let lastIframeInteractionAt = 0;
     let authReturnRefreshTimer = null;
+    let authBannerAutoHideTimer = null;
+    let authBannerMaxTimer = null;
+    const AUTH_BANNER_AUTO_HIDE_MS = 10000;
+    const AUTH_BANNER_MAX_LIFETIME_MS = 25000;
 
     function isPlaceholderLink(link) {
       if (!link) {
@@ -4887,6 +4922,25 @@
       }
 
       authRefreshBanner.classList.remove("hidden");
+      authRefreshBanner.classList.remove("dismissing");
+      startAuthBannerAutoHide();
+
+      /* Hard safety cap: the banner always goes away within this time, even if
+         the pointer never leaves it, so it can never get stuck on screen. */
+      clearTimeout(authBannerMaxTimer);
+      authBannerMaxTimer = setTimeout(hideAuthRefreshBanner, AUTH_BANNER_MAX_LIFETIME_MS);
+    }
+
+    /* Auto-dismiss the welcome-back banner after a short while so it never
+       lingers. The countdown pauses while the pointer or keyboard focus is on
+       the banner (see the hover/focus handlers), so it can't vanish mid-read. */
+    function startAuthBannerAutoHide() {
+      clearTimeout(authBannerAutoHideTimer);
+
+      authBannerAutoHideTimer = setTimeout(function() {
+        clearPossibleSmartsheetAuthReturn();
+        hideAuthRefreshBanner();
+      }, AUTH_BANNER_AUTO_HIDE_MS);
     }
 
     function scheduleAuthReturnRefreshCheck() {
@@ -4902,9 +4956,21 @@
     }
 
     function hideAuthRefreshBanner() {
-      if (authRefreshBanner) {
-        authRefreshBanner.classList.add("hidden");
+      clearTimeout(authBannerAutoHideTimer);
+      clearTimeout(authBannerMaxTimer);
+
+      if (!authRefreshBanner || authRefreshBanner.classList.contains("hidden")) {
+        return;
       }
+
+      /* Play the fade/slide-up, then remove it from the layout once it has
+         finished animating. */
+      authRefreshBanner.classList.add("dismissing");
+
+      window.setTimeout(function() {
+        authRefreshBanner.classList.add("hidden");
+        authRefreshBanner.classList.remove("dismissing");
+      }, 420);
     }
 
     function refreshSmartsheetIframes() {
@@ -7190,6 +7256,28 @@
         clearPossibleSmartsheetAuthReturn();
         hideAuthRefreshBanner();
       });
+    }
+
+    if (authRefreshBanner) {
+      /* Pause the auto-hide countdown while the visitor is hovering or
+         interacting with the banner, then resume it once they move away. */
+      const pauseAutoHide = function() {
+        clearTimeout(authBannerAutoHideTimer);
+      };
+
+      const resumeAutoHide = function() {
+        if (
+          !authRefreshBanner.classList.contains("hidden") &&
+          !authRefreshBanner.classList.contains("dismissing")
+        ) {
+          startAuthBannerAutoHide();
+        }
+      };
+
+      authRefreshBanner.addEventListener("mouseenter", pauseAutoHide);
+      authRefreshBanner.addEventListener("mouseleave", resumeAutoHide);
+      authRefreshBanner.addEventListener("focusin", pauseAutoHide);
+      authRefreshBanner.addEventListener("focusout", resumeAutoHide);
     }
 
     window.addEventListener("blur", function() {
