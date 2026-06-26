@@ -359,6 +359,12 @@
       display: block;
     }
 
+    /* After choosing a project or department, force the menu closed even if
+       the pointer is still over it; it re-enables once the pointer leaves. */
+    .dropdown.force-closed .dropdown-menu {
+      display: none !important;
+    }
+
     .dropdown-menu a {
       display: block;
       padding: 10px 16px;
@@ -7370,6 +7376,8 @@
           clickedLink.getAttribute("data-department-key")
         );
 
+        dismissContainingDropdown(clickedLink);
+
         runWithSaveCheck(function() {
           /* Prefer the seamless in-place switch; fall back to a reload. */
           if (!switchDepartmentInPlace(requestedPortalKey)) {
@@ -7387,6 +7395,7 @@
 
       if (isProjectViewLink) {
         event.preventDefault();
+        dismissContainingDropdown(clickedLink);
         handleProjectViewClick(clickedLink);
         return;
       }
@@ -7700,11 +7709,38 @@
       });
     }
 
+    /* Close the dropdown a clicked item belongs to. It re-enables when the
+       pointer next enters or leaves the dropdown (handlers below), so the menu
+       still opens normally afterward. */
+    function dismissContainingDropdown(element) {
+      const dropdown = element && element.closest ? element.closest(".dropdown") : null;
+
+      if (!dropdown) {
+        return;
+      }
+
+      dropdown.classList.add("force-closed");
+
+      /* Release focus so :focus-within does not keep the menu open. */
+      if (
+        document.activeElement &&
+        dropdown.contains(document.activeElement) &&
+        typeof document.activeElement.blur === "function"
+      ) {
+        document.activeElement.blur();
+      }
+    }
+
     document.querySelectorAll(".dropdown").forEach(function(dropdown) {
       dropdown.addEventListener("mouseenter", function() {
+        dropdown.classList.remove("force-closed");
         requestAnimationFrame(function() {
           positionDropdownMenu(dropdown);
         });
+      });
+
+      dropdown.addEventListener("mouseleave", function() {
+        dropdown.classList.remove("force-closed");
       });
 
       dropdown.addEventListener("focusin", function() {
