@@ -5349,11 +5349,10 @@
       }
     }
 
-    function showProjectSupportSequence() {
-      cancelProjectSupportSequence(true);
-      closeFaqPanel(false);
-      hideTopNavMessage(refreshReminder, true, false);
-      showTopNavMessage(projectRequestAccessButton);
+    /* The Request Access button stays up for a while, then makes way for the
+       FAQ button. Pulled out so the countdown can be paused/resumed on hover. */
+    function startProjectAccessTimer() {
+      clearTimeout(projectAccessDisplayTimer);
 
       projectAccessDisplayTimer = setTimeout(function() {
         projectAccessDisplayTimer = null;
@@ -5362,6 +5361,14 @@
           showTopNavMessage(smartsheetFaqButton);
         });
       }, PROJECT_REQUEST_ACCESS_VISIBLE_MS);
+    }
+
+    function showProjectSupportSequence() {
+      cancelProjectSupportSequence(true);
+      closeFaqPanel(false);
+      hideTopNavMessage(refreshReminder, true, false);
+      showTopNavMessage(projectRequestAccessButton);
+      startProjectAccessTimer();
     }
 
     function setNavPopup(shouldShow, message) {
@@ -7174,6 +7181,28 @@
       projectRequestAccessButton.addEventListener("click", function(event) {
         openAccessRequestEmail(event);
       });
+
+      /* Pause the "make way for the FAQ button" countdown while the pointer or
+         keyboard focus is on Request Access, then resume it once they leave so
+         it can't switch away while someone is about to click it. */
+      const pauseProjectAccess = function() {
+        clearTimeout(projectAccessDisplayTimer);
+        projectAccessDisplayTimer = null;
+      };
+
+      const resumeProjectAccess = function() {
+        if (
+          projectAccessDisplayTimer === null &&
+          projectRequestAccessButton.classList.contains("is-visible")
+        ) {
+          startProjectAccessTimer();
+        }
+      };
+
+      projectRequestAccessButton.addEventListener("mouseenter", pauseProjectAccess);
+      projectRequestAccessButton.addEventListener("mouseleave", resumeProjectAccess);
+      projectRequestAccessButton.addEventListener("focusin", pauseProjectAccess);
+      projectRequestAccessButton.addEventListener("focusout", resumeProjectAccess);
     }
 
     if (smartsheetFaqButton) {
