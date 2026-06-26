@@ -1581,6 +1581,90 @@
         visibility 0s linear 0s;
     }
 
+    /* --- FULL-SCREEN / FOCUS MODE --- */
+    .nav-fullscreen-button {
+      flex: 0 0 auto;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 38px;
+      height: 38px;
+      margin: 0 2px;
+      padding: 0;
+      border: none;
+      border-radius: 9px;
+      background: transparent;
+      color: #ffffff;
+      cursor: pointer;
+      transition: background 0.18s ease;
+    }
+
+    .nav-fullscreen-button:hover,
+    .nav-fullscreen-button:focus {
+      background: rgba(255, 255, 255, 0.14);
+      outline: none;
+    }
+
+    .nav-fullscreen-button svg {
+      width: 20px;
+      height: 20px;
+      fill: none;
+      stroke: currentColor;
+      stroke-width: 2;
+      stroke-linecap: round;
+      stroke-linejoin: round;
+    }
+
+    .nav-fullscreen-collapse { display: none; }
+    body.is-fullscreen .nav-fullscreen-expand { display: none; }
+    body.is-fullscreen .nav-fullscreen-collapse { display: inline; }
+
+    .fullscreen-exit-button {
+      display: none;
+      position: absolute;
+      top: 12px;
+      right: 14px;
+      z-index: 20;
+      align-items: center;
+      gap: 7px;
+      padding: 8px 14px;
+      border: none;
+      border-radius: 9px;
+      background: rgba(37, 39, 99, 0.92);
+      color: #ffffff;
+      font: inherit;
+      font-size: 14px;
+      font-weight: 600;
+      cursor: pointer;
+      box-shadow: 0 6px 18px rgba(0, 0, 0, 0.25);
+    }
+
+    .fullscreen-exit-button:hover,
+    .fullscreen-exit-button:focus {
+      background: #1c1e4f;
+      outline: none;
+    }
+
+    .fullscreen-exit-button svg {
+      width: 18px;
+      height: 18px;
+      fill: none;
+      stroke: currentColor;
+      stroke-width: 2;
+      stroke-linecap: round;
+      stroke-linejoin: round;
+    }
+
+    .iframe-wrap:fullscreen,
+    .iframe-wrap:-webkit-full-screen {
+      background: #ffffff;
+    }
+
+    .iframe-wrap:fullscreen .fullscreen-exit-button,
+    .iframe-wrap:-webkit-full-screen .fullscreen-exit-button {
+      display: inline-flex;
+    }
+
     /* --- SMARTER LOADING MESSAGE --- */
     .loading-message {
       position: absolute;
@@ -2797,6 +2881,20 @@
       </button>
     </div>
 
+    <button class="nav-fullscreen-button"
+            id="fullscreenToggleButton"
+            type="button"
+            aria-pressed="false"
+            title="Full screen"
+            aria-label="Full screen">
+      <svg class="nav-fullscreen-icon nav-fullscreen-expand" viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+        <path d="M4 9V4h5M20 9V4h-5M4 15v5h5M20 15v5h-5"></path>
+      </svg>
+      <svg class="nav-fullscreen-icon nav-fullscreen-collapse" viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+        <path d="M9 4v5H4M15 4v5h5M9 20v-5H4M15 20v-5h5"></path>
+      </svg>
+    </button>
+
     <a class="swgas-logo-link"
        id="departmentSharePointLink"
        href="#"
@@ -2895,7 +2993,14 @@
     </div>
   </div>
 
-  <div class="iframe-wrap">
+  <div class="iframe-wrap" id="iframeWrap">
+    <button class="fullscreen-exit-button" id="fullscreenExitButton" type="button" aria-label="Exit full screen">
+      <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+        <path d="M9 4v5H4M15 4v5h5M9 20v-5H4M15 20v-5h5"></path>
+      </svg>
+      <span>Exit full screen</span>
+    </button>
+
     <div class="iframe-pool" id="iframePool"></div>
 
     <div class="loading-message hidden" id="loadingMessage">
@@ -3620,6 +3725,62 @@
       faqVideoFolder: "",
 
       smartsheetFaqs: [
+        {
+          id: "how-to-use-this-portal",
+          question: "How do I use this portal? (Start here)",
+          visible: true,
+          answerHtml: "<p>This portal is your home base for HR project tracking. Use the blue bar at the top to move around:</p>" +
+                      "<ul>" +
+                      "<li><strong>Main Initiatives</strong> &mdash; the dashboard view: overall status, each team's progress, and total vs. remaining tasks at a glance.</li>" +
+                      "<li><strong>All Projects (View Only)</strong> &mdash; browse every project's tasks in one read-only list.</li>" +
+                      "<li><strong>All HR Personal Tasks</strong> &mdash; just the tasks assigned to you, which you can edit.</li>" +
+                      "<li><strong>All Projects</strong> dropdown &mdash; open a specific project to view or update it.</li>" +
+                      "<li><strong>Navigation</strong> dropdown &mdash; jump to another department or leader.</li>" +
+                      "</ul>",
+          video: false,
+          videoFileName: "",
+          repeat: false
+        },
+        {
+          id: "view-differences",
+          question: "What's the difference between the Dashboard, All Projects, and Personal Tasks?",
+          visible: true,
+          answerHtml: "<p><strong>Main Initiatives / Dashboard</strong> is for <em>seeing status</em> &mdash; the gauges and task counts roll up how everything is going.</p>" +
+                      "<p><strong>All Projects (View Only)</strong> is for <em>browsing</em> every project's tasks without changing anything.</p>" +
+                      "<p><strong>All HR Personal Tasks</strong> is for <em>doing your work</em> &mdash; it shows only the tasks assigned to you and lets you update them.</p>" +
+                      "<p>To change a whole project, open it from the <strong>All Projects</strong> dropdown.</p>",
+          video: false,
+          videoFileName: "",
+          repeat: false
+        },
+        {
+          id: "update-a-project",
+          question: "How do I update or edit a project?",
+          visible: true,
+          answerHtml: "<p>Open the project from the <strong>All Projects</strong> dropdown at the top, then edit it like a normal Smartsheet grid.</p>" +
+                      "<p><strong>Important:</strong> Smartsheet does not auto-save. Click the <strong>Save</strong> icon at the top-left of the sheet before you leave the page, or your changes can be lost.</p>",
+          video: false,
+          videoFileName: "",
+          repeat: false
+        },
+        {
+          id: "request-access",
+          question: "How do I get access to edit a project?",
+          visible: true,
+          answerHtml: "<p>If a project opens as read-only, use the <strong>Request Access</strong> button (top-right) to email the portal owner for editing access.</p>",
+          video: false,
+          videoFileName: "",
+          repeat: false
+        },
+        {
+          id: "full-screen-help",
+          question: "How do I make a dashboard or sheet bigger?",
+          visible: true,
+          answerHtml: "<p>Click the <strong>full-screen</strong> button (the expand icon next to the logo, top-right) to make the current dashboard or project sheet fill the whole screen &mdash; handy for wide project sheets and for status meetings. Press <strong>Esc</strong> or the <strong>Exit full screen</strong> button to come back.</p>",
+          video: false,
+          videoFileName: "",
+          repeat: false
+        },
         {
           id: "row-section-topic-task",
           question: "How do I make a row into a Section, Topic, and Task?",
@@ -6525,6 +6686,67 @@
         window.location.reload();
       }
     });
+
+    /* ==========================================================
+       FULL-SCREEN / FOCUS MODE
+       Expands the content area so a Smartsheet dashboard or project
+       sheet fills the screen. Exit with the button or the Esc key.
+       ========================================================== */
+    (function setupFullscreenMode() {
+      const toggleButton = document.getElementById("fullscreenToggleButton");
+      const exitButton = document.getElementById("fullscreenExitButton");
+      const wrap = document.getElementById("iframeWrap");
+
+      if (!toggleButton || !wrap) {
+        return;
+      }
+
+      const requestFullscreen = wrap.requestFullscreen || wrap.webkitRequestFullscreen;
+
+      /* If the browser cannot do this, do not show a dead button. */
+      if (!requestFullscreen) {
+        toggleButton.style.display = "none";
+        return;
+      }
+
+      function fullscreenElement() {
+        return document.fullscreenElement || document.webkitFullscreenElement || null;
+      }
+
+      function enterFullscreen() {
+        try { requestFullscreen.call(wrap); } catch (error) { /* ignore */ }
+      }
+
+      function leaveFullscreen() {
+        const exit = document.exitFullscreen || document.webkitExitFullscreen;
+        if (exit) {
+          try { exit.call(document); } catch (error) { /* ignore */ }
+        }
+      }
+
+      toggleButton.addEventListener("click", function() {
+        if (fullscreenElement()) {
+          leaveFullscreen();
+        } else {
+          enterFullscreen();
+        }
+      });
+
+      if (exitButton) {
+        exitButton.addEventListener("click", leaveFullscreen);
+      }
+
+      function handleFullscreenChange() {
+        const isOn = fullscreenElement() === wrap;
+        document.body.classList.toggle("is-fullscreen", isOn);
+        toggleButton.setAttribute("aria-pressed", isOn ? "true" : "false");
+        toggleButton.setAttribute("aria-label", isOn ? "Exit full screen" : "Full screen");
+        toggleButton.title = isOn ? "Exit full screen" : "Full screen";
+      }
+
+      document.addEventListener("fullscreenchange", handleFullscreenChange);
+      document.addEventListener("webkitfullscreenchange", handleFullscreenChange);
+    })();
 
     window.addEventListener("pageshow", finishPortalArrival);
 
