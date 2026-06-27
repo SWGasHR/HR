@@ -1720,6 +1720,40 @@
       display: inline-flex;
     }
 
+    /* --- ASK COPILOT PANEL --- */
+    .copilot-panel-body {
+      position: relative;
+      flex: 1 1 auto;
+      min-height: 0;
+      display: flex;
+    }
+
+    .copilot-frame {
+      flex: 1 1 auto;
+      width: 100%;
+      height: 100%;
+      border: none;
+      display: block;
+    }
+
+    .copilot-setup {
+      position: absolute;
+      inset: 0;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+      padding: 30px;
+      text-align: center;
+      color: #555;
+      font-size: 14px;
+      line-height: 1.5;
+    }
+
+    .copilot-panel.connected .copilot-setup { display: none; }
+    .copilot-panel:not(.connected) .copilot-frame { display: none; }
+
     /* --- SMARTER LOADING MESSAGE --- */
     .loading-message {
       position: absolute;
@@ -3076,6 +3110,41 @@
     </div>
   </aside>
 
+  <!-- Ask Copilot panel (only used when COPILOT_EMBED_URL is set). -->
+  <div class="faq-panel-backdrop" id="copilotPanelBackdrop" aria-hidden="true"></div>
+
+  <aside class="faq-panel copilot-panel"
+         id="copilotPanel"
+         aria-labelledby="copilotPanelTitle"
+         aria-hidden="true">
+    <div class="faq-panel-header">
+      <div class="faq-panel-heading-wrap">
+        <h2 class="faq-panel-title" id="copilotPanelTitle">Ask Copilot</h2>
+        <p class="faq-panel-subtitle">Ask anything about the dashboards or how Smartsheet works.</p>
+      </div>
+
+      <button class="faq-panel-close"
+              id="copilotPanelClose"
+              type="button"
+              aria-label="Close Copilot">
+        <svg viewBox="0 0 18 18" aria-hidden="true" focusable="false">
+          <path d="M4 4l10 10M14 4 4 14"></path>
+        </svg>
+      </button>
+    </div>
+
+    <div class="copilot-panel-body">
+      <iframe class="copilot-frame"
+              id="copilotFrame"
+              title="Copilot assistant"
+              allow="clipboard-write; microphone"></iframe>
+      <div class="copilot-setup" id="copilotSetup">
+        <p>The Copilot assistant isn&rsquo;t connected yet.</p>
+        <p>Add your Copilot Studio embed URL to <strong>COPILOT_EMBED_URL</strong> near the top of portal.html.</p>
+      </div>
+    </div>
+  </aside>
+
   <div class="header-bar hidden" id="warningBar">
     <div class="header-left">
       <div class="arrow-down">⬇️</div>
@@ -3253,6 +3322,30 @@
        this line never executes, the recovery watchdog above notices, and a
        friendly message appears instead of a blank page. */
     window.__hrPortalBooted = true;
+
+    /* ==========================================================
+       ASK COPILOT  (optional AI assistant side panel)
+
+       Paste your Microsoft Copilot Studio "Embed" URL between the quotes
+       below to turn on the Ask Copilot panel. While it is empty, nothing
+       changes and the Smartsheet FAQ panel stays exactly as it is.
+
+       HOW TO SET IT UP:
+       1. In Microsoft Copilot Studio, create an agent and add your
+          knowledge (a doc about your dashboards + how Smartsheet works;
+          your FAQ content is a good start).
+       2. Publish it, then open Channels -> Custom website / "Embed".
+       3. Copy the embed URL (it looks like
+          https://copilotstudio.microsoft.com/environments/.../webchat?...)
+          and paste it below.
+       4. Bump the ?v= number in index.html and 404.html so everyone gets
+          the update.
+
+       When this is set, the "Smartsheet FAQs" buttons become "Ask Copilot"
+       and open the assistant instead of the FAQ list.
+       ========================================================== */
+    const COPILOT_EMBED_URL = "";
+    const copilotConfigured = typeof COPILOT_EMBED_URL === "string" && COPILOT_EMBED_URL.trim().length > 0;
 
     /* ==========================================================
        SHARED PORTAL SETTINGS
@@ -6615,6 +6708,12 @@
     }
 
     function openFaqPanel() {
+      /* When Copilot is configured, the FAQ buttons open it instead. */
+      if (copilotConfigured) {
+        openCopilotPanel();
+        return;
+      }
+
       if (!smartsheetFaqPanel || !faqPanelBackdrop) {
         return;
       }
@@ -6643,6 +6742,9 @@
     }
 
     function closeFaqPanel(restoreFocus) {
+      /* Closing the FAQ also closes the Copilot panel (e.g. on navigation). */
+      closeCopilotPanel();
+
       if (!smartsheetFaqPanel || !faqPanelBackdrop) {
         return;
       }
@@ -7225,6 +7327,91 @@
         event.stopPropagation();
         openFaqPanel();
       });
+    }
+
+    /* ----- Ask Copilot panel (used when COPILOT_EMBED_URL is set) ----- */
+    const copilotPanel = document.getElementById("copilotPanel");
+    const copilotPanelBackdrop = document.getElementById("copilotPanelBackdrop");
+    const copilotPanelClose = document.getElementById("copilotPanelClose");
+    const copilotFrame = document.getElementById("copilotFrame");
+    let copilotFrameLoaded = false;
+    let lastFocusedBeforeCopilot = null;
+
+    function openCopilotPanel() {
+      if (!copilotPanel || !copilotPanelBackdrop) {
+        return;
+      }
+
+      /* Load the embed the first time the panel is opened. */
+      if (copilotConfigured && !copilotFrameLoaded && copilotFrame) {
+        copilotFrame.src = COPILOT_EMBED_URL;
+        copilotFrameLoaded = true;
+        copilotPanel.classList.add("connected");
+      }
+
+      lastFocusedBeforeCopilot = document.activeElement;
+      copilotPanel.classList.add("open");
+      copilotPanelBackdrop.classList.add("open");
+      copilotPanel.setAttribute("aria-hidden", "false");
+      copilotPanelBackdrop.setAttribute("aria-hidden", "false");
+
+      if (copilotPanelClose) {
+        setTimeout(function() {
+          copilotPanelClose.focus();
+        }, 380);
+      }
+    }
+
+    function closeCopilotPanel() {
+      if (!copilotPanel || !copilotPanelBackdrop || !copilotPanel.classList.contains("open")) {
+        return;
+      }
+
+      copilotPanel.classList.remove("open");
+      copilotPanelBackdrop.classList.remove("open");
+      copilotPanel.setAttribute("aria-hidden", "true");
+      copilotPanelBackdrop.setAttribute("aria-hidden", "true");
+
+      if (lastFocusedBeforeCopilot && typeof lastFocusedBeforeCopilot.focus === "function") {
+        lastFocusedBeforeCopilot.focus();
+      }
+      lastFocusedBeforeCopilot = null;
+    }
+
+    if (copilotPanelClose) {
+      copilotPanelClose.addEventListener("click", closeCopilotPanel);
+    }
+
+    if (copilotPanelBackdrop) {
+      copilotPanelBackdrop.addEventListener("click", closeCopilotPanel);
+    }
+
+    document.addEventListener("keydown", function(event) {
+      if (event.key === "Escape" && copilotPanel && copilotPanel.classList.contains("open")) {
+        closeCopilotPanel();
+      }
+    });
+
+    /* When Copilot is on, relabel the Smartsheet FAQ buttons to "Ask Copilot".
+       Their click already routes to the Copilot panel via openFaqPanel. */
+    if (copilotConfigured) {
+      const relabelToCopilot = function(button, titleSelector, subtitleSelector) {
+        if (!button) {
+          return;
+        }
+        const title = button.querySelector(titleSelector);
+        const subtitle = button.querySelector(subtitleSelector);
+        if (title) {
+          title.textContent = "Ask Copilot";
+        }
+        if (subtitle) {
+          subtitle.textContent = "Ask about the dashboards or Smartsheet";
+        }
+        button.setAttribute("aria-controls", "copilotPanel");
+      };
+
+      relabelToCopilot(supportFaqButton, ".support-action-title", ".support-action-subtitle");
+      relabelToCopilot(smartsheetFaqButton, ".nav-project-action-title", ".nav-project-action-subtitle");
     }
 
     if (faqPanelClose) {
