@@ -36,38 +36,69 @@
     /*
       LOADER for the HR Project Portal.
 
-      This file — and its identical twin 404.html — fetches the real portal
-      markup from portal.html and renders it in place. That lets every
-      department and leader share ONE source file (portal.html) while clean
-      URLs keep working on GitHub Pages (GitHub serves 404.html for any path
-      that is not a real file, and this loader renders the portal there too).
+      This file — and its identical twin 404.html — fetches the portal in
+      two pieces and renders them in place:
 
-      portal.html is the single source of truth — edit it directly. There are
-      no runtime patches anymore; what you put in portal.html is what ships.
+        • portal-config.js — THE CONTENT (departments, Smartsheet links,
+          projects, FAQs). This is the file you edit day to day. It is
+          fetched fresh on every page load, so a saved edit is live
+          immediately — NO version bump needed.
 
-      WHEN YOU EDIT portal.html: bump the ?v= number in PORTAL_URL below.
-      Between version bumps the browser caches portal.html, so revisiting and
-      switching departments is fast and does not re-download the whole portal.
-      Changing ?v= makes every browser fetch the fresh copy on the next load.
+        • portal.html — the shell (layout and behavior). This file is
+          cached between version bumps so revisiting and switching
+          departments stays fast.
+
+      Clean URLs keep working on GitHub Pages because GitHub serves
+      404.html for any path that is not a real file, and this loader
+      renders the portal there too.
+
+      ONLY WHEN YOU EDIT portal.html (rare, structural changes): bump the
+      ?v= number in PORTAL_URL below — in BOTH index.html and 404.html —
+      so every browser fetches the fresh copy on the next load.
     */
     (async function () {
       "use strict";
 
-      const PORTAL_URL = "/HR/portal.html?v=20260625-12";
+      const PORTAL_URL = "/HR/portal.html?v=20260706-1";
+      const CONFIG_URL = "/HR/portal-config.js";
 
       try {
-        const response = await fetch(PORTAL_URL);
+        const [portalResponse, configResponse] = await Promise.all([
+          fetch(PORTAL_URL),
+          /* "no-cache" means: always check with the server whether
+             portal-config.js changed, so content edits show up on the
+             very next load (unchanged copies still answer quickly). */
+          fetch(CONFIG_URL, { cache: "no-cache" })
+        ]);
 
-        if (!response.ok) {
-          throw new Error("The portal content could not be loaded (" + response.status + ").");
+        if (!portalResponse.ok) {
+          throw new Error("The portal content could not be loaded (" + portalResponse.status + ").");
         }
 
-        const html = await response.text();
+        const html = await portalResponse.text();
 
         // Basic sanity check that we received the real portal and not, for
         // example, an error page returned with a 200 status.
-        if (!html.includes("departmentName:") || !html.includes("</html>")) {
+        if (!html.includes("__hrPortalBooted") || !html.includes("</html>")) {
           throw new Error("The portal content did not look valid.");
+        }
+
+        /* Run the content file first so window.HR_PORTAL_DATA exists by
+           the time the portal boots. A typo in portal-config.js is
+           recorded instead of thrown, so the portal can still render its
+           friendly "fix your last edit" recovery message. */
+        try {
+          if (!configResponse.ok) {
+            throw new Error("portal-config.js could not be loaded (" + configResponse.status + ").");
+          }
+          const configSource = await configResponse.text();
+          new Function(configSource)();
+          if (!window.HR_PORTAL_DATA) {
+            throw new Error("portal-config.js ran but did not set window.HR_PORTAL_DATA.");
+          }
+        } catch (configError) {
+          console.error(configError);
+          window.__hrPortalConfigError = String(configError);
         }
 
         document.open();
