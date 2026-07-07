@@ -820,7 +820,7 @@ window.HR_PORTAL_DATA = {
         { id: "benefits-project-template-4", label: "Project Template 4", embedSrc: "INSERT_BENEFITS_PROJECT_TEMPLATE_4_EMBED_LINK_HERE", visible: false }
       ],
       archiveProjects: [
-        { id: "short-term-projects-archive-benefits", label: "Short-Term Projects Archive (Benefits)", embedSrc: "INSERT_LINK_HERE", visible: false },
+        { id: "short-term-projects-archive-benefits", label: "Short-Term Projects Archive (Benefits)", embedSrc: "https://app.smartsheet.com/b/publish?EQBCT=3ec3a7381d124c7193552e291d0ac87c", visible: true },
         { id: "open enrollment 2025", label: "Open Enrollment 2025", embedSrc: "https://app.smartsheet.com/b/publish?EQBCT=e606315264984f84bd6e288a6871ec5a", visible: true },
         { id: "benefits-archive-template-2", label: "Project Template 2", embedSrc: "INSERT_BENEFITS_ARCHIVE_TEMPLATE_2_EMBED_LINK_HERE", visible: false},
         { id: "benefits-archive-template-3", label: "Project Template 3", embedSrc: "INSERT_BENEFITS_ARCHIVE_TEMPLATE_3_EMBED_LINK_HERE", visible: false },
@@ -841,7 +841,7 @@ window.HR_PORTAL_DATA = {
         { id: "compensation-project-template-4", label: "Project Template 4", embedSrc: "INSERT_COMPENSATION_PROJECT_TEMPLATE_4_EMBED_LINK_HERE", visible: false }
       ],
       archiveProjects: [
-        { id: "short-term-projects-archive-compensation", label: "Short-Term Projects Archive (Compensation)", embedSrc: "INSERT_LINK_HERE", visible: false },
+        { id: "short-term-projects-archive-compensation", label: "Short-Term Projects Archive (Compensation)", embedSrc: "https://app.smartsheet.com/b/publish?EQBCT=a804efa9592b4ea29d31132482d42927", visible: true },
         { id: "compensation-archive-template-2", label: "Project Template 2", embedSrc: "INSERT_COMPENSATION_ARCHIVE_TEMPLATE_2_EMBED_LINK_HERE", visible: false },
         { id: "compensation-archive-template-3", label: "Project Template 3", embedSrc: "INSERT_COMPENSATION_ARCHIVE_TEMPLATE_3_EMBED_LINK_HERE", visible: false },
         { id: "compensation-archive-template-4", label: "Project Template 4", embedSrc: "INSERT_COMPENSATION_ARCHIVE_TEMPLATE_4_EMBED_LINK_HERE", visible: false },
@@ -861,7 +861,7 @@ window.HR_PORTAL_DATA = {
         { id: "dei-project-template-4", label: "Project Template 4", embedSrc: "INSERT_DEI_PROJECT_TEMPLATE_4_EMBED_LINK_HERE", visible: false }
       ],
       archiveProjects: [
-        { id: "short-term-projects-archive-dei", label: "Short-Term Projects Archive (DE&I)", embedSrc: "INSERT_LINK_HERE", visible: false },
+        { id: "short-term-projects-archive-dei", label: "Short-Term Projects Archive (DE&I)", embedSrc: "https://app.smartsheet.com/b/publish?EQBCT=9422817be80f471fa4f6487b5ce6dc50", visible: true },
         { id: "dei-archive-template-2", label: "Project Template 2", embedSrc: "INSERT_DEI_ARCHIVE_TEMPLATE_2_EMBED_LINK_HERE", visible: false },
         { id: "dei-archive-template-3", label: "Project Template 3", embedSrc: "INSERT_DEI_ARCHIVE_TEMPLATE_3_EMBED_LINK_HERE", visible: false },
         { id: "dei-archive-template-4", label: "Project Template 4", embedSrc: "INSERT_DEI_ARCHIVE_TEMPLATE_4_EMBED_LINK_HERE", visible: false },
@@ -882,7 +882,7 @@ window.HR_PORTAL_DATA = {
         { id: "employee-experience-project-template-4", label: "Project Template 4", embedSrc: "INSERT_EMPLOYEE_EXPERIENCE_PROJECT_TEMPLATE_4_EMBED_LINK_HERE", visible: false }
       ],
       archiveProjects: [
-        { id: "short-term-projects-archive-ex", label: "Short-Term Projects Archive (EX)", embedSrc: "INSERT_LINK_HERE", visible: false },
+        { id: "short-term-projects-archive-ex", label: "Short-Term Projects Archive (EX)", embedSrc: "https://app.smartsheet.com/b/publish?EQBCT=adce2600c0bb4b168a6fc1d2b53d1c22", visible: true },
         { id: "tyctwd-2026", label: "TYCTWD (2026)", embedSrc: "https://app.smartsheet.com/b/publish?EQBCT=d47cd6a5a19f4c5f92e94a813dcc3be0", visible: true },
         { id: "employee-experience-archive-template-3", label: "Project Template 3", embedSrc: "INSERT_EMPLOYEE_EXPERIENCE_ARCHIVE_TEMPLATE_3_EMBED_LINK_HERE", visible: false },
         { id: "employee-experience-archive-template-4", label: "Project Template 4", embedSrc: "INSERT_EMPLOYEE_EXPERIENCE_ARCHIVE_TEMPLATE_4_EMBED_LINK_HERE", visible: false },
@@ -902,7 +902,7 @@ window.HR_PORTAL_DATA = {
         { id: "hrbp-project-template-4", label: "Project Template 4", embedSrc: "INSERT_HRBP_PROJECT_TEMPLATE_4_EMBED_LINK_HERE", visible: false }
       ],
       archiveProjects: [
-        { id: "short-term-projects-archive-hrbp", label: "Short-Term Projects Archive (HRBP)", embedSrc: "INSERT_LINK_HERE", visible: false },
+        { id: "short-term-projects-archive-hrbp", label: "Short-Term Projects Archive (HRBP)", embedSrc: "https://app.smartsheet.com/b/publish?EQBCT=44ebd292781c46d0879ef1174f657e75", visible: true },
         { id: "hrbp-archive-template-2", label: "Project Template 2", embedSrc: "INSERT_HRBP_ARCHIVE_TEMPLATE_2_EMBED_LINK_HERE", visible: false },
         { id: "hrbp-archive-template-3", label: "Project Template 3", embedSrc: "INSERT_HRBP_ARCHIVE_TEMPLATE_3_EMBED_LINK_HERE", visible: false },
         { id: "hrbp-archive-template-4", label: "Project Template 4", embedSrc: "INSERT_HRBP_ARCHIVE_TEMPLATE_4_EMBED_LINK_HERE", visible: false },
@@ -923,8 +923,8 @@ window.HR_PORTAL_DATA = {
         { id: "hr-change-management-project-template-4", label: "Project Template 4", embedSrc: "INSERT_HR_CHANGE_MANAGEMENT_PROJECT_TEMPLATE_4_EMBED_LINK_HERE", visible: false }
       ],
       archiveProjects: [
-        { id: "short-term-projects-archive-hrcm", label: "Short-Term Projects Archive (HRCM)", embedSrc: "INSERT_LINK_HERE", visible: false },
-        { id: "hr-change-management-archive-template-2", label: "Project Template 2", embedSrc: "INSERT_HR_CHANGE_MANAGEMENT_ARCHIVE_TEMPLATE_2_EMBED_LINK_HERE", visible: false },
+        { id: "short-term-projects-archive-hrcm", label: "Short-Term Projects Archive (HRCM)", embedSrc: "https://app.smartsheet.com/b/publish?EQBCT=b0dde73313f04cbcbb1c91a2a97fecde", visible: false },
+        { id: "hr-change-management-archive-template-2", label: "Project Template 2", embedSrc: "INSERT_HR_CHANGE_MANAGEMENT_ARCHIVE_TEMPLATE_2_EMBED_LINK_HERE", visible: true },
         { id: "hr-change-management-archive-template-3", label: "Project Template 3", embedSrc: "INSERT_HR_CHANGE_MANAGEMENT_ARCHIVE_TEMPLATE_3_EMBED_LINK_HERE", visible: false },
         { id: "hr-change-management-archive-template-4", label: "Project Template 4", embedSrc: "INSERT_HR_CHANGE_MANAGEMENT_ARCHIVE_TEMPLATE_4_EMBED_LINK_HERE", visible: false },
         { id: "hr-change-management-archive-template-5", label: "Project Template 5", embedSrc: "INSERT_HR_CHANGE_MANAGEMENT_ARCHIVE_TEMPLATE_5_EMBED_LINK_HERE", visible: false }
@@ -943,7 +943,7 @@ window.HR_PORTAL_DATA = {
         { id: "hrs-project-template-4", label: "Project Template 4", embedSrc: "INSERT_HRS_PROJECT_TEMPLATE_4_EMBED_LINK_HERE", visible: false }
       ],
       archiveProjects: [
-        { id: "short-term-projects-archive-hrs", label: "Short-Term Projects Archive (HRS)", embedSrc: "INSERT_LINK_HERE", visible: false },
+        { id: "short-term-projects-archive-hrs", label: "Short-Term Projects Archive (HRS)", embedSrc: "https://app.smartsheet.com/b/publish?EQBCT=5211c76e0916469996bc22aefe4870b6", visible: true },
         { id: "hrs-archive-template-2", label: "Project Template 2", embedSrc: "INSERT_HRS_ARCHIVE_TEMPLATE_2_EMBED_LINK_HERE", visible: false },
         { id: "hrs-archive-template-3", label: "Project Template 3", embedSrc: "INSERT_HRS_ARCHIVE_TEMPLATE_3_EMBED_LINK_HERE", visible: false },
         { id: "hrs-archive-template-4", label: "Project Template 4", embedSrc: "INSERT_HRS_ARCHIVE_TEMPLATE_4_EMBED_LINK_HERE", visible: false },
@@ -965,7 +965,7 @@ window.HR_PORTAL_DATA = {
         { id: "hrss-project-template-4", label: "Project Template 4", embedSrc: "INSERT_HRSS_PROJECT_TEMPLATE_4_EMBED_LINK_HERE", visible: false }
       ],
       archiveProjects: [
-        { id: "short-term-projects-archive-hrss", label: "Short-Term Projects Archive (HRSS)", embedSrc: "INSERT_LINK_HERE", visible: false },
+        { id: "short-term-projects-archive-hrss", label: "Short-Term Projects Archive (HRSS)", embedSrc: "https://app.smartsheet.com/b/publish?EQBCT=0fd987cb93b84f2aa57223f4f0643c49", visible: true },
         { id: "hrss-archive-template-2", label: "Project Template 2", embedSrc: "INSERT_HRSS_ARCHIVE_TEMPLATE_2_EMBED_LINK_HERE", visible: false },
         { id: "hrss-archive-template-3", label: "Project Template 3", embedSrc: "INSERT_HRSS_ARCHIVE_TEMPLATE_3_EMBED_LINK_HERE", visible: false },
         { id: "hrss-archive-template-4", label: "Project Template 4", embedSrc: "INSERT_HRSS_ARCHIVE_TEMPLATE_4_EMBED_LINK_HERE", visible: false },
@@ -986,8 +986,8 @@ window.HR_PORTAL_DATA = {
         { id: "labor-relations-project-template-4", label: "Project Template 4", embedSrc: "INSERT_LABOR_RELATIONS_PROJECT_TEMPLATE_4_EMBED_LINK_HERE", visible: false }
       ],
       archiveProjects: [
-        { id: "short-term-projects-archive-lr", label: "Short-Term Projects Archive (LR)", embedSrc: "INSERT_LINK_HERE", visible: false },
-        { id: "labor-relations-archive-template-2", label: "Project Template 2", embedSrc: "INSERT_LABOR_RELATIONS_ARCHIVE_TEMPLATE_2_EMBED_LINK_HERE", visible: false },
+        { id: "short-term-projects-archive-lr", label: "Short-Term Projects Archive (LR)", embedSrc: "https://app.smartsheet.com/b/publish?EQBCT=09cea3f0fcac432fa19f46ba5a8405d5", visible: false },
+        { id: "labor-relations-archive-template-2", label: "Project Template 2", embedSrc: "INSERT_LABOR_RELATIONS_ARCHIVE_TEMPLATE_2_EMBED_LINK_HERE", visible: true },
         { id: "labor-relations-archive-template-3", label: "Project Template 3", embedSrc: "INSERT_LABOR_RELATIONS_ARCHIVE_TEMPLATE_3_EMBED_LINK_HERE", visible: false },
         { id: "labor-relations-archive-template-4", label: "Project Template 4", embedSrc: "INSERT_LABOR_RELATIONS_ARCHIVE_TEMPLATE_4_EMBED_LINK_HERE", visible: false },
         { id: "labor-relations-archive-template-5", label: "Project Template 5", embedSrc: "INSERT_LABOR_RELATIONS_ARCHIVE_TEMPLATE_5_EMBED_LINK_HERE", visible: false }
@@ -1007,7 +1007,7 @@ window.HR_PORTAL_DATA = {
         { id: "talent-acquisition-project-template-4", label: "Project Template 4", embedSrc: "INSERT_TALENT_ACQUISITION_PROJECT_TEMPLATE_4_EMBED_LINK_HERE", visible: false }
       ],
       archiveProjects: [
-        { id: "short-term-projects-archive-ta", label: "Short-Term Projects Archive (TA)", embedSrc: "INSERT_LINK_HERE", visible: false },
+        { id: "short-term-projects-archive-ta", label: "Short-Term Projects Archive (TA)", embedSrc: "https://app.smartsheet.com/b/publish?EQBCT=c115e046a7844c8085446316d193d9c7", visible: true },
         { id: "talent-acquisition-archive-template-2", label: "Project Template 2", embedSrc: "INSERT_TALENT_ACQUISITION_ARCHIVE_TEMPLATE_2_EMBED_LINK_HERE", visible: false },
         { id: "talent-acquisition-archive-template-3", label: "Project Template 3", embedSrc: "INSERT_TALENT_ACQUISITION_ARCHIVE_TEMPLATE_3_EMBED_LINK_HERE", visible: false },
         { id: "talent-acquisition-archive-template-4", label: "Project Template 4", embedSrc: "INSERT_TALENT_ACQUISITION_ARCHIVE_TEMPLATE_4_EMBED_LINK_HERE", visible: false },
@@ -1029,7 +1029,7 @@ window.HR_PORTAL_DATA = {
         { id: "talent-development-project-template-4", label: "Project Template 4", embedSrc: "INSERT_TALENT_DEVELOPMENT_PROJECT_TEMPLATE_4_EMBED_LINK_HERE", visible: false }
       ],
       archiveProjects: [
-        { id: "short-term-projects-archive-td", label: "Short-Term Projects Archive (TD)", embedSrc: "INSERT_LINK_HERE", visible: false },
+        { id: "short-term-projects-archive-td", label: "Short-Term Projects Archive (TD)", embedSrc: "https://app.smartsheet.com/b/publish?EQBCT=48fe80fa373a4a5db96360740e15832e", visible: true },
         { id: "elo transition plan", label: "ELO Transition Plan", embedSrc: "https://app.smartsheet.com/b/publish?EQBCT=46376cb1ff6e47bf9b7ed1e62019ecd7", visible: true },
         { id: "talent-development-archive-template-3", label: "Project Template 3", embedSrc: "INSERT_TALENT_DEVELOPMENT_ARCHIVE_TEMPLATE_3_EMBED_LINK_HERE", visible: false },
         { id: "talent-development-archive-template-4", label: "Project Template 4", embedSrc: "INSERT_TALENT_DEVELOPMENT_ARCHIVE_TEMPLATE_4_EMBED_LINK_HERE", visible: false },
