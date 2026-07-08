@@ -66,6 +66,42 @@ window.HR_PORTAL_DATA = {
   },
 
 /* ==========================================================
+   COMMS TIMELINE  (Navigation dropdown -> Comms Timeline)
+
+   One Smartsheet sheet — the "HR Comms Calendar" — feeds the whole
+   Comms Timeline page. The calendar, the list, and the Add Comms
+   form are three windows onto the SAME rows, so a comm added or
+   edited anywhere shows up everywhere. Nothing is entered twice.
+
+   HOW TO CONNECT THE COMMS TIMELINE (one-time, ~15 minutes)
+   Full walkthrough (sheet columns, Power Automate flow, publishing):
+   docs/comms-timeline-setup.md in this repository.
+
+     1. calendarEmbedUrl — open the HR Comms Calendar sheet, switch
+        it to Calendar View (on the Send Date column) and save, then
+        File > Publish > turn on "Read Only - Full" and paste that
+        link between the quotes below.
+     2. listEmbedUrl — in the same Publish window, also turn on
+        "Read Only - HTML" (the lightweight grid link) and paste it
+        below.
+     3. addFormUrl — in the sheet choose Forms > Create Form, keep
+        the fields people should fill in, and paste the form link
+        below.
+     4. openSheetUrl (optional) — the sheet's normal Smartsheet
+        permalink. When filled in, the page shows an
+        "Open in Smartsheet" button for editors.
+
+   While a link is blank, its tab on the Comms Timeline page shows
+   these setup steps instead of an embed — nothing breaks.
+   ========================================================== */
+  commsTimeline: {
+    calendarEmbedUrl: "",
+    listEmbedUrl: "",
+    addFormUrl: "",
+    openSheetUrl: ""
+  },
+
+/* ==========================================================
    SINGLE-REPOSITORY PORTAL DIRECTORY
 
    Edit department- and leader-specific settings only in this object.
@@ -668,7 +704,7 @@ window.HR_PORTAL_DATA = {
                   "<li><strong>All Projects (View Only)</strong> &mdash; browse every project's tasks in one read-only list.</li>" +
                   "<li><strong>All HR Personal Tasks</strong> &mdash; just the tasks assigned to you, which you can edit.</li>" +
                   "<li><strong>All Projects</strong> dropdown &mdash; open a specific project to view or update it.</li>" +
-                  "<li><strong>Navigation</strong> dropdown &mdash; jump to another department or leader.</li>" +
+                  "<li><strong>Navigation</strong> dropdown &mdash; jump to another department or leader, or open shared tools like the <strong>Comms Timeline</strong>.</li>" +
                   "</ul>",
       video: false,
       videoFileName: "",
