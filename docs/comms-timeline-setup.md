@@ -25,6 +25,10 @@ People ──────────(Add Comms form)─────────
 Setup is one-time and takes about 15 minutes in Smartsheet, plus the Power
 Automate flow.
 
+> Never built a sheet or a flow before? Use the click-by-click version
+> instead: **[comms-timeline-full-walkthrough.md](comms-timeline-full-walkthrough.md)**
+> spells out every screen and button.
+
 ---
 
 ## Step 1 — Build the "HR Comms Calendar" sheet
