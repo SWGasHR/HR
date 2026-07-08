@@ -1,0 +1,626 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>HR Comms Timeline</title>
+  <link rel="icon" type="image/png" href="/HR/department.png">
+  <style>
+    /*
+      HR COMMS TIMELINE — one page, three windows onto ONE Smartsheet
+      sheet (the HR Comms Calendar):
+
+        • Calendar View — the published sheet opened in Calendar View
+        • List View     — the published sheet as a read-only grid
+        • Add Comms     — the sheet's intake form
+
+      Because all three point at the same sheet, adding or editing a
+      comm in any of them shows up everywhere — nothing is updated
+      twice. The three links live in portal-config.js under
+      commsTimeline: { ... } and this page shows friendly setup
+      instructions for any link that has not been pasted in yet.
+
+      Styling intentionally mirrors portal.html (same blue bar, fonts,
+      and spacing) so this feels like part of the portal.
+    */
+    html, body {
+      margin: 0;
+      padding: 0;
+      height: 100%;
+      overflow: hidden;
+      font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+      background: #f7f8fc;
+    }
+
+    body {
+      display: flex;
+      flex-direction: column;
+    }
+
+    /* --- BLUE NAV BAR (matches portal.html) --- */
+    .top-nav {
+      background-color: #252763;
+      color: white;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      padding: 0 14px;
+      height: 56px;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.15);
+      flex-shrink: 0;
+      z-index: 20;
+    }
+
+    .nav-home {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      width: 40px;
+      height: 40px;
+      border-radius: 6px;
+      color: white;
+      flex-shrink: 0;
+      transition: background-color 0.2s ease;
+    }
+
+    .nav-home:hover {
+      background-color: rgba(255,255,255,0.22);
+    }
+
+    .nav-home svg {
+      width: 22px;
+      height: 22px;
+      fill: currentColor;
+    }
+
+    .page-title {
+      font-size: 16px;
+      font-weight: 700;
+      white-space: nowrap;
+      margin: 0 10px 0 4px;
+    }
+
+    .nav-separator {
+      opacity: 0.5;
+      user-select: none;
+    }
+
+    .tab-row {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      min-width: 0;
+      overflow-x: auto;
+      scrollbar-width: none;
+      flex: 1 1 auto;
+    }
+
+    .tab-row::-webkit-scrollbar {
+      display: none;
+    }
+
+    .nav-item {
+      color: white;
+      background: none;
+      border: none;
+      font-family: inherit;
+      text-decoration: none;
+      font-size: 14px;
+      font-weight: 700;
+      padding: 10px 14px;
+      border-radius: 6px;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      cursor: pointer;
+      white-space: nowrap;
+      transition: background-color 0.2s ease;
+      height: 40px;
+      box-sizing: border-box;
+    }
+
+    .nav-item:hover,
+    .nav-item.active {
+      background-color: rgba(255,255,255,0.22);
+    }
+
+    .open-sheet-link {
+      margin-left: auto;
+      flex-shrink: 0;
+      font-weight: 600;
+      font-size: 13px;
+      opacity: 0.9;
+    }
+
+    .open-sheet-link.hidden {
+      display: none;
+    }
+
+    @media (max-width: 640px) {
+      .page-title,
+      .title-separator {
+        display: none;
+      }
+    }
+
+    /* Optional status color key, configured in portal-config.js
+       (commsTimeline.statusLegend) to match the sheet's conditional
+       formatting. Hidden while unconfigured and on the Add Comms tab. */
+    .legend-bar {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      gap: 4px 16px;
+      padding: 7px 16px;
+      background: white;
+      border-bottom: 1px solid #e3e5f2;
+      font-size: 12px;
+      font-weight: 600;
+      color: #444;
+      flex-shrink: 0;
+    }
+
+    .legend-bar.hidden {
+      display: none;
+    }
+
+    .legend-title {
+      color: #252763;
+      font-weight: 700;
+    }
+
+    .legend-item {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      white-space: nowrap;
+    }
+
+    .legend-dot {
+      width: 10px;
+      height: 10px;
+      border-radius: 50%;
+      flex-shrink: 0;
+    }
+
+    /* --- VIEW AREA --- */
+    .view-area {
+      position: relative;
+      flex: 1 1 auto;
+      min-height: 0;
+    }
+
+    .view-panel {
+      position: absolute;
+      inset: 0;
+      display: none;
+    }
+
+    .view-panel.active {
+      display: block;
+    }
+
+    .view-panel iframe {
+      width: 100%;
+      height: 100%;
+      border: none;
+      background: white;
+      display: block;
+    }
+
+    /* Simple loading caption shown until the Smartsheet iframe loads. */
+    .panel-loading {
+      position: absolute;
+      inset: 0;
+      display: grid;
+      place-items: center;
+      color: #252763;
+      font-size: 15px;
+      font-weight: 600;
+      background: #f7f8fc;
+      z-index: 1;
+    }
+
+    .panel-loading.done {
+      display: none;
+    }
+
+    /* Setup card shown while a tab's link is not configured yet. */
+    .setup-card-wrap {
+      position: absolute;
+      inset: 0;
+      overflow-y: auto;
+      display: grid;
+      place-items: center;
+      padding: 28px;
+      box-sizing: border-box;
+    }
+
+    .setup-card {
+      background: white;
+      border-radius: 14px;
+      box-shadow: 0 8px 28px rgba(37,39,99,0.12);
+      max-width: 620px;
+      padding: 30px 34px;
+      color: #333;
+    }
+
+    .setup-card h2 {
+      margin: 0 0 6px;
+      color: #252763;
+      font-size: 20px;
+    }
+
+    .setup-card .setup-kicker {
+      display: inline-block;
+      font-size: 12px;
+      font-weight: 700;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+      color: #6b6dbb;
+      margin-bottom: 10px;
+    }
+
+    .setup-card p {
+      line-height: 1.55;
+      margin: 10px 0;
+    }
+
+    .setup-card ol {
+      margin: 10px 0;
+      padding-left: 22px;
+      line-height: 1.6;
+    }
+
+    .setup-card code {
+      background: #eef0fb;
+      color: #252763;
+      border-radius: 4px;
+      padding: 1px 6px;
+      font-size: 13px;
+    }
+
+    .setup-card a {
+      color: #2a55b8;
+      font-weight: 600;
+    }
+
+    .setup-error {
+      margin-top: 14px;
+      padding: 10px 12px;
+      border-radius: 8px;
+      background: #fdeef0;
+      color: #8c2333;
+      font-size: 13px;
+      line-height: 1.5;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="top-nav">
+    <a class="nav-home" href="/HR/#home" title="Back to the HR Project Portal">
+      <svg viewBox="0 0 24 24" aria-hidden="true">
+        <path d="M12 3.2 3 10.4v10.4c0 .6.4 1 1 1h5.5c.6 0 1-.4 1-1v-5.2h3v5.2c0 .6.4 1 1 1H20c.6 0 1-.4 1-1V10.4l-9-7.2z"/>
+      </svg>
+    </a>
+
+    <span class="page-title">HR Comms Timeline</span>
+    <span class="nav-separator title-separator" aria-hidden="true">|</span>
+
+    <nav class="tab-row" role="tablist" aria-label="Comms Timeline views">
+      <button class="nav-item" type="button" role="tab" data-tab="calendar" id="tabButton-calendar">
+        Calendar View
+      </button>
+      <button class="nav-item" type="button" role="tab" data-tab="list" id="tabButton-list">
+        List View
+      </button>
+      <button class="nav-item" type="button" role="tab" data-tab="add" id="tabButton-add">
+        Add Comms
+      </button>
+    </nav>
+
+    <a class="nav-item open-sheet-link hidden"
+       id="openSheetLink"
+       href="#"
+       target="_blank"
+       rel="noopener noreferrer">
+      Open in Smartsheet &#8599;
+    </a>
+  </div>
+
+  <div class="legend-bar hidden" id="legendBar"></div>
+
+  <div class="view-area" id="viewArea"></div>
+
+  <script>
+    (async function () {
+      "use strict";
+
+      const CONFIG_URL = "/HR/portal-config.js";
+      const SETUP_GUIDE_URL = "https://github.com/SWGasHR/HR/blob/main/docs/comms-timeline-setup.md";
+
+      /* Each tab reads its Smartsheet link from
+         portal-config.js -> commsTimeline[configKey]. */
+      const TABS = [
+        {
+          id: "calendar",
+          label: "Calendar View",
+          configKey: "calendarEmbedUrl",
+          loadingText: "Loading the comms calendar…",
+          setupTitle: "Connect the calendar view",
+          setupHtml:
+            "<ol>" +
+            "<li>Open the <strong>HR Comms Calendar</strong> sheet in Smartsheet.</li>" +
+            "<li>Switch the sheet to <strong>Calendar View</strong> (on the Send Date column) and save.</li>" +
+            "<li>Go to <strong>File &rarr; Publish</strong> and turn on <strong>Read Only &ndash; Full</strong>.</li>" +
+            "<li>Copy that link into <code>commsTimeline.calendarEmbedUrl</code> in <code>portal-config.js</code>.</li>" +
+            "</ol>"
+        },
+        {
+          id: "list",
+          label: "List View",
+          configKey: "listEmbedUrl",
+          loadingText: "Loading the comms list…",
+          setupTitle: "Connect the list view",
+          setupHtml:
+            "<ol>" +
+            "<li>Open the <strong>HR Comms Calendar</strong> sheet in Smartsheet.</li>" +
+            "<li>Go to <strong>File &rarr; Publish</strong> and turn on <strong>Read Only &ndash; HTML</strong> (the lightweight grid link).</li>" +
+            "<li>Copy that link into <code>commsTimeline.listEmbedUrl</code> in <code>portal-config.js</code>.</li>" +
+            "</ol>"
+        },
+        {
+          id: "add",
+          label: "Add Comms",
+          configKey: "addFormUrl",
+          loadingText: "Loading the Add Comms form…",
+          setupTitle: "Connect the Add Comms form",
+          setupHtml:
+            "<ol>" +
+            "<li>Open the <strong>HR Comms Calendar</strong> sheet in Smartsheet.</li>" +
+            "<li>Choose <strong>Forms &rarr; Create Form</strong> and keep the fields people should fill in " +
+            "(Communication, Initiative, Send Date, Audience, Owner, Channel, Status).</li>" +
+            "<li>Copy the form link into <code>commsTimeline.addFormUrl</code> in <code>portal-config.js</code>.</li>" +
+            "</ol>"
+        }
+      ];
+
+      /* ---- Load the shared content file (same pattern as index.html:
+              fetched fresh every time, so a saved edit is live on the
+              next page load). ---- */
+      let commsConfig = {};
+      let configError = "";
+
+      try {
+        const response = await fetch(CONFIG_URL, { cache: "no-cache" });
+        if (!response.ok) {
+          throw new Error("portal-config.js could not be loaded (" + response.status + ").");
+        }
+        const configSource = await response.text();
+        new Function(configSource)();
+        if (!window.HR_PORTAL_DATA) {
+          throw new Error("portal-config.js ran but did not set window.HR_PORTAL_DATA.");
+        }
+        commsConfig = window.HR_PORTAL_DATA.commsTimeline || {};
+      } catch (error) {
+        console.error(error);
+        configError = String(error);
+      }
+
+      function configuredUrl(configKey) {
+        const value = commsConfig ? commsConfig[configKey] : "";
+        if (typeof value !== "string") {
+          return "";
+        }
+        const trimmed = value.trim();
+        return trimmed.indexOf("https://") === 0 ? trimmed : "";
+      }
+
+      /* ---- Optional extra tabs from portal-config.js
+              (commsTimeline.extraViews) — e.g. a "This Week" or
+              "By Audience" report published on the same sheet. Entries
+              without a label or a valid https link are skipped. ---- */
+      const usedTabIds = { calendar: true, list: true, add: true };
+      const extraTabs = [];
+
+      (Array.isArray(commsConfig.extraViews) ? commsConfig.extraViews : []).forEach(function (view) {
+        if (!view || typeof view.label !== "string" || !view.label.trim()) {
+          return;
+        }
+        const url = typeof view.embedSrc === "string" && view.embedSrc.trim().indexOf("https://") === 0
+          ? view.embedSrc.trim()
+          : "";
+        if (!url) {
+          return;
+        }
+        const label = view.label.trim();
+        const baseId = label.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-+|-+$/g, "") || "view";
+        let id = baseId;
+        let suffix = 2;
+        while (usedTabIds[id]) {
+          id = baseId + "-" + suffix;
+          suffix += 1;
+        }
+        usedTabIds[id] = true;
+        extraTabs.push({
+          id: id,
+          label: label,
+          url: url,
+          isExtra: true,
+          loadingText: "Loading " + label + "…"
+        });
+      });
+
+      const ALL_TABS = TABS.slice(0, 2).concat(extraTabs, TABS.slice(2));
+
+      /* On phones the embedded calendar is cramped, so start on the
+         list instead; desktops start on the calendar. A #hash in the
+         link always wins. */
+      const DEFAULT_TAB_ID =
+        window.matchMedia && window.matchMedia("(max-width: 640px)").matches ? "list" : "calendar";
+
+      /* ---- Optional status color key (commsTimeline.statusLegend),
+              meant to match the sheet's conditional formatting. ---- */
+      const legendBar = document.getElementById("legendBar");
+      let legendHasEntries = false;
+
+      (Array.isArray(commsConfig.statusLegend) ? commsConfig.statusLegend : []).forEach(function (entry) {
+        if (!entry || typeof entry.label !== "string" || !entry.label.trim() ||
+            typeof entry.color !== "string" || !entry.color.trim()) {
+          return;
+        }
+        const item = document.createElement("span");
+        item.className = "legend-item";
+        const dot = document.createElement("span");
+        dot.className = "legend-dot";
+        dot.style.backgroundColor = entry.color.trim();
+        item.appendChild(dot);
+        item.appendChild(document.createTextNode(entry.label.trim()));
+        legendBar.appendChild(item);
+        legendHasEntries = true;
+      });
+
+      if (legendHasEntries) {
+        const legendTitle = document.createElement("span");
+        legendTitle.className = "legend-title";
+        legendTitle.textContent = "Status colors:";
+        legendBar.insertBefore(legendTitle, legendBar.firstChild);
+      }
+
+      /* ---- Build the panels. Iframes are created lazily on the first
+              visit to a tab and kept alive afterwards, so switching
+              between the calendar and the list stays instant. ---- */
+      const viewArea = document.getElementById("viewArea");
+      const panels = {};
+
+      ALL_TABS.forEach(function (tab) {
+        const panel = document.createElement("div");
+        panel.className = "view-panel";
+        panel.id = "panel-" + tab.id;
+        panel.setAttribute("role", "tabpanel");
+        panel.setAttribute("aria-labelledby", "tabButton-" + tab.id);
+        viewArea.appendChild(panel);
+        panels[tab.id] = { tab: tab, element: panel, initialized: false };
+      });
+
+      function buildSetupCard(tab) {
+        const wrap = document.createElement("div");
+        wrap.className = "setup-card-wrap";
+
+        const card = document.createElement("div");
+        card.className = "setup-card";
+
+        let html =
+          '<span class="setup-kicker">One-time setup</span>' +
+          "<h2>" + tab.setupTitle + "</h2>" +
+          "<p>This tab shows a live Smartsheet view, but its link has not been added to " +
+          "<code>portal-config.js</code> yet.</p>" +
+          tab.setupHtml +
+          '<p>Full walkthrough (sheet columns, publishing, and the Power Automate flow): ' +
+          '<a href="' + SETUP_GUIDE_URL + '" target="_blank" rel="noopener noreferrer">Comms Timeline setup guide</a>.</p>';
+
+        if (configError) {
+          html +=
+            '<div class="setup-error"><strong>Heads up:</strong> the portal content file did not load, ' +
+            "so saved links could not be read. Detail: " +
+            configError.replace(/</g, "&lt;") +
+            "</div>";
+        }
+
+        card.innerHTML = html;
+        wrap.appendChild(card);
+        return wrap;
+      }
+
+      function initializePanel(tabId) {
+        const record = panels[tabId];
+        if (!record || record.initialized) {
+          return;
+        }
+        record.initialized = true;
+
+        const url = record.tab.isExtra ? record.tab.url : configuredUrl(record.tab.configKey);
+        if (!url) {
+          record.element.appendChild(buildSetupCard(record.tab));
+          return;
+        }
+
+        const loading = document.createElement("div");
+        loading.className = "panel-loading";
+        loading.textContent = record.tab.loadingText;
+        record.element.appendChild(loading);
+
+        const frame = document.createElement("iframe");
+        frame.src = url;
+        frame.title = "HR Comms Timeline — " + record.tab.label;
+        frame.addEventListener("load", function () {
+          loading.classList.add("done");
+        });
+        record.element.appendChild(frame);
+      }
+
+      /* ---- Tab switching (with hash support — #calendar, #list, #add,
+              or an extra view's name — so each view can be bookmarked
+              and linked directly). ---- */
+      const addTabButton = document.getElementById("tabButton-add");
+      extraTabs.forEach(function (tab) {
+        const button = document.createElement("button");
+        button.className = "nav-item";
+        button.type = "button";
+        button.setAttribute("role", "tab");
+        button.setAttribute("data-tab", tab.id);
+        button.id = "tabButton-" + tab.id;
+        button.textContent = tab.label;
+        addTabButton.parentNode.insertBefore(button, addTabButton);
+      });
+
+      const tabButtons = Array.prototype.slice.call(document.querySelectorAll(".tab-row .nav-item"));
+
+      function activateTab(tabId, updateHash) {
+        if (!panels[tabId]) {
+          tabId = DEFAULT_TAB_ID;
+        }
+        initializePanel(tabId);
+
+        tabButtons.forEach(function (button) {
+          const isActive = button.getAttribute("data-tab") === tabId;
+          button.classList.toggle("active", isActive);
+          button.setAttribute("aria-selected", isActive ? "true" : "false");
+        });
+
+        ALL_TABS.forEach(function (tab) {
+          panels[tab.id].element.classList.toggle("active", tab.id === tabId);
+        });
+
+        /* The status key describes the calendar and list, not the form. */
+        legendBar.classList.toggle("hidden", !legendHasEntries || tabId === "add");
+
+        if (updateHash) {
+          history.replaceState(null, "", "#" + tabId);
+        }
+      }
+
+      tabButtons.forEach(function (button) {
+        button.addEventListener("click", function () {
+          activateTab(button.getAttribute("data-tab"), true);
+        });
+      });
+
+      window.addEventListener("hashchange", function () {
+        activateTab(window.location.hash.replace("#", ""), false);
+      });
+
+      /* Optional "Open in Smartsheet" link for editors. */
+      const openSheetLink = document.getElementById("openSheetLink");
+      const openSheetUrl = configuredUrl("openSheetUrl");
+      if (openSheetUrl) {
+        openSheetLink.href = openSheetUrl;
+        openSheetLink.classList.remove("hidden");
+      }
+
+      activateTab(window.location.hash.replace("#", "") || DEFAULT_TAB_ID, false);
+    })();
+  </script>
+</body>
+</html>

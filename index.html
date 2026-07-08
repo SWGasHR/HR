@@ -59,7 +59,15 @@
     (async function () {
       "use strict";
 
-      const PORTAL_URL = "/HR/portal.html?v=20260706-1";
+      /* The Comms Timeline is its own page (comms-timeline.html), not a
+         department portal, so send its clean URL straight there before
+         loading the portal shell. */
+      if (/^\/hr\/comms-timeline(\/|$)/i.test(window.location.pathname)) {
+        window.location.replace("/HR/comms-timeline.html" + window.location.search + window.location.hash);
+        return;
+      }
+
+      const PORTAL_URL = "/HR/portal.html?v=20260708-1";
       const CONFIG_URL = "/HR/portal-config.js";
 
       try {
