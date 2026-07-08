@@ -74,16 +74,10 @@
       fill: currentColor;
     }
 
-    .page-title {
-      font-size: 16px;
-      font-weight: 700;
-      white-space: nowrap;
-      margin: 0 10px 0 4px;
-    }
-
     .nav-separator {
       opacity: 0.5;
       user-select: none;
+      flex-shrink: 0;
     }
 
     .tab-row {
@@ -156,11 +150,14 @@
       font-size: 10px;
     }
 
+    /* Menus are position:fixed (like the portal) so they are not
+       clipped by the scrollable nav region; the script below places
+       each menu under its toggle when it opens. */
     .dropdown-menu {
       display: none;
-      position: absolute;
-      top: 100%;
-      right: 0;
+      position: fixed;
+      top: 56px;
+      left: 0;
       min-width: 280px;
       background: white;
       color: #333;
@@ -247,13 +244,6 @@
     @media (max-width: 640px) {
       .swgas-logo {
         height: 44px;
-      }
-    }
-
-    @media (max-width: 640px) {
-      .page-title,
-      .title-separator {
-        display: none;
       }
     }
 
@@ -413,37 +403,43 @@
 <body>
 
   <div class="top-nav">
-    <!-- On this page "home" is the Calendar View. Getting back to the
-         portal happens through the Navigation dropdown, same as in the
-         portal itself. -->
-    <a class="nav-home" id="homeButton" href="#calendar" title="Comms Timeline home — Calendar View">
+    <!-- Same layout as the portal's blue bar: home icon, then every
+         item separated by white lines, logo on the far right. On this
+         page "home" is the Calendar View; getting back to the portal
+         happens through the Navigation dropdown, same as in the portal
+         itself. -->
+    <a class="nav-home" id="homeButton" href="#calendar" title="Calendar View (home)">
       <svg viewBox="0 0 24 24" aria-hidden="true">
         <path d="M12 3.2 3 10.4v10.4c0 .6.4 1 1 1h5.5c.6 0 1-.4 1-1v-5.2h3v5.2c0 .6.4 1 1 1H20c.6 0 1-.4 1-1V10.4l-9-7.2z"/>
       </svg>
     </a>
 
-    <span class="page-title">HR Comms Timeline</span>
-    <span class="nav-separator title-separator" aria-hidden="true">|</span>
+    <nav class="tab-row" aria-label="Comms Timeline navigation">
+      <span class="nav-separator" aria-hidden="true">|</span>
 
-    <nav class="tab-row" role="tablist" aria-label="Comms Timeline views">
-      <button class="nav-item" type="button" role="tab" data-tab="calendar" id="tabButton-calendar">
+      <button class="nav-item" type="button" data-tab="calendar" id="tabButton-calendar">
         Calendar View
       </button>
-      <button class="nav-item" type="button" role="tab" data-tab="list" id="tabButton-list">
+
+      <span class="nav-separator" aria-hidden="true">|</span>
+
+      <button class="nav-item" type="button" data-tab="list" id="tabButton-list">
         List View
       </button>
-      <button class="nav-item" type="button" role="tab" data-tab="add" id="tabButton-add">
+
+      <span class="nav-separator" aria-hidden="true">|</span>
+
+      <button class="nav-item" type="button" data-tab="add" id="tabButton-add">
         Add Comms
       </button>
-    </nav>
 
-    <span class="nav-separator" aria-hidden="true">|</span>
+      <span class="nav-separator" aria-hidden="true">|</span>
 
-    <div class="dropdown">
-      <div class="dropdown-toggle" tabindex="0">
-        Navigation <span class="caret">&#9660;</span>
-      </div>
-      <div class="dropdown-menu">
+      <div class="dropdown">
+        <div class="dropdown-toggle" tabindex="0">
+          Navigation <span class="caret">&#9660;</span>
+        </div>
+        <div class="dropdown-menu">
         <div class="dropdown-header">HRLT</div>
         <a href="/HR/#home">Albert Taylor</a>
         <a href="/HR/gail-carmona/#home">Gail Carmona</a>
@@ -511,6 +507,7 @@
         </a>
       </div>
     </div>
+    </nav>
 
     <a class="nav-item open-sheet-link hidden"
        id="openSheetLink"
@@ -720,10 +717,27 @@
         const panel = document.createElement("div");
         panel.className = "view-panel";
         panel.id = "panel-" + tab.id;
-        panel.setAttribute("role", "tabpanel");
-        panel.setAttribute("aria-labelledby", "tabButton-" + tab.id);
         viewArea.appendChild(panel);
         panels[tab.id] = { tab: tab, element: panel, initialized: false };
+      });
+
+      /* Place each dropdown menu under its toggle when it opens
+         (menus are position:fixed so the scrollable nav region cannot
+         clip them, which means they need explicit placement). */
+      document.querySelectorAll(".top-nav .dropdown").forEach(function (dropdown) {
+        const menu = dropdown.querySelector(".dropdown-menu");
+        function positionMenu() {
+          menu.style.visibility = "hidden";
+          menu.style.display = "block";
+          const menuWidth = menu.offsetWidth;
+          menu.style.display = "";
+          menu.style.visibility = "";
+          const toggleLeft = dropdown.getBoundingClientRect().left;
+          const maxLeft = window.innerWidth - menuWidth - 8;
+          menu.style.left = Math.max(8, Math.min(toggleLeft, maxLeft)) + "px";
+        }
+        dropdown.addEventListener("mouseenter", positionMenu);
+        dropdown.addEventListener("focusin", positionMenu);
       });
 
       function buildSetupCard(tab) {
@@ -790,11 +804,16 @@
         const button = document.createElement("button");
         button.className = "nav-item";
         button.type = "button";
-        button.setAttribute("role", "tab");
         button.setAttribute("data-tab", tab.id);
         button.id = "tabButton-" + tab.id;
         button.textContent = tab.label;
         addTabButton.parentNode.insertBefore(button, addTabButton);
+
+        const separator = document.createElement("span");
+        separator.className = "nav-separator";
+        separator.setAttribute("aria-hidden", "true");
+        separator.textContent = "|";
+        addTabButton.parentNode.insertBefore(separator, addTabButton);
       });
 
       const tabButtons = Array.prototype.slice.call(document.querySelectorAll(".tab-row .nav-item"));
@@ -812,7 +831,7 @@
         tabButtons.forEach(function (button) {
           const isActive = button.getAttribute("data-tab") === tabId;
           button.classList.toggle("active", isActive);
-          button.setAttribute("aria-selected", isActive ? "true" : "false");
+          button.setAttribute("aria-pressed", isActive ? "true" : "false");
         });
 
         ALL_TABS.forEach(function (tab) {
