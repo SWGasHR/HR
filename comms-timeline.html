@@ -143,6 +143,46 @@
       }
     }
 
+    /* Optional status color key, configured in portal-config.js
+       (commsTimeline.statusLegend) to match the sheet's conditional
+       formatting. Hidden while unconfigured and on the Add Comms tab. */
+    .legend-bar {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      gap: 4px 16px;
+      padding: 7px 16px;
+      background: white;
+      border-bottom: 1px solid #e3e5f2;
+      font-size: 12px;
+      font-weight: 600;
+      color: #444;
+      flex-shrink: 0;
+    }
+
+    .legend-bar.hidden {
+      display: none;
+    }
+
+    .legend-title {
+      color: #252763;
+      font-weight: 700;
+    }
+
+    .legend-item {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      white-space: nowrap;
+    }
+
+    .legend-dot {
+      width: 10px;
+      height: 10px;
+      border-radius: 50%;
+      flex-shrink: 0;
+    }
+
     /* --- VIEW AREA --- */
     .view-area {
       position: relative;
@@ -289,6 +329,8 @@
     </a>
   </div>
 
+  <div class="legend-bar hidden" id="legendBar"></div>
+
   <div class="view-area" id="viewArea"></div>
 
   <script>
@@ -303,6 +345,7 @@
       const TABS = [
         {
           id: "calendar",
+          label: "Calendar View",
           configKey: "calendarEmbedUrl",
           loadingText: "Loading the comms calendar…",
           setupTitle: "Connect the calendar view",
@@ -316,6 +359,7 @@
         },
         {
           id: "list",
+          label: "List View",
           configKey: "listEmbedUrl",
           loadingText: "Loading the comms list…",
           setupTitle: "Connect the list view",
@@ -328,6 +372,7 @@
         },
         {
           id: "add",
+          label: "Add Comms",
           configKey: "addFormUrl",
           loadingText: "Loading the Add Comms form…",
           setupTitle: "Connect the Add Comms form",
@@ -372,13 +417,84 @@
         return trimmed.indexOf("https://") === 0 ? trimmed : "";
       }
 
+      /* ---- Optional extra tabs from portal-config.js
+              (commsTimeline.extraViews) — e.g. a "This Week" or
+              "By Audience" report published on the same sheet. Entries
+              without a label or a valid https link are skipped. ---- */
+      const usedTabIds = { calendar: true, list: true, add: true };
+      const extraTabs = [];
+
+      (Array.isArray(commsConfig.extraViews) ? commsConfig.extraViews : []).forEach(function (view) {
+        if (!view || typeof view.label !== "string" || !view.label.trim()) {
+          return;
+        }
+        const url = typeof view.embedSrc === "string" && view.embedSrc.trim().indexOf("https://") === 0
+          ? view.embedSrc.trim()
+          : "";
+        if (!url) {
+          return;
+        }
+        const label = view.label.trim();
+        const baseId = label.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-+|-+$/g, "") || "view";
+        let id = baseId;
+        let suffix = 2;
+        while (usedTabIds[id]) {
+          id = baseId + "-" + suffix;
+          suffix += 1;
+        }
+        usedTabIds[id] = true;
+        extraTabs.push({
+          id: id,
+          label: label,
+          url: url,
+          isExtra: true,
+          loadingText: "Loading " + label + "…"
+        });
+      });
+
+      const ALL_TABS = TABS.slice(0, 2).concat(extraTabs, TABS.slice(2));
+
+      /* On phones the embedded calendar is cramped, so start on the
+         list instead; desktops start on the calendar. A #hash in the
+         link always wins. */
+      const DEFAULT_TAB_ID =
+        window.matchMedia && window.matchMedia("(max-width: 640px)").matches ? "list" : "calendar";
+
+      /* ---- Optional status color key (commsTimeline.statusLegend),
+              meant to match the sheet's conditional formatting. ---- */
+      const legendBar = document.getElementById("legendBar");
+      let legendHasEntries = false;
+
+      (Array.isArray(commsConfig.statusLegend) ? commsConfig.statusLegend : []).forEach(function (entry) {
+        if (!entry || typeof entry.label !== "string" || !entry.label.trim() ||
+            typeof entry.color !== "string" || !entry.color.trim()) {
+          return;
+        }
+        const item = document.createElement("span");
+        item.className = "legend-item";
+        const dot = document.createElement("span");
+        dot.className = "legend-dot";
+        dot.style.backgroundColor = entry.color.trim();
+        item.appendChild(dot);
+        item.appendChild(document.createTextNode(entry.label.trim()));
+        legendBar.appendChild(item);
+        legendHasEntries = true;
+      });
+
+      if (legendHasEntries) {
+        const legendTitle = document.createElement("span");
+        legendTitle.className = "legend-title";
+        legendTitle.textContent = "Status colors:";
+        legendBar.insertBefore(legendTitle, legendBar.firstChild);
+      }
+
       /* ---- Build the panels. Iframes are created lazily on the first
               visit to a tab and kept alive afterwards, so switching
               between the calendar and the list stays instant. ---- */
       const viewArea = document.getElementById("viewArea");
       const panels = {};
 
-      TABS.forEach(function (tab) {
+      ALL_TABS.forEach(function (tab) {
         const panel = document.createElement("div");
         panel.className = "view-panel";
         panel.id = "panel-" + tab.id;
@@ -424,7 +540,7 @@
         }
         record.initialized = true;
 
-        const url = configuredUrl(record.tab.configKey);
+        const url = record.tab.isExtra ? record.tab.url : configuredUrl(record.tab.configKey);
         if (!url) {
           record.element.appendChild(buildSetupCard(record.tab));
           return;
@@ -437,20 +553,33 @@
 
         const frame = document.createElement("iframe");
         frame.src = url;
-        frame.title = "HR Comms Timeline — " + record.tab.setupTitle;
+        frame.title = "HR Comms Timeline — " + record.tab.label;
         frame.addEventListener("load", function () {
           loading.classList.add("done");
         });
         record.element.appendChild(frame);
       }
 
-      /* ---- Tab switching (with #calendar / #list / #add hash support
-              so each view can be bookmarked and linked directly). ---- */
+      /* ---- Tab switching (with hash support — #calendar, #list, #add,
+              or an extra view's name — so each view can be bookmarked
+              and linked directly). ---- */
+      const addTabButton = document.getElementById("tabButton-add");
+      extraTabs.forEach(function (tab) {
+        const button = document.createElement("button");
+        button.className = "nav-item";
+        button.type = "button";
+        button.setAttribute("role", "tab");
+        button.setAttribute("data-tab", tab.id);
+        button.id = "tabButton-" + tab.id;
+        button.textContent = tab.label;
+        addTabButton.parentNode.insertBefore(button, addTabButton);
+      });
+
       const tabButtons = Array.prototype.slice.call(document.querySelectorAll(".tab-row .nav-item"));
 
       function activateTab(tabId, updateHash) {
         if (!panels[tabId]) {
-          tabId = TABS[0].id;
+          tabId = DEFAULT_TAB_ID;
         }
         initializePanel(tabId);
 
@@ -460,9 +589,12 @@
           button.setAttribute("aria-selected", isActive ? "true" : "false");
         });
 
-        TABS.forEach(function (tab) {
+        ALL_TABS.forEach(function (tab) {
           panels[tab.id].element.classList.toggle("active", tab.id === tabId);
         });
+
+        /* The status key describes the calendar and list, not the form. */
+        legendBar.classList.toggle("hidden", !legendHasEntries || tabId === "add");
 
         if (updateHash) {
           history.replaceState(null, "", "#" + tabId);
@@ -487,7 +619,7 @@
         openSheetLink.classList.remove("hidden");
       }
 
-      activateTab(window.location.hash.replace("#", "") || TABS[0].id, false);
+      activateTab(window.location.hash.replace("#", "") || DEFAULT_TAB_ID, false);
     })();
   </script>
 </body>

@@ -97,6 +97,36 @@ commsTimeline: {
 Save the file — the change is live on the next page load (no version bump
 needed). Until a link is pasted, its tab shows these setup steps instead.
 
+Two optional extras in the same section:
+
+- **`extraViews`** adds more tabs, each a published *report* on the same
+  sheet — perfect for a "This Week" tab (report filtered to the next 7 days)
+  or a "By Audience" tab (report grouped by Audience). Uncomment an example
+  line and paste the report's publish link:
+
+  ```js
+  extraViews: [
+    { label: "This Week", embedSrc: "https://app.smartsheet.com/b/publish?EQBCT=..." }
+  ],
+  ```
+
+- **`statusLegend`** shows a small color key above the calendar and list.
+  Set the colors to match the conditional formatting you chose in Step 1 so
+  viewers can read the calendar at a glance:
+
+  ```js
+  statusLegend: [
+    { label: "Suggested (Auto)", color: "#f5c94e" },
+    { label: "Sent", color: "#57b96b" }
+  ]
+  ```
+
+**Tip — keep the list focused on what's next:** once the sheet has months of
+history, point `listEmbedUrl` at a published **report** filtered to
+`Send Date` is *today or later* (sorted soonest first) instead of the raw
+sheet, and add a "Full History" entry under `extraViews`. Same single source
+of truth — reports are just filtered lenses on the sheet.
+
 ## Step 4 — The Power Automate flow (master sheet → comms calendar)
 
 Goal: every day, look at the **master HR sheet**, find project work that needs
@@ -144,6 +174,54 @@ Draft/Approved.
 > checked → Copy row to HR Comms Calendar") does the core job without a
 > premium connector. Power Automate is worth it when you want the daily
 > sweep, Teams notifications, or smarter field mapping.
+
+## Step 5 — Automations that make it run itself (recommended)
+
+All of these are built in the HR Comms Calendar sheet under
+**Automation → Create workflow** and take a couple of minutes each. They are
+what turn the calendar from a log into a system that keeps itself on time.
+
+1. **Draft reminder** — *When a date is reached: 3 days before Draft Due
+   Date* → alert the **Owner**, condition `Status is one of: Suggested
+   (Auto), Draft`. Message: "Your comm '{{Communication / Deliverable}}' is
+   due for draft in 3 days."
+2. **Send-date readiness check** — *2 days before Send Date* → alert
+   **Owner and Approver**, condition `Status is NOT one of: Approved,
+   Scheduled, Sent`. This is the "it's about to go out and isn't approved
+   yet" safety net.
+3. **New form submission alert** — *When rows are added*, condition
+   `Source = Manual` → alert the comms calendar owner. Nothing lands on the
+   calendar silently; you review form adds the same way you review the
+   Power Automate suggestions.
+4. **Monday digest** — most people will never open the portal weekly on
+   their own, so push the week to them: create a report filtered to
+   `Send Date` in the next 7 days, then use **Schedule** (in the report's
+   File menu) to email it every Monday morning — or add a Power Automate
+   step that posts the same list to a Teams channel. The portal stays the
+   deep-dive; the digest builds the habit.
+
+## Conflict spotting and blackout dates
+
+The classic comms failure is two all-employee messages landing on the same
+day. Two cheap safeguards:
+
+- **Conflict flag** — add a checkbox column named `Conflict` with this
+  column formula, then add conditional formatting to turn the row red when
+  it is checked (the red carries into the published calendar):
+
+  ```
+  =IF(COUNTIFS([Send Date]:[Send Date], [Send Date]@row,
+               Audience:Audience, Audience@row) > 1, 1, 0)
+  ```
+
+  Any two comms aimed at the same audience on the same day now light up.
+
+- **Blackout dates** — add a `Type` dropdown column (values: Communication,
+  Blackout) and drop "Blackout" rows on the calendar for payroll weeks, open
+  enrollment, company holidays, and other no-send windows. Give Blackout
+  rows their own conditional formatting color (e.g. gray) and add it to the
+  `statusLegend`. Planners now see when *not* to schedule before they pick a
+  date.
 
 ## FAQ
 

@@ -90,6 +90,14 @@ window.HR_PORTAL_DATA = {
      4. openSheetUrl (optional) — the sheet's normal Smartsheet
         permalink. When filled in, the page shows an
         "Open in Smartsheet" button for editors.
+     5. extraViews (optional) — extra tabs, each a published REPORT
+        on the same sheet. Great for "This Week" or "By Audience".
+        Copy the commented example line inside the list below and
+        remove the leading // to turn it on.
+     6. statusLegend (optional) — a small color key shown above the
+        calendar and list. Make the colors match the conditional
+        formatting you set on the sheet. Copy the commented example
+        lines below and remove the leading // to turn it on.
 
    While a link is blank, its tab on the Comms Timeline page shows
    these setup steps instead of an embed — nothing breaks.
@@ -98,7 +106,20 @@ window.HR_PORTAL_DATA = {
     calendarEmbedUrl: "",
     listEmbedUrl: "",
     addFormUrl: "",
-    openSheetUrl: ""
+    openSheetUrl: "",
+
+    extraViews: [
+      // { label: "This Week", embedSrc: "https://app.smartsheet.com/b/publish?EQBCT=PASTE_YOURS" },
+      // { label: "By Audience", embedSrc: "https://app.smartsheet.com/b/publish?EQBCT=PASTE_YOURS" }
+    ],
+
+    statusLegend: [
+      // { label: "Suggested (Auto)", color: "#f5c94e" },
+      // { label: "Approved", color: "#4ea3f5" },
+      // { label: "Scheduled", color: "#8e7cc3" },
+      // { label: "Sent", color: "#57b96b" },
+      // { label: "On Hold / Cancelled", color: "#b0b3c6" }
+    ]
   },
 
 /* ==========================================================
@@ -706,6 +727,21 @@ window.HR_PORTAL_DATA = {
                   "<li><strong>All Projects</strong> dropdown &mdash; open a specific project to view or update it.</li>" +
                   "<li><strong>Navigation</strong> dropdown &mdash; jump to another department or leader, or open shared tools like the <strong>Comms Timeline</strong>.</li>" +
                   "</ul>",
+      video: false,
+      videoFileName: "",
+      repeat: false
+    },
+    {
+      id: "what-is-the-comms-timeline",
+      question: "What is the Comms Timeline and how do I add a communication?",
+      visible: true,
+      answerHtml: "<p>The <strong>Comms Timeline</strong> (Navigation dropdown &rarr; Comms Timeline) shows every communication going out from HR in one place:</p>" +
+                  "<ul>" +
+                  "<li><strong>Calendar View</strong> &mdash; comms plotted on their send dates, so you can see what's landing when.</li>" +
+                  "<li><strong>List View</strong> &mdash; the same comms as a list you can scan and filter.</li>" +
+                  "<li><strong>Add Comms</strong> &mdash; a short form anyone can use to add a communication (what it is, the send date, the audience, the owner, and the channel).</li>" +
+                  "</ul>" +
+                  "<p>Everything comes from one Smartsheet sheet, so a comm added through the form appears in the calendar and the list automatically &mdash; there is nothing to update twice.</p>",
       video: false,
       videoFileName: "",
       repeat: false
