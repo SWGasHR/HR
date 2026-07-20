@@ -137,11 +137,13 @@ Goal: every day, look at the **master HR sheet**, find project work that needs
 a communication, and add it to the HR Comms Calendar as a **suggestion** for a
 human to confirm.
 
-> **It never erases manual entries.** The flow's only calendar action is *Add
-> row* — never update or delete — and it only ever looks at its own
-> `Source = Power Automate` rows (tagged with a Sync Key). Rows people add by
-> hand or via the form are `Source = Manual` with no Sync Key, so the flow
-> can't see them or change them. Full explanation and a self-test are in
+> **It adds and updates, but never touches manual rows.** The flow finds a
+> tracker row only by its **Sync Key** (`MK-` + the master row's ID), a key
+> that only exists on rows the flow created. Match → it updates just the
+> master-driven fields; no match → it adds a new auto row. Rows people add by
+> hand or via the form are `Source = Manual` with no Sync Key, so the search
+> can never find them — they're structurally out of reach, and a `Locked`
+> checkbox freezes any auto row too. Full explanation and a self-test are in
 > [comms-timeline-full-walkthrough.md](comms-timeline-full-walkthrough.md),
 > Part C.
 
@@ -155,27 +157,26 @@ milestones need announcing.
 Flow outline (Power Automate, using the Smartsheet connector — note it is a
 *premium* connector):
 
-1. **Trigger:** Recurrence — daily, e.g. 6:00 AM.
-2. **Smartsheet – List rows** on the master HR sheet.
-3. **Filter array:** `Needs Comms` is checked AND `Comms Date` is not empty
-   AND `Comms Date` is today or later.
-4. **For each** remaining row:
-   1. **Compose a Sync Key** = the master sheet row ID (plus a suffix if one
-      project can generate multiple comms).
-   2. **Smartsheet – List rows** on *HR Comms Calendar*, filtered to
-      `Sync Key = <that value>` — if a row already exists, **skip** (this is
-      what prevents duplicates on every daily run).
-   3. **Smartsheet – Add row** to *HR Comms Calendar*:
-      - Communication / Deliverable ← the master row's task/milestone name
-      - Initiative / Project ← the master row's project name
-      - Send Date ← Comms Date
-      - Owner ← the master row's owner
-      - Audience / Channel ← mapped from the project when obvious, otherwise
-        leave blank for the human pass
-      - **Status ← "Suggested (Auto)"**, **Source ← "Power Automate"**,
-        Sync Key ← the composed key
-5. **(Optional) notify:** post to Teams or email the comms owner: "3 new
-   suggested comms were added to the HR Comms Calendar — review and approve."
+1. **Trigger:** Recurrence — daily, e.g. 6:00 AM (a reconcile, so it catches
+   changed dates too, not just new comms).
+2. **Get sheet** the master HR sheet, and **Get sheet** the HR Comms Calendar.
+3. **For each** master row where `Needs Comms` is checked and `Comms Date` is
+   set:
+   1. **Sync Key** = `MK-` + the master row's ID.
+   2. **Smartsheet – Search** the HR Comms Calendar for that Sync Key.
+   3. **If found** (and the row isn't `Locked`) → **Update row**: write **only**
+      the master-driven fields — Communication / Deliverable, Initiative /
+      Project, Send Date. Leave Audience, Channel, Status, Owner, and Notes
+      untouched so human choices survive.
+   4. **If not found** → **Add row**: the three fields above, plus Owner, and
+      **Status ← "Suggested (Auto)"**, **Source ← "Power Automate"**,
+      **Sync Key ← the `MK-…` key**.
+4. **(Optional) notify:** on the *Add* branch only, post to Teams: "New
+   suggested comm added — set its audience and channel on the Comms Timeline."
+
+This is add-or-update keyed by Sync Key. Manual rows (`Source = Manual`, no
+Sync Key) can't be found by the search, so they're never updated or deleted;
+deletions are left to humans on purpose.
 
 The weekly human routine is then just: open the **List View** tab, filter
 Status = "Suggested (Auto)", fix up Audience/Channel, and flip Status to
