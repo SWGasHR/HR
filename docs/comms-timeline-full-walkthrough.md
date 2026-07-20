@@ -191,9 +191,34 @@ Comms Timeline."*
 
 ## Part C — Feeding comms from the master HR sheet
 
-Two levels. Level 1 is 5 minutes and needs nothing but Smartsheet. Level 2
-adds Power Automate for clean field mapping and Teams notifications — done
-click by click as requested.
+> ### ⚠️ Will Power Automate erase what people put in the calendar by hand?
+> **No — and it can't, by design.** This is the single most important rule in
+> the whole setup, so the flow is built to make it impossible:
+>
+> 1. **The flow only ever ADDS rows to the calendar.** It uses one calendar
+>    action — *Add row* — and never *Update row* or *Delete row* on the
+>    calendar. An action that only appends physically cannot change or remove
+>    a row someone else created.
+> 2. **Auto rows and manual rows are two separate populations.** Every row the
+>    flow creates is stamped `Source = Power Automate` and carries a **Sync
+>    Key** (the master row's ID). Rows people add — by the form or by typing —
+>    are `Source = Manual` with a **blank Sync Key**. The flow only ever looks
+>    at its own `Power Automate` rows, so manual rows are invisible to it.
+> 3. **Even edited auto rows are safe.** Once the flow has created a suggested
+>    row, it never revisits it (the Sync Key is already there), so if a person
+>    fixes the audience, changes the date, or rewrites the text on a suggested
+>    row, the next run leaves those edits completely alone.
+>
+> The trade-off of rule 3 is deliberate: if a date changes on the master sheet
+> *after* the calendar row exists, the flow will **not** auto-update the
+> calendar — it never overwrites. You update that one by hand (or the flow can
+> post a "heads up, master date changed" Teams note). Never silently
+> overwriting is exactly what you asked for.
+
+Two levels below. Level 1 is 5 minutes and needs nothing but Smartsheet.
+Level 2 adds Power Automate for clean field mapping, the "what comms does it
+think are needed" suggestions, and Teams notifications — done click by click.
+Both levels obey the three rules above.
 
 ### C0. Prepare the master HR sheet (both levels need this)
 
@@ -217,11 +242,18 @@ produces junk rows people learn to ignore.)
 3. Action: **Copy rows to another sheet** → select **HR Comms Calendar**.
 4. Name it `Send flagged rows to Comms Calendar` → **Save**.
 
+**This is also erase-safe:** *Copy rows* only ever appends new rows to the
+calendar — it never edits or deletes existing ones — so manual entries are
+untouched here too.
+
 **Caveat to know:** copy-row brings *every* master-sheet column along, so the
 first run will append the master's columns to the right side of the comms
 sheet. Right-click each unwanted new column header → **Hide Column** (once).
 Copied rows also arrive without Status/Source set — you'll fill those during
-review. If that annoys you, use Level 2.
+review. And because Smartsheet re-copies whenever **Needs Comms** goes from
+unchecked to checked, treat that box as **one-way**: check it once when the
+comm is real, and don't uncheck it. If clean field mapping and duplicate
+control matter to you, use Level 2.
 
 ### C2. Level 2 — Power Automate (recommended), from absolute zero
 
@@ -272,6 +304,11 @@ copy-row clutter so your calendar stays clean.
    - That's the only required setting.
 
 #### C2-c. Add the "write to the calendar" step
+
+**This is the only calendar action in the whole flow — and it only ADDS.**
+There is deliberately no "Update row" or "Delete row" pointed at the calendar
+anywhere, which is what makes it impossible for the flow to erase manual
+entries.
 
 1. Click **+ New step** (or the **+** under the trigger → "Add an action").
 2. Search `Smartsheet` → under Actions choose **"Add row to a sheet"**.
@@ -336,12 +373,88 @@ copy-row clutter so your calendar stays clean.
   fails repeatedly — no setup needed.
 - **Co-owner:** flow page → **Edit** next to Owners → add a teammate, so the
   flow doesn't die if you're out.
-- **Duplicates:** each staging row triggers exactly once, so duplicates only
-  happen if someone unchecks and re-checks Needs Comms. The **Sync Key**
-  column shows you the source row id — if you ever see two rows with the
-  same Sync Key, delete one and ask the owner to stop toggling the box. 🙂
+- **Duplicates (not the same as data loss):** each staging row triggers the
+  flow exactly once, so the only way to get a repeat is unchecking and
+  re-checking **Needs Comms** on the master (which re-copies the row). That
+  makes one extra *suggested* row — never a change to a manual row. The
+  **Sync Key** column makes dupes obvious: if two rows share a Sync Key,
+  delete one. The operating rule "check Needs Comms once, don't uncheck it"
+  avoids it entirely.
+- **Want zero-duplicate, zero-touch?** (Optional, more setup.) Before the
+  "Add row" step, add a **Smartsheet → Search** action for the master Row ID
+  against **HR Comms Calendar**, then wrap the Add row in a **Condition**:
+  only add *if the search found nothing*. Now re-checks can never duplicate.
+  Skip this until the basic flow is working — the operating rule above is
+  enough for most teams.
 
-### C3. The weekly human routine (the part automation can't do)
+### C3. "What comms does it think are needed?" — optional suggestion layer
+
+The reliable core above is **flag-driven**: a comm reaches the calendar
+because a human ticked **Needs Comms**. That covers "comms already in the
+plans." To also have the flow *propose* comms nobody flagged — the "thinks
+are needed" part — add a light, rule-based suggestion pass. (True AI judgment
+isn't something Power Automate does; keyword rules are the dependable stand-in,
+and because every suggestion lands as `Suggested (Auto)` for a human to keep
+or delete, a wrong guess costs nothing.)
+
+Two ways to do it, easiest first:
+
+1. **Smartsheet-side keyword flag (recommended).** On the master sheet add a
+   checkbox column `Comms Suggested` with a column formula that trips on
+   milestone words, e.g.:
+   ```
+   =IF(OR(CONTAINS("launch", [Task Name]@row), CONTAINS("rollout", [Task Name]@row),
+          CONTAINS("go-live", [Task Name]@row), CONTAINS("kickoff", [Task Name]@row),
+          CONTAINS("open enrollment", [Task Name]@row), CONTAINS("deadline", [Task Name]@row),
+          CONTAINS("training", [Task Name]@row)), 1, 0)
+   ```
+   Then, in the flow's trigger/filter, treat **`Comms Suggested` = checked**
+   the same as Needs Comms. These rows arrive as `Suggested (Auto)` for the
+   weekly review — owners confirm the good ones and delete the noise. Tune the
+   word list to your projects over time.
+2. **Power Automate keyword branch.** If you'd rather keep the master sheet
+   clean, do the keyword test inside the flow: after the trigger, add a
+   **Condition** that checks whether the task-name dynamic field
+   **contains** any of your keywords, and only run "Add row" on the true
+   branch. Same result, logic lives in the flow instead of a sheet column.
+
+Either way it is still **append-only** — suggestions are added, never forced,
+and manual rows are never touched.
+
+### C4. The form is erase-safe too
+
+Form submissions follow the exact same rules: the form only ever **adds** a
+row (with `Source = Manual`, blank Sync Key). It cannot edit or remove any
+existing row, auto or manual. So people adding comms through the form and the
+flow adding suggestions never collide — they just append to the same sheet,
+and both show up on the calendar and list automatically.
+
+### C5. Test it yourself (how to be sure it "works")
+
+I can't run your Power Automate or Smartsheet from here, so here's the
+5-minute proof for **you** to run once it's built — it exercises every rule
+above:
+
+1. **Manual-safety test (the important one).** Type a comm directly into the
+   HR Comms Calendar (or submit one via the form) — call it "MANUAL TEST".
+   Run the flow (My flows → your flow → **Run**, or check a master row's
+   Needs Comms). Confirm "MANUAL TEST" is **still there, unchanged**. It
+   always will be — the flow has no action that can touch it — but seeing it
+   proves the guarantee.
+2. **Add test.** Check **Needs Comms** on a master row with a Comms Date →
+   within ~1 minute a yellow `Suggested (Auto)` row appears on the calendar
+   with the right Send Date and a Sync Key.
+3. **No-overwrite test.** On that new suggested row, change the Audience and
+   the text by hand. Run the flow again. Confirm your edits **survive** (the
+   Sync Key already exists, so the flow skips it).
+4. **Duplicate check.** Run the flow a third time without changing anything →
+   no new copy of that row appears.
+
+If all four pass, the system is doing exactly what you asked: it fills the
+calendar from the master sheet and the form, and it never overwrites a
+person's work.
+
+### C6. The weekly human routine (the part automation can't do)
 
 Once a week: open the **List View** tab → find the yellow **Suggested
 (Auto)** rows (and anything from the form) → fix up Audience and Channel →

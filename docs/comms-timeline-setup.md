@@ -137,6 +137,14 @@ Goal: every day, look at the **master HR sheet**, find project work that needs
 a communication, and add it to the HR Comms Calendar as a **suggestion** for a
 human to confirm.
 
+> **It never erases manual entries.** The flow's only calendar action is *Add
+> row* — never update or delete — and it only ever looks at its own
+> `Source = Power Automate` rows (tagged with a Sync Key). Rows people add by
+> hand or via the form are `Source = Manual` with no Sync Key, so the flow
+> can't see them or change them. Full explanation and a self-test are in
+> [comms-timeline-full-walkthrough.md](comms-timeline-full-walkthrough.md),
+> Part C.
+
 **Make the master sheet flow-friendly first (recommended).** Rather than
 having the flow guess which rows are comms, add two columns to the master
 sheet: a **"Needs Comms"** checkbox and a **"Comms Date"** date column that
