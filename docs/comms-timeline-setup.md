@@ -53,7 +53,7 @@ Recommended extra columns (these earn their keep quickly):
 | **Draft Due Date** | Date | Work-back date so drafting doesn't slip to send day |
 | **Link to Draft / Asset** | Text | Where the actual email/post lives |
 | **Key Message / Notes** | Text | One-liner on what the comm says |
-| **Source** | Dropdown: Power Automate, Manual | Shows which rows the flow suggested vs. people added |
+| **Source** | Dropdown: Copilot, Manual | Shows which rows the AI suggested vs. people added |
 | **Sync Key** | Text | Filled by the flow (master row ID) so it never adds the same comm twice — see Step 4 |
 
 Tips:
@@ -131,43 +131,42 @@ history, point `listEmbedUrl` at a published **report** filtered to
 sheet, and add a "Full History" entry under `extraViews`. Same single source
 of truth — reports are just filtered lenses on the sheet.
 
-## Step 4 — The Power Automate flow (master sheet → comms calendar)
+## Step 4 — Copilot Studio + Power Automate (master sheet → comms calendar)
 
-Goal: every day, look at the **master HR sheet**, find project work that needs
-a communication, and add it to the HR Comms Calendar as a **suggestion** for a
-human to confirm.
+Goal: every day, a **Copilot Studio** agent reads the **master HR sheet**,
+decides which project milestones need a communication and drafts them, and a
+**Power Automate** flow writes those as **suggestions** for a human to confirm.
 
-**Make the master sheet flow-friendly first (recommended).** Rather than
-having the flow guess which rows are comms, add two columns to the master
-sheet: a **"Needs Comms"** checkbox and a **"Comms Date"** date column that
-project owners fill in. The flow then only picks up rows that are explicitly
-flagged — far more reliable than inference, and owners already know which
-milestones need announcing.
+> **The AI only proposes; a human approves; manual rows are never touched.**
+> Every agent-created row is `Status = Suggested (Auto)`, `Source = Copilot`,
+> with a **Sync Key** = `MK-` + the master row's ID. The flow finds tracker rows
+> only by that key, so it updates its own rows (master-driven fields only) and
+> adds new ones, while rows people add by hand or via the form (`Source =
+> Manual`, no Sync Key) can never be found — structurally out of reach; a
+> `Locked` checkbox freezes any auto row too. Full click-by-click build,
+> licensing, and a self-test are in
+> [comms-timeline-full-walkthrough.md](comms-timeline-full-walkthrough.md),
+> Part C.
 
-Flow outline (Power Automate, using the Smartsheet connector — note it is a
-*premium* connector):
+Outline (needs Copilot Studio, AI Builder credits, and Power Automate Premium —
+all Microsoft, so it satisfies a "use Copilot" mandate):
 
-1. **Trigger:** Recurrence — daily, e.g. 6:00 AM.
-2. **Smartsheet – List rows** on the master HR sheet.
-3. **Filter array:** `Needs Comms` is checked AND `Comms Date` is not empty
-   AND `Comms Date` is today or later.
-4. **For each** remaining row:
-   1. **Compose a Sync Key** = the master sheet row ID (plus a suffix if one
-      project can generate multiple comms).
-   2. **Smartsheet – List rows** on *HR Comms Calendar*, filtered to
-      `Sync Key = <that value>` — if a row already exists, **skip** (this is
-      what prevents duplicates on every daily run).
-   3. **Smartsheet – Add row** to *HR Comms Calendar*:
-      - Communication / Deliverable ← the master row's task/milestone name
-      - Initiative / Project ← the master row's project name
-      - Send Date ← Comms Date
-      - Owner ← the master row's owner
-      - Audience / Channel ← mapped from the project when obvious, otherwise
-        leave blank for the human pass
-      - **Status ← "Suggested (Auto)"**, **Source ← "Power Automate"**,
-        Sync Key ← the composed key
-5. **(Optional) notify:** post to Teams or email the comms owner: "3 new
-   suggested comms were added to the HR Comms Calendar — review and approve."
+1. **Copilot Studio prompt** `HR Comms Advisor` — inputs are a project row
+   (project, milestone, date, owner, details); it returns JSON: `needsComm`,
+   `deliverable`, `audience`, `channel`, `suggestedSendDate`, `keyMessage`.
+2. **Power Automate — scheduled daily.** Get the master and tracker sheets, then
+   for each master row:
+   - **Search** the tracker for `MK-` + Row ID.
+   - **Found & not Locked** → **Update** just the Send Date (keep it in sync).
+   - **Not found & not yet `AI Reviewed`** → **Run the prompt** → if
+     `needsComm` (or `Needs Comms` is ticked) → **Add row** with the agent's
+     drafted fields, `Status = Suggested (Auto)`, `Source = Copilot`, the Sync
+     Key. Then tick `AI Reviewed` on the master row so it isn't re-charged.
+   - Optional Teams ping on new suggestions.
+
+Manual rows (no Sync Key) are never found, so never updated or deleted;
+deletions stay with humans on purpose. The same agent can also power the
+portal's **Ask Copilot** panel (`copilotEmbedUrl`).
 
 The weekly human routine is then just: open the **List View** tab, filter
 Status = "Suggested (Auto)", fix up Audience/Channel, and flip Status to

@@ -49,7 +49,7 @@ the listed options, and click **OK**.
 | 8 | `Draft Due Date` | **Date** | — |
 | 9 | `Link to Draft / Asset` | **Text/Number** | — |
 | 10 | `Key Message / Notes` | **Text/Number** | — |
-| 11 | `Source` | **Dropdown (single select)** | Values: `Power Automate`, `Manual`. |
+| 11 | `Source` | **Dropdown (single select)** | Values: `Copilot`, `Manual`. (The automation stamps `Copilot`; people/form use `Manual`.) |
 | 12 | `Sync Key` | **Text/Number** | Used by the automation to prevent duplicates. |
 | 13 | `Type` | **Dropdown (single select)** | Values: `Communication`, `Blackout`. Blackout rows mark no-send windows. |
 | 14 | `Conflict` | **Checkbox** | Formula added next. |
@@ -191,158 +191,359 @@ Comms Timeline."*
 
 ## Part C — Feeding comms from the master HR sheet
 
-Two levels. Level 1 is 5 minutes and needs nothing but Smartsheet. Level 2
-adds Power Automate for clean field mapping and Teams notifications — done
-click by click as requested.
+This is the part with the "AI." A **Microsoft Copilot Studio** agent is the
+brain that reads each project and decides what comms are needed and drafts
+them; a **Power Automate** flow is the plumbing that calls the agent and writes
+its suggestions into the tracker. Nothing is ever sent to employees — the agent
+only *proposes*, and a human approves.
 
-### C0. Prepare the master HR sheet (both levels need this)
+> ### ⚠️ Two guarantees this is built on
+> **1. The AI only ever proposes — a human always approves.** Every row the
+> agent produces lands as **`Status = Suggested (Auto)`**. It is a draft on the
+> tracker, nothing more. No comm goes out until a person reviews it and sets a
+> real status. The AI can be wrong (it will occasionally suggest a comm that
+> isn't needed, or miss one) and that's fine, because it never has the last
+> word.
+>
+> **2. The flow can only ever write to a row it owns — so manual rows are
+> untouchable.** Rows the flow creates are stamped `Source = Copilot` and carry
+> a **Sync Key** = `MK-` + the master row's ID. Rows people add (form or typing)
+> are `Source = Manual` with a **blank Sync Key**. The flow finds rows *only* by
+> searching that Sync Key, so:
+> - **Match → update** just the master-driven facts (deliverable, initiative,
+>   Send Date). It never rewrites **Audience, Channel, Status, Owner, or Notes**,
+>   so a person's edits to a suggested row survive every run.
+> - **No match → add** a new suggested row.
+> - **Manual rows have no `MK-` key → the search never returns them → they are
+>   never updated or deleted.** A **`Locked`** checkbox freezes any auto row too.
+> - The flow never deletes anything on the tracker.
+>
+> Net effect: the AI keeps proposing and the flow keeps the tracker in sync with
+> the master, while manual entries and human edits are structurally protected.
 
-In the **master HR sheet**, add two columns (right-click a header → Insert
+Below is the whole thing, click by click: prep, the Copilot Studio agent, the
+Power Automate flow that calls it, the approval gate, a self-test, and reusing
+the same agent in the portal's "Ask Copilot" panel. Cheaper, no-AI fallbacks
+are in the appendix at the end.
+
+> ### Licensing — check this first
+> This design uses three paid/managed pieces. Confirm your org has them (ask
+> whoever owns your Microsoft licensing):
+> - **Copilot Studio** — to build and run the agent/prompt.
+> - **AI Builder credits** — consumed each time the flow runs the prompt (a
+>   Copilot Studio prompt called from Power Automate runs on AI Builder credits).
+> - **Power Automate Premium** — the **Smartsheet** connector is premium.
+>
+> All three are Microsoft/Power Platform, so this satisfies a "use Copilot"
+> mandate. To keep AI credits down, the flow below only calls the agent for
+> rows it hasn't reviewed yet (see `AI Reviewed` below) — not every row every
+> day.
+
+### C0. Prepare both sheets
+
+**On the master HR sheet** — add three columns (right-click a header → Insert
 Column Right):
 
-1. `Needs Comms` — **Checkbox**.
-2. `Comms Date` — **Date**.
+1. `Needs Comms` — **Checkbox**. A person ticks this to *force* a comm even if
+   the AI wouldn't have suggested one ("this is definitely going out").
+2. `Comms Date` — **Date**. The intended send date when it's already known.
+3. `AI Reviewed` — **Checkbox**. The flow ticks this after the agent has looked
+   at the row, so the agent isn't re-run (and re-charged) on it every day. To
+   have the agent re-evaluate a row later, just uncheck it.
 
-The rule for project owners: when a milestone needs an announcement, check
-**Needs Comms** and set the **Comms Date**. Everything downstream is
-automatic. (This beats having automation "guess" what needs comms — guessing
-produces junk rows people learn to ignore.)
+You don't add an ID column — Power Automate reads each master row's built-in
+**Row ID** for the Sync Key.
 
-### C1. Level 1 — Smartsheet-only (no Power Automate)
+**On the HR Comms Calendar (tracker)** — you already added `Source` and
+`Sync Key` in Part A. Add one more:
 
-1. Open the **master HR sheet** → **Automation** → **Create workflow → start
-   from scratch**.
-2. Trigger: **When rows are added or changed** → click "any field" → choose
-   **Needs Comms** → "changes to" → **Checked**.
-3. Action: **Copy rows to another sheet** → select **HR Comms Calendar**.
-4. Name it `Send flagged rows to Comms Calendar` → **Save**.
+4. `Locked` — **Checkbox**. When checked, the flow leaves that row completely
+   alone (even if it's an auto row). Manual rows are protected automatically by
+   having no Sync Key; `Locked` is the extra escape hatch for auto rows a human
+   wants frozen.
 
-**Caveat to know:** copy-row brings *every* master-sheet column along, so the
-first run will append the master's columns to the right side of the comms
-sheet. Right-click each unwanted new column header → **Hide Column** (once).
-Copied rows also arrive without Status/Source set — you'll fill those during
-review. If that annoys you, use Level 2.
+Reminder of the two populations this relies on:
 
-### C2. Level 2 — Power Automate (recommended), from absolute zero
+| | Manual rows | Auto (AI) rows |
+|---|---|---|
+| `Source` | `Manual` | `Copilot` |
+| `Sync Key` | *(blank)* | `MK-` + the master row's ID |
+| Flow can find it? | **No** — never matched | Yes — matched by Sync Key |
+| Flow can change it? | **Never** | Only master-driven fields, unless `Locked` |
 
-**How it works:** a Smartsheet automation copies flagged rows into a small
-**staging sheet**; Power Automate watches the staging sheet, then writes a
-*clean, mapped* row into HR Comms Calendar (Status = Suggested (Auto),
-Source = Power Automate) and pings Teams. The staging sheet absorbs the
-copy-row clutter so your calendar stays clean.
+### C1. Build the Copilot Studio agent (the AI brain)
 
-> **License note:** the Smartsheet connector in Power Automate is a
-> **Premium** connector. You need a Power Automate Premium license (there's a
-> 90-day trial — Power Automate will offer it the first time you add the
-> connector). If your org blocks the trial, this is the one thing to ask IT
-> for.
+You'll build one **prompt** — a reusable AI instruction with inputs and a
+structured output — inside Copilot Studio. The Power Automate flow calls it once
+per project row.
 
-#### C2-a. Create the staging sheet (in Smartsheet)
+1. Go to **copilotstudio.microsoft.com** → sign in with your work account →
+   pick your environment (top right) if you have more than one.
+2. Left menu → **Prompts** (under *Tools* / *Library* depending on your tenant)
+   → **+ New prompt**. (A "prompt" is the unit Power Automate can call. If your
+   tenant only shows **Agents**, create an agent, then add this same text as a
+   **Prompt** tool inside it — the flow calls the prompt either way.)
+3. **Name** it `HR Comms Advisor`.
+4. **Add inputs** (click **+ Add** → *Text* for each) — these are the project
+   details the flow will pass in:
+   `ProjectName`, `Milestone`, `MilestoneDate`, `Owner`, `Description`.
+5. In the big instruction box, paste this and click each `{input}` where shown
+   to insert the real input token:
 
-1. Create a new grid sheet named **Comms Intake (Auto)** (same clicks as A1).
-2. No columns needed beyond the default — the copy-row automation will bring
-   the master's columns with it on first run.
-3. In the **master HR sheet**, build the same automation as C1 but pointing
-   at **Comms Intake (Auto)** instead of the calendar:
-   *Automation → Create workflow → When rows are added or changed → Needs
-   Comms changes to Checked → Copy rows to another sheet → Comms Intake
-   (Auto) → Save.*
-4. Test now: check **Needs Comms** on any master row → within a minute the
-   row appears in Comms Intake (Auto). (Uncheck/recheck later re-copies, so
-   only check it when it's real.)
+   ```
+   You are an HR communications planner for Southwest Gas. Given ONE project
+   milestone, decide whether it warrants a communication to employees or
+   leaders, and if so, draft it. Be conservative — only suggest a comm for
+   milestones people genuinely need to hear about (launches, rollouts,
+   go-lives, enrollment windows, policy or system changes, required training,
+   deadlines that affect staff). Routine internal tasks do NOT need a comm.
 
-#### C2-b. Create the flow
+   Project: {ProjectName}
+   Milestone: {Milestone}
+   Milestone date: {MilestoneDate}
+   Owner: {Owner}
+   Details: {Description}
 
-1. In your browser go to **make.powerautomate.com** and sign in with your
-   work (Microsoft 365) account.
-2. Left menu → **Create**.
-3. Choose the tile **Automated cloud flow**.
-4. In the dialog:
-   - **Flow name:** `HR Comms – New Suggested Comm`
-   - In **"Choose your flow's trigger"**, type `Smartsheet` in the search
-     box.
-   - Select **"When a new row is created (Smartsheet)"**.
-   - Click **Create**.
-5. **Connect Smartsheet** (first time only): a sign-in prompt appears on the
-   trigger card → click **Sign in** → a Smartsheet window opens → enter your
-   Smartsheet credentials → click **Allow** on the "Power Automate wants
-   access" consent screen. The card now shows your connection.
-6. On the trigger card **"When a new row is created"**:
-   - Click the **Sheet** dropdown → pick **Comms Intake (Auto)**.
-   - That's the only required setting.
+   Reply with ONLY a JSON object, no other text:
+   {
+     "needsComm": true or false,
+     "deliverable": "short name of the communication",
+     "audience": "one of: All Employees, All Leaders, White Glove, HR Only, Field Employees, Corporate Employees",
+     "channel": "one of: Corp HR Email, Corp Comms Post, Weekly Roundup, Manager Cascade, SharePoint / Intranet, Teams Post, Town Hall",
+     "suggestedSendDate": "YYYY-MM-DD, a few business days before the milestone date",
+     "keyMessage": "one sentence on what the comm should say",
+     "confidence": "High, Medium, or Low"
+   }
+   If needsComm is false, still return the object with empty strings for the
+   other fields.
+   ```
 
-#### C2-c. Add the "write to the calendar" step
+6. Set the output format to **Text** (we parse the JSON in the flow). Click
+   **Test**, type a sample milestone into the inputs, and confirm it returns
+   clean JSON. **Save**. Leave it published in this environment.
 
-1. Click **+ New step** (or the **+** under the trigger → "Add an action").
-2. Search `Smartsheet` → under Actions choose **"Add row to a sheet"**.
-3. On the card:
-   - **Sheet** dropdown → **HR Comms Calendar**.
-   - The card now shows one input per column of the calendar sheet. Fill
-     them like this (click into a box, then pick from the **Dynamic
-     content** panel that pops up on the right — dynamic content = values
-     from the staging row that triggered the flow):
+> Why a prompt and not a chatbot: the flow needs a single question-in,
+> answer-out call per row. The same instructions can also power a full
+> conversational agent for the portal's "Ask Copilot" panel — see C6.
 
-     | Calendar column | What to put in it |
-     |---|---|
-     | Communication / Deliverable | dynamic: the master row's task/milestone name column |
-     | Initiative / Project | dynamic: the master row's project name column |
-     | Send Date | dynamic: **Comms Date** |
-     | Owner | dynamic: the master row's owner/assigned-to column |
-     | Status | type literally: `Suggested (Auto)` |
-     | Source | type literally: `Power Automate` |
-     | Sync Key | dynamic: **Row ID** (the trigger's row id) |
-     | everything else | leave blank — humans fill it during review |
+### C2. Build the Power Automate flow (calls Copilot, writes the tracker)
 
-   - If a dynamic field you expect isn't listed, click **"See more"** in the
-     dynamic content panel.
+**The whole flow in one picture:**
 
-#### C2-d. Add the Teams notification (optional but worth it)
+```
+Every day:
+  Get all master rows
+  Get all tracker rows (to look up Sync Keys)
+  For each master row:
+     search tracker for its Sync Key  (MK-<row id>)
+       ├─ FOUND & not Locked → UPDATE Send Date only (keep it in sync)   → done
+       └─ NOT FOUND:
+             already AI-Reviewed?  ── yes → do nothing (don't re-nag / re-charge)
+                                   └─ no → ask the Copilot agent about this row
+                                            ├─ needsComm = true (or Needs Comms ticked)
+                                            │     → ADD a Suggested (Auto) row with the
+                                            │       agent's drafted fields + ping Teams
+                                            └─ needsComm = false → add nothing
+             then tick AI Reviewed on the master row
+  manual rows have no MK- key → the search never finds them → never touched
+```
 
-1. **+ New step** → search `Teams` → choose **"Post message in a chat or
-   channel" (Microsoft Teams)**.
-2. On the card:
-   - **Post as:** `Flow bot`
-   - **Post in:** `Channel`
-   - **Team:** your HR team → **Channel:** wherever comms folks look.
-   - **Message:** e.g.
-     `New suggested comm: ` *(dynamic: task name)* ` on ` *(dynamic: Comms
-     Date)* ` — review it on the Comms Timeline and set the audience/channel.`
+#### C2-a. Create the flow shell
+
+1. Go to **make.powerautomate.com** → sign in with your work account.
+2. Left menu → **Create** → tile **Scheduled cloud flow**.
+3. **Flow name** `HR Comms – Copilot Sync` → repeat every **1 Day** at ~6:00 AM
+   → **Create**.
+4. The first time you add a Smartsheet or Copilot action it will ask you to
+   **Sign in** / **Allow** — do that once per connector.
+
+#### C2-b. Read both sheets
+
+1. **+ New step** → search `Smartsheet` → **"Get sheet"** → **Sheet** = master
+   HR sheet. Rename the card `Get master` (⋯ → Rename).
+2. **+ New step** → **"Get sheet"** → **Sheet** = **HR Comms Calendar**. Rename
+   `Get tracker`.
+
+#### C2-c. Loop each master row
+
+1. **+ New step** → **"Apply to each"** → output = **rows** of `Get master`.
+2. Inside the loop, **Smartsheet → "Search"** (Search for sheets and rows):
+   **Query** = `MK-` + the master row's **Row ID**; scope to **HR Comms
+   Calendar**. Rename `Find existing`.
+   > Referencing a master column value (Row ID, Needs Comms, dates, etc.): if
+   > your connector shows friendly column names, pick them; if it shows a
+   > `cells` array, use the *Get column value* expression. Send me your
+   > connector version + master column names and I'll paste the exact
+   > expressions.
+3. **Condition** `Exists?` → length of `Find existing` results **is greater
+   than** `0`.
+
+**`Exists?` = Yes → keep it in sync (no AI call needed):**
+
+4. **Condition** `Not locked?` → found row's `Locked` **is not equal to**
+   `true`. **If yes → Smartsheet "Update row"** on HR Comms Calendar, Row ID =
+   found row's id, and set **only** `Send Date` = master `Comms Date`. Leave
+   every other box empty so curated fields are never overwritten.
+
+**`Exists?` = No → maybe create it (this is where the AI runs):**
+
+5. **Condition** `Already reviewed?` → master `AI Reviewed` **is equal to**
+   `true`. **If yes → do nothing** (already handled or intentionally declined —
+   don't re-nag or re-spend credits). **If no**, continue:
+6. **Add an action → "Run a prompt"** (AI Builder / Copilot) → pick
+   **HR Comms Advisor** → fill its inputs from the master row (ProjectName,
+   Milestone, MilestoneDate, Owner, Description dynamic values).
+7. **Add an action → "Parse JSON"** → Content = the prompt's **Text/Response**
+   output. For the schema, click **Generate from sample** and paste one of the
+   agent's JSON replies. Now `needsComm`, `deliverable`, `audience`, etc. are
+   usable fields.
+8. **Condition** `Create it?` → `needsComm` **is equal to** `true` **OR** master
+   `Needs Comms` **is equal to** `true`. **If yes → Smartsheet "Add row to a
+   sheet"** on HR Comms Calendar:
+
+   | Field | Value |
+   |---|---|
+   | Communication / Deliverable | Parse JSON → `deliverable` (or master milestone name if empty) |
+   | Initiative / Project | dynamic: master project name |
+   | Send Date | Parse JSON → `suggestedSendDate` (fall back to master `Comms Date`) |
+   | Audience | Parse JSON → `audience` |
+   | Channel | Parse JSON → `channel` |
+   | Key Message / Notes | Parse JSON → `keyMessage` |
+   | Owner | dynamic: master owner |
+   | Status | type literally: `Suggested (Auto)` |
+   | Source | type literally: `Copilot` |
+   | Sync Key | expression: `concat('MK-', <master Row ID>)` |
+
+9. **After** the `Create it?` condition (in both branches), **Smartsheet
+   "Update row"** on the **master** sheet → set `AI Reviewed` = `true`, so this
+   row isn't evaluated again. (Uncheck it by hand later to force a re-look.)
+
+#### C2-d. Teams notification (optional)
+
+Inside the `Create it?` = Yes branch, after Add row: **+ Add an action** →
+`Teams` → **"Post message in a chat or channel"** → Post as **Flow bot** →
+**Channel** → your HR team/channel → message e.g.
+`Copilot suggested a new comm: ` *(Parse JSON: deliverable)* ` for `
+*(master project)* ` — review & approve it on the Comms Timeline.`
 
 #### C2-e. Save, test, and turn on
 
-1. Click **Save** (top right). If the **Flow checker** (top right) shows a
-   red dot, click it — it tells you exactly which box is missing.
-2. Real test: in the **master HR sheet**, check **Needs Comms** on a test row
-   with a Comms Date → wait ~1 minute (Smartsheet copies it to staging) →
-   the flow fires.
-3. Watch it run: left menu **My flows** → click the flow →
-   **28-day run history**. A green check = success; click the run to see
-   every step's inputs/outputs. A red X = click the failed step to read the
-   error message.
-4. Open **HR Comms Calendar** — the new row should be there in yellow
-   (Suggested (Auto)), and it's already on the portal's calendar and list.
-5. The flow is **On** automatically after saving. To pause it later: My
-   flows → ⋯ next to the flow → **Turn off**.
+1. **Save**. If the **Flow checker** shows a red dot, click it — it names the
+   exact box that's missing.
+2. **Run it now:** **Test → Manually → Run**.
+3. **Watch it:** **My flows** → your flow → **28-day run history**. Green check
+   = success (click to see each step's in/out, including what the agent
+   returned); red X = click the failed step for the error.
+4. Open **HR Comms Calendar** — Copilot's picks appear as yellow
+   `Suggested (Auto)` rows with a drafted audience/channel; changed master dates
+   update matching rows; manual rows are unchanged. It's all live on the portal.
 
 #### C2-f. Settings worth knowing (the "advanced" bits)
 
-- **Rename steps** so future-you understands the flow: click the **⋯** on any
-  card → **Rename**.
-- **Retry policy:** ⋯ on a card → **Settings** → Retry Policy. The default
-  (4 retries, exponential) is right — don't change it.
-- **Concurrency:** trigger card ⋯ → Settings → Concurrency Control. Leave
-  OFF — comms rows are rare, and order doesn't matter here.
-- **Failure emails:** Power Automate emails you automatically when a flow
-  fails repeatedly — no setup needed.
-- **Co-owner:** flow page → **Edit** next to Owners → add a teammate, so the
-  flow doesn't die if you're out.
-- **Duplicates:** each staging row triggers exactly once, so duplicates only
-  happen if someone unchecks and re-checks Needs Comms. The **Sync Key**
-  column shows you the source row id — if you ever see two rows with the
-  same Sync Key, delete one and ask the owner to stop toggling the box. 🙂
+- **Control AI cost:** the `AI Reviewed` gate means each row is sent to the
+  agent once. To also skip old work, add a condition so only rows with a
+  future milestone date are evaluated.
+- **Rename every card** (⋯ → Rename) so the flow reads like a sentence.
+- **Retry policy:** ⋯ → **Settings** → leave the default (4 retries).
+- **Concurrency:** leave **off** — a daily reconcile shouldn't overlap itself.
+- **Pin a row from automation:** check **`Locked`** on any auto row.
+- **Deletions are deliberately manual.** The flow never deletes a tracker row
+  (deleting is the one irreversible thing). Drop a comm by deleting it by hand
+  or setting Status = `Cancelled`. Optional auto-cancel branch: when a master
+  row is no longer relevant, `Update row` → Status `Cancelled` (never delete).
+- **Co-owner:** flow page → **Edit** next to Owners → add a teammate.
 
-### C3. The weekly human routine (the part automation can't do)
+### C3. The approval gate — why the AI never has the last word
 
-Once a week: open the **List View** tab → find the yellow **Suggested
-(Auto)** rows (and anything from the form) → fix up Audience and Channel →
-set a real Status. Five minutes, and the calendar stays trustworthy.
+Everything the agent produces is a **draft**: `Status = Suggested (Auto)`,
+`Source = Copilot`. Nothing is a real, going-out comm until a person reviews it.
+That's the safety valve for using AI on employee communications — a wrong or
+half-baked suggestion just sits on the tracker as yellow until someone accepts,
+fixes, or deletes it. Keep this gate; don't let the flow set any status past
+`Suggested (Auto)`.
+
+### C4. The form is safe too
+
+Form submissions follow the exact same rules: the form only ever **adds** a
+row (with `Source = Manual`, blank Sync Key). It cannot edit or remove any
+existing row, auto or manual. So people adding comms through the form and the
+flow adding suggestions never collide — they just append to the same sheet,
+and both show up on the calendar and list automatically.
+
+### C5. Test it yourself (how to be sure it "works")
+
+I can't run your Copilot Studio, Power Automate, or Smartsheet from here, so
+here's the proof for **you** to run once it's built. It checks that the AI
+suggests, updates flow through, and manual work is never touched.
+
+1. **Manual-safety test (the important one).** Type a comm straight into the
+   HR Comms Calendar (or submit one via the form) — call it "MANUAL TEST",
+   give it an Audience. **Run** the flow. Confirm "MANUAL TEST" is **still
+   there, unchanged**. It has no `MK-` Sync Key, so the flow's search can never
+   find it — structurally out of reach.
+2. **AI suggestion test.** Add a master row with a clear comm-worthy milestone
+   (e.g. "Open Enrollment opens 11/1") and leave `Needs Comms` unchecked and
+   `AI Reviewed` unchecked → run the flow → a yellow `Suggested (Auto)` /
+   `Source = Copilot` row appears with a drafted deliverable, audience, and
+   channel, and the master row's `AI Reviewed` is now ticked.
+3. **AI-restraint test.** Add a routine master row (e.g. "Update internal
+   tracker column") → run → confirm the agent adds **no** row for it
+   (needsComm = false), and `AI Reviewed` still gets ticked so it won't be
+   re-checked.
+4. **Update test.** Change a suggested row's master `Comms Date` → run again →
+   the tracker row's Send Date **updates**, no duplicate.
+5. **Curated-field test.** Set the **Audience/Channel** on an auto row by hand,
+   change the master date, run again → Send Date updates but your Audience and
+   Channel **survive**.
+6. **Lock test.** Check **`Locked`** on an auto row, change the master date, run
+   → the row does **not** change.
+
+Pass these and it's doing exactly what you asked: Copilot reads the sheet and
+proposes comms, updates flow through, and nothing people entered is disturbed.
+
+### C6. Reuse the same agent in the portal's "Ask Copilot" panel
+
+The portal already has an **Ask Copilot** side panel wired up — it just needs a
+URL. Point it at the same HR agent so one Copilot both suggests comms *and*
+answers questions across the portal:
+
+1. In **Copilot Studio**, open (or create) a full **Agent** that uses the same
+   HR knowledge as your `HR Comms Advisor` prompt.
+2. **Channels → Custom website / Embed** → copy the embed URL.
+3. In `portal-config.js`, set `copilotEmbedUrl:` to that URL and save. The
+   portal's "Smartsheet FAQs" buttons become "Ask Copilot" and open the agent.
+
+(That panel and this flow are independent — you can do either first. The
+suggestion flow needs the **prompt**; the panel needs the **agent**; they can
+share instructions.)
+
+### C7. The weekly human routine (the part automation can't do)
+
+Once a week: open the **List View** tab → filter to `Suggested (Auto)` → for
+each, accept or fix the Audience/Channel Copilot drafted, then set a real Status
+(Draft/Approved). Delete any the AI got wrong. Five minutes, and the calendar
+stays trustworthy.
+
+---
+
+## Appendix — cheaper fallbacks (no AI, or no Power Automate)
+
+If the Copilot/AI Builder licensing isn't available, these get you a working
+comms feed with less intelligence:
+
+- **Keyword suggestions instead of AI.** On the master sheet add a checkbox
+  `Comms Suggested` with a formula that trips on milestone words, then treat it
+  like `Needs Comms` in the flow:
+  ```
+  =IF(OR(CONTAINS("launch",[Task Name]@row), CONTAINS("rollout",[Task Name]@row),
+         CONTAINS("go-live",[Task Name]@row), CONTAINS("kickoff",[Task Name]@row),
+         CONTAINS("open enrollment",[Task Name]@row), CONTAINS("training",[Task Name]@row)), 1, 0)
+  ```
+  No AI credits, but it's dumb string-matching — no judgment, no drafting.
+- **Smartsheet-only, no Power Automate.** Master **Automation → When `Needs
+  Comms` changes to checked → Copy row to HR Comms Calendar.** Add-only (can't
+  update), re-copies on re-check, and drags master columns along — but free and
+  five minutes. Good for a pilot.
+- **Smartsheet DataMesh** (if your org has it) does the add-*and*-update keyed
+  sync natively, no flow — but no AI drafting; pair it with the keyword flag for
+  suggestions.
