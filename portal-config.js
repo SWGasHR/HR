@@ -103,8 +103,8 @@ window.HR_PORTAL_DATA = {
    these setup steps instead of an embed — nothing breaks.
    ========================================================== */
   commsTimeline: {
-    calendarEmbedUrl: "",
-    listEmbedUrl: "",
+    calendarEmbedUrl: "https://app.smartsheet.com/b/publish?EQBCT=018a7eb3001740fb98758f4a826b50b2",
+    listEmbedUrl: "https://app.smartsheet.com/b/publish?EQBCT=54199ec609c24d00883e20e2f144a7c7",
     addFormUrl: "",
     openSheetUrl: "",
 
