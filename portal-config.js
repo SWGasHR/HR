@@ -105,7 +105,7 @@ window.HR_PORTAL_DATA = {
   commsTimeline: {
     calendarEmbedUrl: "https://app.smartsheet.com/b/publish?EQBCT=018a7eb3001740fb98758f4a826b50b2",
     listEmbedUrl: "https://app.smartsheet.com/b/publish?EQBCT=54199ec609c24d00883e20e2f144a7c7",
-    addFormUrl: "",
+    addFormUrl: "https://app.smartsheet.com/b/form/019f8bbf579778718a50d54566ad8f35",
     openSheetUrl: "",
 
     extraViews: [
