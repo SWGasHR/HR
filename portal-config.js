@@ -885,7 +885,7 @@ window.HR_PORTAL_DATA = {
       preload: false,
       projects: [
         { id: "short-term-projects-benefits", label: "Short-Term Projects (Benefits)", embedSrc: "https://app.smartsheet.com/b/publish?EQBCT=d575dd0772a144f3b5e57aa51803d403", visible: true },
-        { id: "open enrollment 2026", label: "Open Enrollment 2026", embedSrc: "https://app.smartsheet.com/b/publish?EQBCT=379a936b6187472faf634ba8aaf80c8b", visible: true },
+        { id: "open enrollment 2027", label: "Open Enrollment 2027", embedSrc: "https://app.smartsheet.com/b/publish?EQBCT=379a936b6187472faf634ba8aaf80c8b", visible: true },
         { id: "benefits-project-template-1", label: "Project Template 1", embedSrc: "INSERT_BENEFITS_PROJECT_TEMPLATE_1_EMBED_LINK_HERE", visible: false },
         { id: "benefits-project-template-2", label: "Project Template 2", embedSrc: "INSERT_BENEFITS_PROJECT_TEMPLATE_2_EMBED_LINK_HERE", visible: false },
         { id: "benefits-project-template-3", label: "Project Template 3", embedSrc: "INSERT_BENEFITS_PROJECT_TEMPLATE_3_EMBED_LINK_HERE", visible: false },
@@ -893,7 +893,7 @@ window.HR_PORTAL_DATA = {
       ],
       archiveProjects: [
         { id: "short-term-projects-archive-benefits", label: "Short-Term Projects Archive (Benefits)", embedSrc: "https://app.smartsheet.com/b/publish?EQBCT=3ec3a7381d124c7193552e291d0ac87c", visible: true },
-        { id: "open enrollment 2025", label: "Open Enrollment 2025", embedSrc: "https://app.smartsheet.com/b/publish?EQBCT=e606315264984f84bd6e288a6871ec5a", visible: true },
+        { id: "open enrollment 2026", label: "Open Enrollment 2026", embedSrc: "https://app.smartsheet.com/b/publish?EQBCT=e606315264984f84bd6e288a6871ec5a", visible: true },
         { id: "benefits-archive-template-2", label: "Project Template 2", embedSrc: "INSERT_BENEFITS_ARCHIVE_TEMPLATE_2_EMBED_LINK_HERE", visible: false},
         { id: "benefits-archive-template-3", label: "Project Template 3", embedSrc: "INSERT_BENEFITS_ARCHIVE_TEMPLATE_3_EMBED_LINK_HERE", visible: false },
         { id: "benefits-archive-template-4", label: "Project Template 4", embedSrc: "INSERT_BENEFITS_ARCHIVE_TEMPLATE_4_EMBED_LINK_HERE", visible: false },
