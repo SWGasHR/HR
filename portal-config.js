@@ -947,8 +947,8 @@ window.HR_PORTAL_DATA = {
       preload: false,
       projects: [
         { id: "short-term-projects-ex", label: "Short-Term Projects (EX)", embedSrc: "https://app.smartsheet.com/b/publish?EQBCT=5c7efc0357a5471f8559cde63936a16f", visible: true },
-        { id: "hr-roadshows-2027", label: "HR Roadshows 2027", embedSrc: "INSERT_HR_ROADSHOWS_2027_EMBED_LINK_HERE", visible: true },
-        { id: "companywide-committee-selection-process", label: "Companywide Committee Selection Process", embedSrc: "INSERT_COMPANYWIDE_COMMITTEE_SELECTION_PROCESS_EMBED_LINK_HERE", visible: true },
+        { id: "hr-roadshows-2027", label: "HR Roadshows 2027", embedSrc: "https://app.smartsheet.com/b/publish?EQBCT=9b7d97f6619241d3989a9d2947d7a490", visible: true },
+        { id: "companywide-committee-selection-process", label: "Companywide Committee Selection Process", embedSrc: "https://app.smartsheet.com/b/publish?EQBCT=37cd1bfd4fb44af8978cf2441c66a19d", visible: true },
         { id: "employee-experience-project-template-5", label: "Project Template 5", embedSrc: "INSERT_EMPLOYEE_EXPERIENCE_PROJECT_TEMPLATE_5_EMBED_LINK_HERE", visible: false },
         { id: "employee-experience-project-template-1", label: "Project Template 1", embedSrc: "INSERT_EMPLOYEE_EXPERIENCE_PROJECT_TEMPLATE_1_EMBED_LINK_HERE", visible: false },
         { id: "employee-experience-project-template-2", label: "Project Template 2", embedSrc: "INSERT_EMPLOYEE_EXPERIENCE_PROJECT_TEMPLATE_2_EMBED_LINK_HERE", visible: false },
@@ -962,23 +962,23 @@ window.HR_PORTAL_DATA = {
         {
           label: "Appreciation Events",
           projects: [
-            { id: "service-awards-2026", label: "Service Awards 2026", embedSrc: "INSERT_SERVICE_AWARDS_2026_EMBED_LINK_HERE", visible: true },
-            { id: "silver-jubilee-2027", label: "Silver Jubilee 2027", embedSrc: "INSERT_SILVER_JUBILEE_2027_EMBED_LINK_HERE", visible: true },
-            { id: "tyctwd-2027", label: "TYCTWD 2027", embedSrc: "INSERT_TYCTWD_2027_EMBED_LINK_HERE", visible: true }
+            { id: "service-awards-2026", label: "Service Awards 2026", embedSrc: "https://app.smartsheet.com/b/publish?EQBCT=7543758702f54a3e8906c8ed895ce645", visible: true },
+            { id: "silver-jubilee-2027", label: "Silver Jubilee 2027", embedSrc: "https://app.smartsheet.com/b/publish?EQBCT=cd83966a69c54f33a99b1e951be46b91", visible: true },
+            { id: "tyctwd-2027", label: "TYCTWD 2027", embedSrc: "https://app.smartsheet.com/b/publish?EQBCT=30e12c4e895c40aa9f2394a12635e712", visible: true }
           ]
         },
         {
           label: "Engagement Surveys",
           projects: [
-            { id: "spring-full-engagement-survey-2027", label: "Spring Full Engagement Survey 2027", embedSrc: "INSERT_SPRING_FULL_ENGAGEMENT_SURVEY_2027_EMBED_LINK_HERE", visible: true },
-            { id: "fall-pulse-survey-2026", label: "Fall Pulse Survey 2026", embedSrc: "INSERT_FALL_PULSE_SURVEY_2026_EMBED_LINK_HERE", visible: true }
+            { id: "spring-full-engagement-survey-2027", label: "Spring Full Engagement Survey 2027", embedSrc: "https://app.smartsheet.com/b/publish?EQBCT=c1fead335cf3449ea45b277f8b6beccc", visible: true },
+            { id: "fall-pulse-survey-2026", label: "Fall Pulse Survey 2026", embedSrc: "https://app.smartsheet.com/b/publish?EQBCT=d395b3fa61584082bcf81facc4dede7d", visible: true }
           ]
         },
         {
           label: "Employee Engagement",
           projects: [
-            { id: "action-planning", label: "Action Planning", embedSrc: "INSERT_ACTION_PLANNING_EMBED_LINK_HERE", visible: true },
-            { id: "listening-sessions", label: "Listening Sessions", embedSrc: "INSERT_LISTENING_SESSIONS_EMBED_LINK_HERE", visible: true }
+            { id: "action-planning", label: "Action Planning", embedSrc: "https://app.smartsheet.com/b/publish?EQBCT=2cdc8090771e4b74b85983b1c2d6bee5", visible: true },
+            { id: "listening-sessions", label: "Listening Sessions", embedSrc: "https://app.smartsheet.com/b/publish?EQBCT=57e7ee61689a4100a646fca7a4f65b1c", visible: true }
           ]
         }
       ],
