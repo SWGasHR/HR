@@ -940,19 +940,49 @@
       outline: none;
     }
 
+    /* Sub-groups (sections) inside a department mirror the Archive box:
+       same rounded card, tinted header, icon, and indented white list. */
     .project-subgroup-toggle {
-      padding: 10px 16px 10px 22px;
-      font-size: 14px;
+      width: calc(100% - 30px);
+      margin: 7px 12px 11px 18px;
+      border: 1px solid #dedff0;
+      border-radius: 9px;
+      background: #f4f5fb;
+      color: #4f5278;
+      padding: 9px 12px;
+      font-size: 13px;
       font-weight: 700;
-      color: #333;
-      background: white;
+      letter-spacing: 0.1px;
+      box-shadow: 0 1px 3px rgba(37, 39, 99, 0.06);
+      transition: background-color 0.2s ease, color 0.2s ease;
+    }
+
+    .project-subgroup-toggle .project-caret {
+      font-size: 10px;
     }
 
     .project-subgroup-toggle:hover,
-    .project-subgroup-toggle:focus {
-      background: #f3f4f6;
+    .project-subgroup-toggle:focus,
+    .project-subgroup-toggle[aria-expanded="true"] {
+      background: #e9eafa;
       color: #252763;
       outline: none;
+    }
+
+    .project-subgroup-toggle[aria-expanded="true"] {
+      margin-bottom: 0;
+      border-bottom: none;
+      border-radius: 9px 9px 0 0;
+    }
+
+    .project-subgroup-content {
+      margin: 0 12px 11px 18px;
+      border: 1px solid #dedff0;
+      border-top: 1px solid #e6e7f2;
+      border-radius: 0 0 9px 9px;
+      background: #ffffff;
+      overflow: hidden;
+      box-shadow: 0 1px 3px rgba(37, 39, 99, 0.06);
     }
 
     .project-subgroup-toggle[data-project-section-label="All Projects"] {
@@ -986,7 +1016,19 @@
     }
 
     .project-subgroup-content .project-view-link {
-      padding-left: 38px;
+      padding: 9px 12px 9px 36px;
+      color: #555875;
+      font-size: 13.5px;
+      border-bottom: 1px solid #f0f0f6;
+    }
+
+    .project-subgroup-content .project-view-link:last-child {
+      border-bottom: none;
+    }
+
+    .project-subgroup-content .project-view-link:hover {
+      color: #252763;
+      background: #f5f5fb;
     }
 
     .project-group-content > .project-view-link {
@@ -4959,7 +5001,22 @@
         button.setAttribute("data-project-section-label", label);
       }
 
-      labelSpan.textContent = label;
+      if (level === "group") {
+        labelSpan.textContent = label;
+      } else {
+        /* Sections reuse the Archive header's icon + label layout. */
+        const iconSpan = document.createElement("span");
+        const labelTextSpan = document.createElement("span");
+
+        labelSpan.className = "archive-toggle-label";
+        iconSpan.className = "archive-icon";
+        iconSpan.setAttribute("aria-hidden", "true");
+        iconSpan.innerHTML = '<svg viewBox="0 0 24 24" focusable="false"><path d="M3.5 6.5h6l2 2.5h11v10.5h-17z"></path></svg>';
+        labelTextSpan.textContent = label;
+        labelSpan.appendChild(iconSpan);
+        labelSpan.appendChild(labelTextSpan);
+      }
+
       caretSpan.className = "project-caret";
       caretSpan.textContent = "▶";
 
@@ -5422,9 +5479,8 @@
           const sectionKey = button.getAttribute("data-project-subgroup-toggle");
           const content = projectLinksContainer.querySelector('[data-project-subgroup-content="' + sectionKey + '"]');
 
-          if (visibleSections[sectionKey]) {
-            setCollapsibleOpen(button, content, true);
-          }
+          /* Close non-matching sections so an opened card never lingers empty. */
+          setCollapsibleOpen(button, content, Boolean(visibleSections[sectionKey]));
         });
       } else {
         groupContents.forEach(function(content) {

@@ -947,11 +947,40 @@ window.HR_PORTAL_DATA = {
       preload: false,
       projects: [
         { id: "short-term-projects-ex", label: "Short-Term Projects (EX)", embedSrc: "https://app.smartsheet.com/b/publish?EQBCT=5c7efc0357a5471f8559cde63936a16f", visible: true },
+        { id: "hr-roadshows-2027", label: "HR Roadshows 2027", embedSrc: "INSERT_HR_ROADSHOWS_2027_EMBED_LINK_HERE", visible: true },
+        { id: "companywide-committee-selection-process", label: "Companywide Committee Selection Process", embedSrc: "INSERT_COMPANYWIDE_COMMITTEE_SELECTION_PROCESS_EMBED_LINK_HERE", visible: true },
         { id: "employee-experience-project-template-5", label: "Project Template 5", embedSrc: "INSERT_EMPLOYEE_EXPERIENCE_PROJECT_TEMPLATE_5_EMBED_LINK_HERE", visible: false },
         { id: "employee-experience-project-template-1", label: "Project Template 1", embedSrc: "INSERT_EMPLOYEE_EXPERIENCE_PROJECT_TEMPLATE_1_EMBED_LINK_HERE", visible: false },
         { id: "employee-experience-project-template-2", label: "Project Template 2", embedSrc: "INSERT_EMPLOYEE_EXPERIENCE_PROJECT_TEMPLATE_2_EMBED_LINK_HERE", visible: false },
         { id: "employee-experience-project-template-3", label: "Project Template 3", embedSrc: "INSERT_EMPLOYEE_EXPERIENCE_PROJECT_TEMPLATE_3_EMBED_LINK_HERE", visible: false },
         { id: "employee-experience-project-template-4", label: "Project Template 4", embedSrc: "INSERT_EMPLOYEE_EXPERIENCE_PROJECT_TEMPLATE_4_EMBED_LINK_HERE", visible: false }
+      ],
+      /* Collapsible sub-groups shown inside this department's dropdown,
+         styled like the Archive box. Add a project to a sub-group the same
+         way as anywhere else — paste its publish link into embedSrc. */
+      sections: [
+        {
+          label: "Appreciation Events",
+          projects: [
+            { id: "service-awards-2026", label: "Service Awards 2026", embedSrc: "INSERT_SERVICE_AWARDS_2026_EMBED_LINK_HERE", visible: true },
+            { id: "silver-jubilee-2027", label: "Silver Jubilee 2027", embedSrc: "INSERT_SILVER_JUBILEE_2027_EMBED_LINK_HERE", visible: true },
+            { id: "tyctwd-2027", label: "TYCTWD 2027", embedSrc: "INSERT_TYCTWD_2027_EMBED_LINK_HERE", visible: true }
+          ]
+        },
+        {
+          label: "Engagement Surveys",
+          projects: [
+            { id: "spring-full-engagement-survey-2027", label: "Spring Full Engagement Survey 2027", embedSrc: "INSERT_SPRING_FULL_ENGAGEMENT_SURVEY_2027_EMBED_LINK_HERE", visible: true },
+            { id: "fall-pulse-survey-2026", label: "Fall Pulse Survey 2026", embedSrc: "INSERT_FALL_PULSE_SURVEY_2026_EMBED_LINK_HERE", visible: true }
+          ]
+        },
+        {
+          label: "Employee Engagement",
+          projects: [
+            { id: "action-planning", label: "Action Planning", embedSrc: "INSERT_ACTION_PLANNING_EMBED_LINK_HERE", visible: true },
+            { id: "listening-sessions", label: "Listening Sessions", embedSrc: "INSERT_LISTENING_SESSIONS_EMBED_LINK_HERE", visible: true }
+          ]
+        }
       ],
       archiveProjects: [
         { id: "short-term-projects-archive-ex", label: "Short-Term Projects Archive (EX)", embedSrc: "https://app.smartsheet.com/b/publish?EQBCT=adce2600c0bb4b168a6fc1d2b53d1c22", visible: true },
