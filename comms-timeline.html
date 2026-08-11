@@ -39,7 +39,7 @@
 
     /* --- BLUE NAV BAR (matches portal.html) --- */
     .top-nav {
-      background-color: #252763;
+      background-color: #121e66;
       color: white;
       display: flex;
       align-items: center;
@@ -210,7 +210,7 @@
 
     .dropdown-menu a.active {
       background-color: #e8e9fb;
-      color: #252763;
+      color: #121e66;
       font-weight: 700;
     }
 
@@ -218,7 +218,7 @@
       padding: 10px 16px 6px 16px;
       font-size: 12px;
       font-weight: 700;
-      color: #252763;
+      color: #121e66;
       text-transform: uppercase;
       letter-spacing: 0.5px;
     }
@@ -264,16 +264,16 @@
 
     .dropdown-menu a.support-request-access-button {
       border: 1px solid rgba(255,255,255,0.22);
-      background: linear-gradient(135deg, #252763 0%, #35388a 100%);
+      background: linear-gradient(135deg, #121e66 0%, #232f8d 100%);
       color: #ffffff;
-      box-shadow: 0 7px 17px rgba(37,39,99,0.24);
+      box-shadow: 0 7px 17px rgba(18,30,102,0.24);
     }
 
     .dropdown-menu a.support-request-access-button:hover,
     .dropdown-menu a.support-request-access-button:focus {
-      background: linear-gradient(135deg, #303381 0%, #252763 100%);
+      background: linear-gradient(135deg, #1b2680 0%, #121e66 100%);
       color: #ffffff;
-      box-shadow: 0 10px 22px rgba(37,39,99,0.30);
+      box-shadow: 0 10px 22px rgba(18,30,102,0.30);
     }
 
     .support-action-icon {
@@ -410,7 +410,7 @@
     }
 
     .legend-title {
-      color: #252763;
+      color: #121e66;
       font-weight: 700;
     }
 
@@ -459,7 +459,7 @@
       inset: 0;
       display: grid;
       place-items: center;
-      color: #252763;
+      color: #121e66;
       font-size: 15px;
       font-weight: 600;
       background: #f7f8fc;
@@ -484,7 +484,7 @@
     .setup-card {
       background: white;
       border-radius: 14px;
-      box-shadow: 0 8px 28px rgba(37,39,99,0.12);
+      box-shadow: 0 8px 28px rgba(18,30,102,0.12);
       max-width: 620px;
       padding: 30px 34px;
       color: #333;
@@ -492,7 +492,7 @@
 
     .setup-card h2 {
       margin: 0 0 6px;
-      color: #252763;
+      color: #121e66;
       font-size: 20px;
     }
 
@@ -502,7 +502,7 @@
       font-weight: 700;
       letter-spacing: 0.06em;
       text-transform: uppercase;
-      color: #6b6dbb;
+      color: #33409d;
       margin-bottom: 10px;
     }
 
@@ -519,14 +519,14 @@
 
     .setup-card code {
       background: #eef0fb;
-      color: #252763;
+      color: #121e66;
       border-radius: 4px;
       padding: 1px 6px;
       font-size: 13px;
     }
 
     .setup-card a {
-      color: #2a55b8;
+      color: #0a76ba;
       font-weight: 600;
     }
 
@@ -539,7 +539,46 @@
       font-size: 13px;
       line-height: 1.5;
     }
-  </style>
+
+    /* ============================================================
+       SWG 2025 BRAND LAYER (matches portal.html exactly)
+       Navy #121e66 banner with the pipeline artwork showing
+       faintly through, a very subtle white keyline along the top
+       edge, a cyan #0c90e2 rule along the bottom edge, and
+       selective yellow #fccc42 accents. Inset shadows keep the
+       bar exactly 56px tall so the fixed dropdowns stay aligned.
+       ============================================================ */
+    .top-nav {
+      background-color: #121e66;
+      background-image:
+        linear-gradient(90deg, rgba(18,30,102,0.98) 0%, rgba(18,30,102,0.92) 60%, rgba(18,30,102,0.76) 100%),
+        url("/HR/images/swgas-pipeline.png");
+      background-position: center, 72% 47%;
+      background-size: auto, 760px auto;
+      box-shadow:
+        inset 0 1px 0 rgba(255, 255, 255, 0.24),
+        inset 0 -3px 0 #0c90e2,
+        0 2px 6px rgba(0, 0, 0, 0.15);
+    }
+
+    .support-request-access-button .support-action-icon {
+      background: #fccc42;
+      color: #121e66;
+    }
+
+    .dropdown-menu a:hover {
+      box-shadow: inset 3px 0 0 #0c90e2;
+    }
+
+    .dropdown-menu a.active {
+      box-shadow: inset 3px 0 0 #fccc42;
+    }
+
+    ::selection {
+      color: #121e66;
+      background: rgba(252, 204, 66, 0.9);
+    }
+</style>
 </head>
 <body>
 
