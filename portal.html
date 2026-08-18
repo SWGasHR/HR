@@ -2815,6 +2815,145 @@
             }
           }
         </style>
+
+        <style id="portal-nav-fit-overrides">
+          /*
+            NAV MESSAGE FIT
+            The message slot was allowed to shrink without a floor, so on a
+            laptop-width banner "This Dashboard updates every 24 hours.", the
+            view-only note and the Request Access / FAQ buttons wrapped onto
+            three or four lines. Their heights are auto, so the bubbles then
+            grew taller than the 56px bar and hung off its top and bottom
+            edges. Below 980px the slot also kept the `top: 64px` offset from
+            the old floating layout while being forced back to
+            `position: relative`, which left the bubble stranded under the
+            banner. Fixed here by giving the slot a workable minimum width
+            (the topic links scroll instead -- that is what their arrows are
+            for), capping every bubble to a height that fits inside the bar,
+            and floating the bubble properly on narrow screens, where the bar
+            genuinely has no room for it.
+          */
+          .nav-refresh-popover,
+          .nav-project-action {
+            align-self: center !important;
+            max-height: 42px !important;
+          }
+
+          .nav-refresh-popover {
+            min-height: 36px !important;
+            padding: 5px 22px 5px 12px !important;
+            font-size: 11px !important;
+            line-height: 1.14 !important;
+          }
+
+          /* Two lines is what the bar has room for; clamp rather than grow. */
+          .nav-refresh-text {
+            display: -webkit-box !important;
+            -webkit-box-orient: vertical;
+            -webkit-line-clamp: 2;
+            line-clamp: 2;
+            overflow: hidden !important;
+            line-height: inherit !important;
+          }
+
+          /* Keep the dismiss badge inside the banner above the shorter pill. */
+          .nav-refresh-close {
+            top: -6px;
+            right: -6px;
+            width: 20px;
+            height: 20px;
+          }
+
+          .nav-project-action {
+            min-height: 40px !important;
+            padding: 4px 30px 4px 6px !important;
+          }
+
+          .nav-project-action-copy {
+            min-width: 0 !important;
+            overflow: hidden !important;
+          }
+
+          .nav-project-action-title,
+          .nav-project-action-subtitle {
+            max-width: 100% !important;
+            overflow: hidden !important;
+            text-overflow: ellipsis !important;
+            white-space: nowrap !important;
+          }
+
+          /* Sits in the bar: hold a width the messages can actually wrap in. */
+          @media (min-width: 900px) {
+            #navReminderSlot,
+            .top-nav.reminder-visible #navReminderSlot {
+              position: relative !important;
+              top: auto !important;
+              bottom: auto !important;
+              height: 100% !important;
+              min-width: 252px !important;
+              z-index: auto !important;
+            }
+          }
+
+          /* Tighter banners: trade a little type size for a third line. */
+          @media (min-width: 900px) and (max-width: 1099px) {
+            .nav-refresh-popover {
+              padding: 4px 20px 4px 10px !important;
+              font-size: 10px !important;
+              line-height: 1.1 !important;
+            }
+
+            .nav-refresh-text {
+              -webkit-line-clamp: 3;
+              line-clamp: 3;
+            }
+          }
+
+          @media (min-width: 1100px) {
+            #navReminderSlot,
+            .top-nav.reminder-visible #navReminderSlot {
+              min-width: 300px !important;
+              max-width: 300px !important;
+            }
+
+            .nav-refresh-popover,
+            .nav-project-action {
+              max-width: 300px !important;
+            }
+          }
+
+          /*
+            Narrow screens: the bar has no room left beside the topic links,
+            so the message floats just under it and can size to its text.
+          */
+          @media (max-width: 899px) {
+            #navReminderSlot,
+            .top-nav.reminder-visible #navReminderSlot {
+              position: fixed !important;
+              top: 60px !important;
+              right: 12px !important;
+              left: auto !important;
+              bottom: auto !important;
+              width: min(300px, calc(100vw - 24px)) !important;
+              min-width: 0 !important;
+              max-width: min(300px, calc(100vw - 24px)) !important;
+              height: auto !important;
+              padding: 0 !important;
+              z-index: 1450 !important;
+            }
+
+            .nav-refresh-popover,
+            .nav-project-action {
+              max-width: 100% !important;
+              max-height: none !important;
+            }
+
+            .nav-refresh-text {
+              -webkit-line-clamp: none;
+              line-clamp: none;
+            }
+          }
+        </style>
 </head>
 <body>
 
