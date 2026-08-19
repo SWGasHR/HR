@@ -1081,14 +1081,14 @@ window.HR_PORTAL_DATA = {
       projects: [
         { id: "short-term-projects-labor-relations", label: "Short-Term Projects (LR)", embedSrc: "https://app.smartsheet.com/b/publish?EQBCT=3b119c94e2a54f4585a838bf6e4bce00", visible: true },
         { id: "readiness", label: "Readiness", embedSrc: "https://app.smartsheet.com/b/publish?EQBCT=cd4faaab81c04c92b07b3f46adf80d68", visible: true },
-        { id: "summer-intern-projects", label: "Summer Intern Projects", embedSrc: "https://app.smartsheet.com/b/publish?EQBCT=be3638b35df84dcea0ee453384cb00e1", visible: true },
+        { id: "labor-relations-project-template-1", label: "Project Template 1", embedSrc: "INSERT_LABOR_RELATIONS_PROJECT_TEMPLATE_1_EMBED_LINK_HERE", visible: false },
         { id: "labor-relations-project-template-2", label: "Project Template 2", embedSrc: "INSERT_LABOR_RELATIONS_PROJECT_TEMPLATE_2_EMBED_LINK_HERE", visible: false },
         { id: "labor-relations-project-template-3", label: "Project Template 3", embedSrc: "INSERT_LABOR_RELATIONS_PROJECT_TEMPLATE_3_EMBED_LINK_HERE", visible: false },
         { id: "labor-relations-project-template-4", label: "Project Template 4", embedSrc: "INSERT_LABOR_RELATIONS_PROJECT_TEMPLATE_4_EMBED_LINK_HERE", visible: false }
       ],
       archiveProjects: [
         { id: "short-term-projects-archive-lr", label: "Short-Term Projects Archive (LR)", embedSrc: "https://app.smartsheet.com/b/publish?EQBCT=09cea3f0fcac432fa19f46ba5a8405d5", visible: true },
-        { id: "labor-relations-archive-template-2", label: "Project Template 2", embedSrc: "INSERT_LABOR_RELATIONS_ARCHIVE_TEMPLATE_2_EMBED_LINK_HERE", visible: false },
+        { id: "summer-intern-projects", label: "Summer Intern Projects 2026", embedSrc: "https://app.smartsheet.com/b/publish?EQBCT=be3638b35df84dcea0ee453384cb00e1", visible: true },
         { id: "labor-relations-archive-template-3", label: "Project Template 3", embedSrc: "INSERT_LABOR_RELATIONS_ARCHIVE_TEMPLATE_3_EMBED_LINK_HERE", visible: false },
         { id: "labor-relations-archive-template-4", label: "Project Template 4", embedSrc: "INSERT_LABOR_RELATIONS_ARCHIVE_TEMPLATE_4_EMBED_LINK_HERE", visible: false },
         { id: "labor-relations-archive-template-5", label: "Project Template 5", embedSrc: "INSERT_LABOR_RELATIONS_ARCHIVE_TEMPLATE_5_EMBED_LINK_HERE", visible: false }
