@@ -2954,6 +2954,808 @@
             }
           }
         </style>
+
+        <style id="portal-apple-design">
+          /*
+            ============================================================
+            APPLE DESIGN LAYER
+            ============================================================
+            Everything in this block comes from the `apple-design` skill in
+            .claude/skills/apple-design/ — Apple's own interface guidance from
+            their WWDC design talks, translated to the web. It is a LAYER: it
+            sits last in <head> and refines what the blocks above already
+            built, so the portal's structure, colors, and layout are untouched
+            and any single rule here can be deleted on its own.
+
+            The five ideas it applies, in the skill's own order:
+
+              1. RESPONSE      Feedback happens on pointer-DOWN, never on
+                               release, and never later than 100ms.
+              2. MATERIALS     Anything that floats over the page (menus,
+                               panels, modals) is a translucent material with
+                               content visible underneath — not an opaque slab.
+              3. SPATIAL       Things enter from, and leave toward, where they
+                               came from. Menus grow out of the button that
+                               opened them.
+              4. TYPOGRAPHY    Letter-spacing is size-specific: tight on large
+                               text, open on small text. Never one value.
+              5. ACCESSIBILITY Reduced motion, reduced transparency, and high
+                               contrast each get a real answer at the bottom
+                               of this block.
+
+            What this layer deliberately does NOT do: make the blue bar
+            translucent. Translucency is only honest when there is content
+            behind it, and the bar sits above the Smartsheet frame rather than
+            over it — so it stays solid and structural, and the lighter
+            materials float on top of it. (Skill §12: heavier material for
+            structure, lighter material for the interactive things.)
+          */
+
+          :root {
+            /*
+              MOTION
+              Apple describes motion as a spring with two knobs: DAMPING (how
+              much it overshoots) and RESPONSE (how quickly it arrives). CSS
+              has no springs, so these curves are the closest shape a
+              cubic-bezier can hold. Anything the user can physically GRAB is
+              driven by a real spring in the portal-apple-motion script at the
+              bottom of the page instead, because a CSS transition cannot be
+              caught and reversed halfway.
+            */
+            --ease-out: cubic-bezier(0.22, 1, 0.36, 1);   /* arriving: fast, then settles */
+            --ease-in: cubic-bezier(0.64, 0, 0.78, 0);    /* leaving: the exact mirror of the above */
+            --ease-inout: cubic-bezier(0.65, 0, 0.35, 1);
+
+            --dur-press: 100ms;   /* a press must read as instant */
+            --dur-fast: 180ms;    /* small things: carets, chips, hovers */
+            --dur-base: 260ms;    /* menus and popovers */
+            --dur-panel: 420ms;   /* full-height side panels */
+
+            /*
+              MATERIALS
+              Bigger surfaces read as thicker: more blur, deeper shadow. Small
+              chips stay light so they do not compete with the content.
+            */
+            --material-light: rgba(255, 255, 255, 0.86);
+            --material-heavy: rgba(246, 247, 251, 0.92);
+            --material-blur: blur(24px) saturate(180%);
+            --material-blur-heavy: blur(20px) saturate(180%);
+            --material-edge: inset 0 1px 0 rgba(255, 255, 255, 0.72);
+
+            /* Layered shadows read as depth; one flat shadow reads as a box. */
+            --shadow-menu:
+              0 1px 2px rgba(12, 20, 69, 0.08),
+              0 8px 20px rgba(12, 20, 69, 0.12),
+              0 20px 44px rgba(12, 20, 69, 0.14);
+            --shadow-panel:
+              -1px 0 2px rgba(12, 20, 69, 0.06),
+              -12px 0 34px rgba(12, 20, 69, 0.16),
+              -30px 0 70px rgba(12, 20, 69, 0.16);
+            --shadow-modal:
+              0 2px 6px rgba(12, 20, 69, 0.10),
+              0 18px 48px rgba(12, 20, 69, 0.26);
+
+            --focus-ring: 0 0 0 3px rgba(12, 144, 226, 0.55);
+          }
+
+          /*
+            ============================================================
+            1. RESPONSE — feedback on pointer-down
+            ============================================================
+            The moment feedback waits for the click to finish, directness
+            "falls off a cliff" (skill §1). The script at the bottom of the
+            page marks whatever is being pressed with data-pressed, on
+            pointerdown, so the press lands on the first frame of the touch
+            rather than on release. Bigger surfaces move less than small ones —
+            a wide row that shrank as much as a small chip would look rubbery.
+          */
+          .nav-item,
+          .dropdown-toggle,
+          .nav-home,
+          .nav-scroll-button,
+          .nav-fullscreen-button,
+          .fullscreen-exit-button,
+          .swgas-logo-link,
+          .dropdown-menu a,
+          .support-action-button,
+          .nav-project-action,
+          .project-group-toggle,
+          .project-subgroup-toggle,
+          .archive-toggle,
+          .project-view-link,
+          .faq-question,
+          .faq-panel-close,
+          .faq-search-clear,
+          .nav-refresh-close,
+          .save-modal-button,
+          .slow-embed-button,
+          .header-toggle,
+          #authRefreshButton,
+          #authRefreshDismiss {
+            -webkit-tap-highlight-color: transparent;
+            transition:
+              background-color var(--dur-fast) var(--ease-out),
+              border-color var(--dur-fast) var(--ease-out),
+              color var(--dur-fast) var(--ease-out),
+              box-shadow var(--dur-fast) var(--ease-out),
+              opacity var(--dur-fast) var(--ease-out),
+              transform var(--dur-press) var(--ease-out);
+          }
+
+          /*
+            One rule declares the press, and a custom property sets how deep it
+            goes — so the reduced-motion block at the bottom can switch the
+            whole thing off with a single line. Bigger surfaces move less: a
+            wide row that shrank as much as a small chip looks rubbery.
+          */
+          [data-pressed="true"] {
+            transform: scale(var(--press-scale, 0.96)) !important;
+          }
+
+          .dropdown-menu a,
+          .dropdown-menu .support-action-button,
+          .project-view-link,
+          .project-group-toggle,
+          .project-subgroup-toggle,
+          .archive-toggle,
+          .faq-question,
+          .nav-project-action,
+          .auth-refresh-banner button,
+          .save-modal-button,
+          .slow-embed-button {
+            --press-scale: 0.985;
+          }
+
+          /* The panel is 500px of surface; more than a hint reads as collapse. */
+          .faq-panel {
+            --press-scale: 0.99;
+          }
+
+          /*
+            Keyboard users get the same clarity as pointer users. :focus-visible
+            only fires for keyboard focus, so this never shows on a mouse click.
+          */
+          .nav-item:focus-visible,
+          .dropdown-toggle:focus-visible,
+          .nav-home:focus-visible,
+          .nav-scroll-button:focus-visible,
+          .nav-fullscreen-button:focus-visible,
+          .fullscreen-exit-button:focus-visible,
+          .swgas-logo-link:focus-visible,
+          .dropdown-menu a:focus-visible,
+          .support-action-button:focus-visible,
+          .nav-project-action:focus-visible,
+          .project-group-toggle:focus-visible,
+          .project-subgroup-toggle:focus-visible,
+          .archive-toggle:focus-visible,
+          .project-view-link:focus-visible,
+          .faq-question:focus-visible,
+          .faq-panel-close:focus-visible,
+          .faq-search-clear:focus-visible,
+          .nav-refresh-close:focus-visible,
+          .save-modal-button:focus-visible,
+          .slow-embed-button:focus-visible,
+          .header-toggle:focus-visible,
+          #authRefreshButton:focus-visible,
+          #authRefreshDismiss:focus-visible {
+            outline: none;
+            box-shadow: var(--focus-ring);
+          }
+
+          /*
+            HIT PADDING (skill §10)
+            The reminder's dismiss badge is 20px square — under every guideline
+            for a touch target. This grows the area that ACCEPTS the tap by
+            10px in each direction without changing a single pixel of how it
+            looks.
+          */
+          .nav-refresh-close::before,
+          .faq-search-clear::before {
+            content: "";
+            position: absolute;
+            inset: -10px;
+            border-radius: inherit;
+          }
+
+          /* .nav-refresh-close is already positioned; this one is not. */
+          .faq-search-clear {
+            position: relative;
+          }
+
+          /*
+            ============================================================
+            2. MATERIALS & DEPTH
+            ============================================================
+            Everything that floats over the page becomes a translucent material
+            with the content blurred underneath, so the layer reads as glass
+            above the work rather than a hole punched through it. Solid
+            backgrounds stay as the fallback for browsers without
+            backdrop-filter, and for anyone who has asked for less
+            transparency (see the accessibility section at the bottom).
+          */
+          @supports ((backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px))) {
+            .dropdown-menu {
+              background: var(--material-light);
+              -webkit-backdrop-filter: var(--material-blur);
+              backdrop-filter: var(--material-blur);
+              box-shadow: var(--shadow-menu), var(--material-edge);
+            }
+
+            /* The panel is the largest floating surface in the portal, so it
+               is the thickest: more blur, a deeper shadow. */
+            .faq-panel {
+              background: var(--material-heavy);
+              -webkit-backdrop-filter: var(--material-blur-heavy);
+              backdrop-filter: var(--material-blur-heavy);
+              box-shadow: var(--shadow-panel);
+            }
+
+            /* Floating chrome inside the panel: the search bar sits above the
+               list that scrolls under it. It gets a lighter TINT rather than
+               a blur of its own — a translucent surface stacked on another
+               translucent surface destroys legibility (skill §12), and a
+               second blur region is the one thing here that measurably costs
+               frames. The panel underneath has already done the blurring. */
+            .faq-search-area {
+              background: rgba(255, 255, 255, 0.72);
+            }
+
+            /* A modal is a task that blocks: dim to focus, and push the page
+               behind it out of focus rather than just darkening it. */
+            .save-modal-overlay {
+              background: rgba(10, 14, 40, 0.34);
+              -webkit-backdrop-filter: blur(10px) saturate(120%);
+              backdrop-filter: blur(10px) saturate(120%);
+            }
+
+            .placeholder-message {
+              background: rgba(255, 255, 255, 0.82);
+              -webkit-backdrop-filter: blur(14px) saturate(160%);
+              backdrop-filter: blur(14px) saturate(160%);
+            }
+
+            .placeholder-box,
+            .save-modal,
+            #hrPortalRecovery .hr-recovery-card {
+              box-shadow: var(--shadow-modal), var(--material-edge);
+            }
+          }
+
+          .dropdown-menu {
+            border-radius: 0 0 14px 14px;
+            padding: 8px 0;
+            overscroll-behavior: contain;   /* scrolling the menu never scrolls the page */
+          }
+
+          /* Direct children only: the project tree and the two big action
+             buttons carry their own spacing and are left alone. */
+          .dropdown-menu > a:not(.support-action-button) {
+            border-radius: 8px;
+            margin: 0 8px;
+            padding-left: 10px;
+            padding-right: 10px;
+          }
+
+          .dropdown-divider {
+            background: rgba(18, 30, 102, 0.10);
+          }
+
+          /* Subtle, self-effacing scrollbars — the list is the content, the
+             scrollbar is not. */
+          .dropdown-menu,
+          .faq-panel-body,
+          .project-group-content,
+          .archive-content {
+            scrollbar-width: thin;
+            scrollbar-color: rgba(18, 30, 102, 0.28) transparent;
+          }
+
+          .dropdown-menu::-webkit-scrollbar,
+          .faq-panel-body::-webkit-scrollbar {
+            width: 10px;
+          }
+
+          .dropdown-menu::-webkit-scrollbar-track,
+          .faq-panel-body::-webkit-scrollbar-track {
+            background: transparent;
+          }
+
+          .dropdown-menu::-webkit-scrollbar-thumb,
+          .faq-panel-body::-webkit-scrollbar-thumb {
+            border: 3px solid transparent;
+            border-radius: 999px;
+            background-clip: content-box;
+            background-color: rgba(18, 30, 102, 0.24);
+          }
+
+          .dropdown-menu::-webkit-scrollbar-thumb:hover,
+          .faq-panel-body::-webkit-scrollbar-thumb:hover {
+            background-color: rgba(18, 30, 102, 0.40);
+          }
+
+          .faq-panel-body {
+            overscroll-behavior: contain;
+          }
+
+          /*
+            SCROLL EDGE EFFECT (skill §12)
+            A 1px rule under floating chrome says "there is a border here". A
+            short fade says "content continues under here", which is what is
+            actually true. The line is replaced with a soft edge.
+          */
+          .faq-search-area {
+            position: relative;
+            border-bottom: 0;
+            box-shadow: none;
+          }
+
+          .faq-search-area::after {
+            content: "";
+            position: absolute;
+            left: 0;
+            right: 0;
+            bottom: -14px;
+            height: 14px;
+            pointer-events: none;
+            background: linear-gradient(
+              to bottom,
+              rgba(18, 30, 102, 0.07),
+              rgba(18, 30, 102, 0)
+            );
+          }
+
+          /*
+            VIBRANCY (skill §12)
+            Text on a translucent surface cannot be flat grey — the background
+            moves underneath it. A little more weight and a little more
+            letter-spacing keeps it legible over whatever it lands on.
+          */
+          .faq-panel-subtitle,
+          .nav-project-action-subtitle,
+          .support-action-subtitle {
+            font-weight: 600;
+            letter-spacing: 0.01em;
+          }
+
+          /*
+            ============================================================
+            3. SPATIAL CONSISTENCY — enter from where you came from
+            ============================================================
+            The menus used to appear and vanish instantly (display: none), so
+            there was no relationship between the button and the panel it
+            opened. Now the menu grows out of its own button and shrinks back
+            into it, and the two paths mirror each other exactly.
+
+            Note this changes HOW the menu is hidden, not WHEN: the same
+            :hover / :focus-within / .force-closed rules above still decide.
+          */
+          .dropdown-menu {
+            display: block !important;
+            visibility: hidden;
+            opacity: 0;
+            pointer-events: none;
+            transform-origin: top left;      /* anchored to the button, not the center */
+            transform: translateY(-6px) scale(0.97);
+            filter: blur(3px);               /* materialize: it arrives, it does not just fade */
+            will-change: transform, opacity;
+            transition:
+              opacity var(--dur-fast) var(--ease-in),
+              transform var(--dur-fast) var(--ease-in),
+              filter var(--dur-fast) var(--ease-in),
+              visibility 0s linear var(--dur-fast);
+          }
+
+          .dropdown:hover > .dropdown-menu,
+          .dropdown:focus-within > .dropdown-menu {
+            visibility: visible;
+            opacity: 1;
+            pointer-events: auto;
+            transform: translateY(0) scale(1);
+            filter: blur(0);
+            transition:
+              opacity var(--dur-base) var(--ease-out),
+              transform var(--dur-base) var(--ease-out),
+              filter var(--dur-base) var(--ease-out),
+              visibility 0s linear 0s;
+          }
+
+          .dropdown.force-closed > .dropdown-menu {
+            visibility: hidden !important;
+            opacity: 0 !important;
+            pointer-events: none !important;
+            transform: translateY(-6px) scale(0.97) !important;
+            filter: blur(3px) !important;
+          }
+
+          /* The caret is the menu's state, so it should show the state. */
+          .caret {
+            display: inline-block;
+            font-size: 10px;
+            transition: transform var(--dur-base) var(--ease-out);
+          }
+
+          .dropdown:hover .caret,
+          .dropdown:focus-within .caret {
+            transform: rotate(180deg);
+          }
+
+          .dropdown.force-closed .caret {
+            transform: rotate(0deg);
+          }
+
+          /*
+            The modal and the "link not added yet" message used to be switched
+            with display: none, which cannot animate — so they appeared and
+            disappeared in a single frame. Hiding them with opacity instead
+            lets both directions animate, and keeps them out of the way of
+            clicks and screen readers while hidden.
+          */
+          .save-modal-overlay {
+            display: flex !important;
+            transition:
+              opacity var(--dur-base) var(--ease-in),
+              visibility 0s linear var(--dur-base),
+              backdrop-filter var(--dur-base) var(--ease-in);
+          }
+
+          .save-modal-overlay.hidden {
+            opacity: 0;
+            visibility: hidden;
+            pointer-events: none;
+          }
+
+          .save-modal-overlay:not(.hidden) {
+            opacity: 1;
+            visibility: visible;
+            pointer-events: auto;
+            transition:
+              opacity var(--dur-base) var(--ease-out),
+              visibility 0s linear 0s,
+              backdrop-filter var(--dur-base) var(--ease-out);
+          }
+
+          .save-modal {
+            border-radius: 18px;
+            transform-origin: center;
+            transform: scale(0.94) translateY(8px);
+            transition: transform var(--dur-base) var(--ease-in);
+          }
+
+          .save-modal-overlay:not(.hidden) .save-modal {
+            transform: scale(1) translateY(0);
+            transition: transform var(--dur-base) var(--ease-out);
+          }
+
+          .placeholder-message {
+            display: flex !important;
+            transition:
+              opacity var(--dur-base) var(--ease-in),
+              visibility 0s linear var(--dur-base);
+          }
+
+          .placeholder-message.hidden {
+            opacity: 0;
+            visibility: hidden;
+            pointer-events: none;
+          }
+
+          .placeholder-message:not(.hidden) {
+            opacity: 1;
+            visibility: visible;
+            transition:
+              opacity var(--dur-base) var(--ease-out),
+              visibility 0s linear 0s;
+          }
+
+          .placeholder-box {
+            border-radius: 18px;
+            transform: scale(0.97);
+            transition: transform var(--dur-base) var(--ease-in);
+          }
+
+          .placeholder-message:not(.hidden) .placeholder-box {
+            transform: scale(1);
+            transition: transform var(--dur-base) var(--ease-out);
+          }
+
+          /*
+            The reminder chips already fade in. Give them the material's
+            arrival — they scale up from slightly small, and leave the same
+            way they came.
+          */
+          .nav-refresh-popover,
+          .nav-project-action {
+            transition:
+              opacity var(--dur-base) var(--ease-in),
+              transform var(--dur-base) var(--ease-in),
+              box-shadow var(--dur-fast) var(--ease-out),
+              visibility 0s linear var(--dur-base);
+          }
+
+          .nav-refresh-popover.is-visible,
+          .nav-project-action.is-visible {
+            transition:
+              opacity var(--dur-panel) var(--ease-out),
+              transform var(--dur-panel) var(--ease-out),
+              box-shadow var(--dur-fast) var(--ease-out),
+              visibility 0s linear 0s;
+          }
+
+          .nav-project-action:hover,
+          .nav-project-action:focus {
+            transform: translateY(-1px);
+          }
+
+          .nav-project-action[data-pressed="true"] {
+            transform: scale(0.985);
+          }
+
+          /*
+            ============================================================
+            4. TYPOGRAPHY
+            ============================================================
+            Two rules from the skill:
+              • Prefer the platform's own font. It already ships optical
+                sizing and legibility tuning that no override improves on.
+                Apple devices get San Francisco; Windows keeps Segoe UI
+                exactly as before, so nothing shifts for the people who use
+                this portal at their desks.
+              • Letter-spacing is size-specific. Big text needs it tightened
+                (letters drift apart as they grow); small text needs it
+                opened. One value for everything is wrong somewhere.
+          */
+          html,
+          body,
+          .nav-item,
+          .dropdown-toggle,
+          .dropdown-menu,
+          .faq-panel,
+          .save-modal,
+          .placeholder-box,
+          #hrPortalRecovery,
+          input,
+          button {
+            font-family:
+              -apple-system, BlinkMacSystemFont, "SF Pro Text",
+              "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+            font-optical-sizing: auto;
+          }
+
+          body {
+            -webkit-font-smoothing: antialiased;
+            -moz-osx-font-smoothing: grayscale;
+          }
+
+          /* Large text: tighten, and pull the leading in with it. */
+          #hrPortalRecovery h1,
+          .save-modal h2,
+          .placeholder-box h2 {
+            letter-spacing: -0.021em;
+            line-height: 1.18;
+          }
+
+          .faq-panel-title {
+            letter-spacing: -0.022em;
+            line-height: 1.12;
+          }
+
+          /* Mid-size UI text: a hair tight, no more. */
+          .nav-item,
+          .dropdown-toggle,
+          .nav-fullscreen-label,
+          .support-action-title,
+          .faq-question-text,
+          .save-modal-button,
+          .slow-embed-button {
+            letter-spacing: -0.006em;
+          }
+
+          /* Body copy sits at zero — the size it was designed for. */
+          .faq-answer-content,
+          .placeholder-box p,
+          .save-modal p,
+          #hrPortalRecovery p,
+          .view-only-note,
+          .auth-refresh-banner span {
+            letter-spacing: 0;
+            line-height: 1.55;
+          }
+
+          /* Small text opens up, so it stays readable at 10-12px. */
+          .dropdown-header,
+          .nav-project-action-subtitle,
+          .support-action-subtitle,
+          .faq-search-summary,
+          .loading-caption {
+            letter-spacing: 0.03em;
+          }
+
+          /* Spacing in em, so a larger browser text size grows the layout
+             with the text instead of cramping it (skill §15, Dynamic Type). */
+          .faq-answer-content p {
+            margin-block: 0.6em;
+          }
+
+          ::selection {
+            background: rgba(12, 144, 226, 0.24);
+          }
+
+          /*
+            ============================================================
+            5. FRAME-LEVEL SMOOTHNESS
+            ============================================================
+            Only transform and opacity are animated anywhere in this layer —
+            they are the two properties the compositor can move without
+            re-laying out the page. will-change is set only where motion is
+            genuinely imminent, because it costs memory everywhere else.
+          */
+          .faq-panel,
+          .faq-panel-backdrop,
+          .save-modal,
+          .nav-project-action,
+          .nav-refresh-popover {
+            will-change: transform, opacity;
+          }
+
+          /* Dim to focus. Deliberately NOT blurred: this covers the whole
+             viewport, and blurring it while the panel slides is what turns a
+             60fps slide into a 12fps one on a machine without a GPU. */
+          .faq-panel-backdrop {
+            background: rgba(10, 14, 40, 0.26);
+          }
+
+          /*
+            The panel can be dragged closed (see portal-apple-motion at the
+            bottom of the page). The grabber is the affordance that says so,
+            and the header is the surface that accepts the drag.
+          */
+          .faq-panel.is-draggable .faq-panel-header {
+            cursor: grab;
+            touch-action: none;
+            -webkit-user-select: none;
+            user-select: none;
+          }
+
+          .faq-panel.is-dragging .faq-panel-header {
+            cursor: grabbing;
+          }
+
+          /* The list still scrolls up and down natively; only the sideways
+             gesture — which has nothing else to do here — is ours. */
+          .faq-panel.is-draggable .faq-panel-body {
+            touch-action: pan-y;
+          }
+
+          .faq-panel.is-draggable .faq-panel-header::before {
+            content: "";
+            position: absolute;
+            left: 7px;
+            top: 50%;
+            width: 4px;
+            height: 38px;
+            margin-top: -19px;
+            border-radius: 999px;
+            background: rgba(255, 255, 255, 0.28);
+            transition: background-color var(--dur-fast) var(--ease-out);
+          }
+
+          .faq-panel.is-draggable .faq-panel-header:hover::before,
+          .faq-panel.is-dragging .faq-panel-header::before {
+            background: rgba(255, 255, 255, 0.55);
+          }
+
+          .faq-panel-header {
+            position: relative;
+          }
+
+          /* While a spring is driving the panel, CSS must keep its hands off
+             the transform — the script owns it frame by frame. */
+          .faq-panel.is-spring-driven {
+            transition: none !important;
+          }
+
+          /*
+            ============================================================
+            6. ACCESSIBILITY — three separate signals, three real answers
+            ============================================================
+            Reduced motion does not mean no feedback; it means feedback that
+            does not move across the screen. Cross-fades replace slides,
+            overshoot is dropped, and every colour and opacity change that
+            helps someone understand what happened is kept.
+          */
+          @media (prefers-reduced-motion: reduce) {
+            *,
+            *::before,
+            *::after {
+              animation-duration: 0.01ms !important;
+              animation-iteration-count: 1 !important;
+              transition-duration: 0.01ms !important;
+              scroll-behavior: auto !important;
+            }
+
+            /* Kept deliberately: a short cross-fade is not vestibular motion,
+               and without it things blink in and out with no explanation. */
+            .dropdown-menu,
+            .dropdown:hover > .dropdown-menu,
+            .dropdown:focus-within > .dropdown-menu,
+            .save-modal-overlay,
+            .save-modal-overlay:not(.hidden),
+            .placeholder-message,
+            .placeholder-message:not(.hidden),
+            .faq-panel,
+            .faq-panel-backdrop {
+              transition-duration: 160ms !important;
+              transition-property: opacity, visibility !important;
+            }
+
+            .dropdown-menu,
+            .dropdown.force-closed > .dropdown-menu {
+              transform: none !important;
+              filter: none !important;
+            }
+
+            .save-modal,
+            .placeholder-box,
+            .nav-refresh-popover,
+            .nav-project-action,
+            [data-pressed="true"] {
+              transform: none !important;
+            }
+
+            .faq-panel {
+              transform: none !important;
+            }
+
+            .skl::after {
+              animation: none !important;
+            }
+          }
+
+          /*
+            Someone who has asked for less transparency gets solid surfaces —
+            the blur is dropped entirely rather than merely thickened.
+          */
+          @media (prefers-reduced-transparency: reduce) {
+            .dropdown-menu,
+            .faq-panel,
+            .faq-search-area,
+            .placeholder-message,
+            .save-modal-overlay,
+            .faq-panel-backdrop {
+              -webkit-backdrop-filter: none !important;
+              backdrop-filter: none !important;
+            }
+
+            .dropdown-menu { background: #ffffff !important; }
+            .faq-panel { background: #f6f7fb !important; }
+            .faq-search-area { background: #ffffff !important; }
+            .placeholder-message { background: #ffffff !important; }
+            .save-modal-overlay { background: rgba(10, 14, 40, 0.62) !important; }
+            .faq-panel-backdrop { background: rgba(10, 14, 40, 0.46) !important; }
+          }
+
+          /* High contrast: near-solid surfaces with a defined border. */
+          @media (prefers-contrast: more) {
+            .dropdown-menu,
+            .faq-panel,
+            .save-modal,
+            .placeholder-box {
+              -webkit-backdrop-filter: none !important;
+              backdrop-filter: none !important;
+              background: #ffffff !important;
+              border: 1px solid #121e66 !important;
+            }
+
+            .dropdown-divider { background: #121e66 !important; }
+
+            .nav-item:hover,
+            .dropdown-toggle:hover,
+            .nav-item.active,
+            .dropdown-toggle.active {
+              background-color: rgba(255, 255, 255, 0.34) !important;
+            }
+          }
+        </style>
 </head>
 <body>
 
@@ -7722,6 +8524,593 @@
               shortenBlueBarDepartmentName();
               refreshAdaptiveNavigation();
             });
+          })();
+        </script>
+
+        <script id="portal-apple-motion">
+          /*
+            ============================================================
+            APPLE MOTION LAYER
+            ============================================================
+            The companion to the portal-apple-design stylesheet in <head>.
+            CSS handles everything that simply appears and disappears. This
+            file handles the two things CSS cannot do:
+
+              1. PRESS FEEDBACK ON POINTER-DOWN
+                 A :active rule is close, but it cannot be cancelled by
+                 dragging your finger off the button and brought back by
+                 dragging on again — which is how a real button behaves.
+
+              2. A SPRING THAT CAN BE GRABBED MID-FLIGHT
+                 A CSS transition runs to its end no matter what. The side
+                 panel can be thrown closed with a flick, caught halfway and
+                 pulled back, and it never jumps, because every animation
+                 starts from where the panel is RIGHT NOW and inherits the
+                 speed the finger was moving.
+
+            Nothing here is required for the portal to work. If this script
+            fails, the CSS transitions it replaces are still in place and
+            everything keeps opening and closing normally.
+          */
+          (function () {
+            "use strict";
+
+            var reduceMotionQuery =
+              window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)");
+
+            function prefersReducedMotion() {
+              return !!(reduceMotionQuery && reduceMotionQuery.matches);
+            }
+
+            /* ==========================================================
+               1. RESPONSE — the press lands on touch-down
+               ==========================================================
+               "The moment lag appears, the feeling of directness falls off a
+               cliff." Waiting for the click event to fire means waiting for
+               the finger to LIFT, which is far too late to be feedback.
+            */
+            var PRESSABLE = [
+              ".nav-item",
+              ".nav-home",
+              ".dropdown-toggle",
+              ".nav-scroll-button",
+              ".nav-fullscreen-button",
+              ".fullscreen-exit-button",
+              ".swgas-logo-link",
+              ".dropdown-menu a",
+              ".support-action-button",
+              ".nav-project-action",
+              ".nav-refresh-close",
+              ".project-group-toggle",
+              ".project-subgroup-toggle",
+              ".archive-toggle",
+              ".project-view-link",
+              ".faq-question",
+              ".faq-panel-close",
+              ".faq-search-clear",
+              ".save-modal-button",
+              ".slow-embed-button",
+              ".header-toggle",
+              "#authRefreshButton",
+              "#authRefreshDismiss"
+            ].join(",");
+
+            /* 10px of slack around the target, so a fingertip that drifts a
+               couple of pixels during a tap does not read as a cancel. */
+            var PRESS_HYSTERESIS = 10;
+
+            var pressTarget = null;
+            var pressPointerId = null;
+            var pressBounds = null;
+
+            function paintPress(on) {
+              if (!pressTarget) {
+                return;
+              }
+
+              if (on) {
+                pressTarget.setAttribute("data-pressed", "true");
+              } else {
+                pressTarget.removeAttribute("data-pressed");
+              }
+            }
+
+            function releasePress() {
+              paintPress(false);
+              pressTarget = null;
+              pressPointerId = null;
+              pressBounds = null;
+            }
+
+            document.addEventListener("pointerdown", function (event) {
+              /* Left button / touch / pen only — a right-click is not a press. */
+              if (typeof event.button === "number" && event.button !== 0) {
+                return;
+              }
+
+              var target = event.target;
+
+              if (!target || typeof target.closest !== "function") {
+                return;
+              }
+
+              var element = target.closest(PRESSABLE);
+
+              if (!element) {
+                return;
+              }
+
+              releasePress();
+              pressTarget = element;
+              pressPointerId = event.pointerId;
+              pressBounds = element.getBoundingClientRect();
+              paintPress(true);
+            }, true);
+
+            /* Drag off the button and the press lifts; drag back on and it
+               returns. This is the behaviour every native button has. */
+            document.addEventListener("pointermove", function (event) {
+              if (!pressTarget || event.pointerId !== pressPointerId || !pressBounds) {
+                return;
+              }
+
+              var inside =
+                event.clientX >= pressBounds.left - PRESS_HYSTERESIS &&
+                event.clientX <= pressBounds.right + PRESS_HYSTERESIS &&
+                event.clientY >= pressBounds.top - PRESS_HYSTERESIS &&
+                event.clientY <= pressBounds.bottom + PRESS_HYSTERESIS;
+
+              paintPress(inside);
+            }, true);
+
+            ["pointerup", "pointercancel", "dragstart", "contextmenu"].forEach(function (name) {
+              document.addEventListener(name, releasePress, true);
+            });
+
+            /* A press that turns into a scroll was never a press. */
+            window.addEventListener("scroll", releasePress, true);
+            window.addEventListener("blur", releasePress);
+
+            /* ==========================================================
+               2. A SPRING
+               ==========================================================
+               Apple deliberately replaced mass/stiffness/damping with two
+               numbers a designer can reason about:
+
+                 DAMPING   how much it overshoots.
+                           1.0 = settles with no bounce at all.
+                           0.8 = a little overshoot, which is only right when
+                           a real gesture threw it there.
+                 RESPONSE  how quickly it arrives, in seconds. Not a duration
+                           — a spring has no fixed duration; where it ends up
+                           each frame emerges from the physics.
+
+               Those two convert into the classic spring constants:
+                 omega = 2*pi / response      k = omega^2      c = 2*damping*omega
+            */
+            function createSpring(onUpdate, onRest) {
+              var value = 0;
+              var velocity = 0;
+              var target = 0;
+              var damping = 1;
+              var response = 0.4;
+              var frame = null;
+              var lastTime = 0;
+
+              function tick(now) {
+                var elapsed = Math.min((now - lastTime) / 1000, 1 / 30);
+                lastTime = now;
+
+                var omega = (2 * Math.PI) / response;
+                var stiffness = omega * omega;
+                var friction = 2 * damping * omega;
+
+                /* Fixed small sub-steps keep the integration stable no matter
+                   how long the browser took to hand us this frame. */
+                var steps = Math.max(1, Math.ceil(elapsed * 600));
+                var step = elapsed / steps;
+                var index;
+
+                for (index = 0; index < steps; index += 1) {
+                  var acceleration =
+                    -stiffness * (value - target) - friction * velocity;
+                  velocity += acceleration * step;
+                  value += velocity * step;
+                }
+
+                /* Close enough, and slow enough, that another frame would not
+                   be visible. Snap and stop rather than crawl. */
+                if (Math.abs(value - target) < 0.4 && Math.abs(velocity) < 8) {
+                  value = target;
+                  velocity = 0;
+                  frame = null;
+                  onUpdate(value);
+                  if (onRest) {
+                    onRest(value);
+                  }
+                  return;
+                }
+
+                onUpdate(value);
+                frame = window.requestAnimationFrame(tick);
+              }
+
+              return {
+                /* Re-targeting mid-flight KEEPS the current value and the
+                   current velocity. That is what stops a reversal from
+                   hitting a brick wall — the motion bends, it never cuts. */
+                to: function (nextTarget, options) {
+                  var settings = options || {};
+
+                  target = nextTarget;
+                  damping = typeof settings.damping === "number" ? settings.damping : 1;
+                  response = typeof settings.response === "number" ? settings.response : 0.4;
+
+                  if (typeof settings.from === "number") {
+                    value = settings.from;
+                  }
+
+                  if (typeof settings.velocity === "number") {
+                    velocity = settings.velocity;
+                  }
+
+                  if (frame === null) {
+                    lastTime = window.performance ? window.performance.now() : Date.now();
+                    frame = window.requestAnimationFrame(tick);
+                  }
+                },
+                set: function (nextValue) {
+                  value = nextValue;
+                  velocity = 0;
+                },
+                stop: function () {
+                  if (frame !== null) {
+                    window.cancelAnimationFrame(frame);
+                    frame = null;
+                  }
+                  velocity = 0;
+                },
+                value: function () {
+                  return value;
+                },
+                velocity: function () {
+                  return velocity;
+                },
+                isRunning: function () {
+                  return frame !== null;
+                }
+              };
+            }
+
+            /*
+              MOMENTUM PROJECTION
+              Where would this land if you let go and it just coasted? This is
+              Apple's own function from the Designing Fluid Interfaces sample
+              code — the exponential decay a scroll view uses, not the
+              textbook v^2/2a, which feels wrong.
+            */
+            function projectMomentum(velocity, decelerationRate) {
+              var rate = typeof decelerationRate === "number" ? decelerationRate : 0.998;
+              return ((velocity / 1000) * rate) / (1 - rate);
+            }
+
+            /*
+              RUBBER BANDING
+              Past the edge, the panel follows less and less instead of
+              stopping dead. A hard stop reads as frozen; resistance reads as
+              "still listening, but there is nothing more this way".
+            */
+            function rubberband(overshoot, dimension, constant) {
+              var c = typeof constant === "number" ? constant : 0.55;
+              return (overshoot * dimension * c) / (dimension + c * Math.abs(overshoot));
+            }
+
+            /* ==========================================================
+               3. THE SIDE PANELS — grabbable, throwable, interruptible
+               ==========================================================
+               The FAQ panel and the Copilot panel both slide in from the
+               right. They now behave like a real sheet: drag them, flick
+               them, catch them halfway, change your mind.
+
+               The portal's own open/close functions still do all the real
+               work (focus, aria, pausing videos). This layer only watches for
+               the "open" class going on and off, and animates the glass.
+            */
+            function attachPanel(panel) {
+              if (!panel) {
+                return;
+              }
+
+              var backdrop = document.getElementById(
+                panel.id === "copilotPanel" ? "copilotPanelBackdrop" : "faqPanelBackdrop"
+              );
+              var header = panel.querySelector(".faq-panel-header");
+              var body = panel.querySelector(".faq-panel-body, .copilot-panel-body");
+              var closeButton = panel.querySelector(".faq-panel-close");
+
+              if (!backdrop || !header) {
+                return;
+              }
+
+              /* Distance from open to fully off-screen, plus a little extra so
+                 the shadow clears the edge too. */
+              function closedOffset() {
+                return (panel.offsetWidth || 500) + 48;
+              }
+
+              var offset = closedOffset();
+              var isOpen = panel.classList.contains("open");
+              var spring = createSpring(render, settle);
+              var handoff = null;
+              var drag = null;
+
+              spring.set(isOpen ? 0 : offset);
+
+              function render(x) {
+                panel.style.transform = "translate3d(" + x + "px, 0, 0)";
+
+                /* The backdrop tracks the panel one-to-one the entire way, so
+                   a half-open drag looks half-open rather than fully dim. */
+                var progress = 1 - Math.min(Math.max(x / offset, 0), 1);
+                backdrop.style.opacity = String(progress);
+              }
+
+              function takeOver() {
+                panel.classList.add("is-spring-driven");
+                panel.style.visibility = "visible";
+                backdrop.style.visibility = "visible";
+                backdrop.style.transition = "none";
+              }
+
+              function settle(x) {
+                /* Motion is over: hand the transform back to the stylesheet so
+                   there is no stale inline value to go stale. The CSS resting
+                   positions are identical, so nothing moves at the handover. */
+                panel.classList.remove("is-spring-driven");
+                panel.style.transform = "";
+                panel.style.visibility = "";
+                backdrop.style.opacity = "";
+                backdrop.style.visibility = "";
+                backdrop.style.transition = "";
+                panel.style.willChange = "";
+              }
+
+              function animateTo(x, options) {
+                takeOver();
+                spring.to(x, options);
+              }
+
+              function openWithMomentum(velocity, damping) {
+                animateTo(0, {
+                  velocity: velocity || 0,
+                  damping: typeof damping === "number" ? damping : 1,
+                  response: 0.4
+                });
+              }
+
+              /* Watch the portal's own open/close, rather than replacing it. */
+              new MutationObserver(function () {
+                var nowOpen = panel.classList.contains("open");
+
+                if (nowOpen === isOpen) {
+                  return;
+                }
+
+                isOpen = nowOpen;
+                offset = closedOffset();
+
+                var velocity = handoff ? handoff.velocity : 0;
+                var damping = handoff ? handoff.damping : 1;
+                handoff = null;
+
+                if (nowOpen) {
+                  /* Opened from a button: no gesture, so no bounce (skill §4 —
+                     overshoot on something that was not thrown feels wrong). */
+                  openWithMomentum(velocity, damping);
+                } else {
+                  animateTo(offset, {
+                    velocity: velocity,
+                    damping: damping,
+                    response: 0.4
+                  });
+                }
+              }).observe(panel, { attributes: true, attributeFilter: ["class"] });
+
+              /* ---------- the gesture itself ---------- */
+
+              function beginDrag(event, axisLocked) {
+                offset = closedOffset();
+                spring.stop();
+                takeOver();
+                panel.classList.add("is-dragging");
+                panel.style.willChange = "transform";
+
+                drag = {
+                  pointerId: event.pointerId,
+                  /* Respect WHERE it was grabbed. Snapping the panel to the
+                     finger on contact breaks the illusion instantly. */
+                  grabOffset: event.clientX - spring.value(),
+                  startX: event.clientX,
+                  startY: event.clientY,
+                  locked: !!axisLocked,
+                  history: [{ x: event.clientX, time: event.timeStamp }]
+                };
+
+                try {
+                  event.target.setPointerCapture(event.pointerId);
+                } catch (error) {
+                  /* Capture is a nicety; tracking still works without it. */
+                }
+              }
+
+              function moveDrag(event) {
+                if (!drag || event.pointerId !== drag.pointerId) {
+                  return;
+                }
+
+                /* Started in the scrolling list: wait until the direction is
+                   unambiguous before committing to a drag, and let a vertical
+                   swipe scroll the list as usual. */
+                if (!drag.locked) {
+                  var dx = event.clientX - drag.startX;
+                  var dy = event.clientY - drag.startY;
+
+                  if (Math.abs(dx) < 10 && Math.abs(dy) < 10) {
+                    return;
+                  }
+
+                  if (Math.abs(dy) >= Math.abs(dx) || dx < 0) {
+                    endDrag(event, true);
+                    return;
+                  }
+
+                  drag.locked = true;
+                  drag.grabOffset = event.clientX - spring.value();
+                  panel.classList.add("is-dragging");
+                }
+
+                var next = event.clientX - drag.grabOffset;
+
+                /* Dragging further open than open: resist, do not stop dead. */
+                if (next < 0) {
+                  next = -rubberband(-next, panel.offsetWidth || 500);
+                }
+
+                spring.set(next);
+                render(next);
+
+                drag.history.push({ x: event.clientX, time: event.timeStamp });
+
+                if (drag.history.length > 6) {
+                  drag.history.shift();
+                }
+
+                if (event.cancelable) {
+                  event.preventDefault();
+                }
+              }
+
+              function endDrag(event, abandoned) {
+                if (!drag || event.pointerId !== drag.pointerId) {
+                  return;
+                }
+
+                var wasLocked = drag.locked;
+                var history = drag.history;
+
+                panel.classList.remove("is-dragging");
+                drag = null;
+
+                if (abandoned || !wasLocked) {
+                  panel.style.willChange = "";
+                  if (!spring.isRunning()) {
+                    settle(spring.value());
+                  }
+                  return;
+                }
+
+                /* Velocity from the last few moves, not from the single last
+                   event — one stray sample should not decide the throw. */
+                var last = history[history.length - 1];
+                var first = history[0];
+                var elapsed = (last.time - first.time) / 1000;
+                var velocity = elapsed > 0 ? (last.x - first.x) / elapsed : 0;
+
+                var current = spring.value();
+                var flicked = Math.abs(velocity) > 80;
+
+                /* Where would it come to rest if released right now? */
+                var projected = current + projectMomentum(velocity);
+
+                /* A flick is decided by its DIRECTION, not by where the finger
+                   happened to be when it lifted. Only a slow release falls
+                   back to asking how far across it got. */
+                var shouldClose = flicked
+                  ? velocity > 0
+                  : projected > (panel.offsetWidth || 500) * 0.4;
+
+                /* Bounce is earned: a thrown panel may overshoot slightly, a
+                   gently released one settles flat. */
+                var damping = flicked ? 0.8 : 1;
+
+                if (shouldClose) {
+                  /* Hand the finger's speed to the close animation so there is
+                     no seam between dragging and animating, then let the
+                     portal's own close function run — it restores focus,
+                     updates aria, and pauses any playing video. */
+                  handoff = { velocity: velocity, damping: damping };
+
+                  if (closeButton) {
+                    closeButton.click();
+                  } else if (typeof window.closeFaqPanel === "function") {
+                    window.closeFaqPanel(false);
+                  }
+
+                  /* If nothing removed the class (an unexpected layout), do
+                     not leave the panel stranded mid-screen. */
+                  if (panel.classList.contains("open")) {
+                    handoff = null;
+                    openWithMomentum(velocity, damping);
+                  }
+                } else {
+                  openWithMomentum(velocity, damping);
+                }
+              }
+
+              header.addEventListener("pointerdown", function (event) {
+                if (typeof event.button === "number" && event.button !== 0) {
+                  return;
+                }
+
+                /* The close button inside the header is a button, not a handle. */
+                if (event.target.closest("button, a, input, select, textarea")) {
+                  return;
+                }
+
+                beginDrag(event, true);
+              });
+
+              if (body) {
+                body.addEventListener("pointerdown", function (event) {
+                  if (typeof event.button === "number" && event.button !== 0) {
+                    return;
+                  }
+
+                  /* Touch and pen only here: a mouse drag inside the list is
+                     almost always someone selecting text. */
+                  if (event.pointerType === "mouse") {
+                    return;
+                  }
+
+                  beginDrag(event, false);
+                });
+              }
+
+              document.addEventListener("pointermove", moveDrag, { passive: false });
+              document.addEventListener("pointerup", endDrag);
+              document.addEventListener("pointercancel", function (event) {
+                endDrag(event, true);
+              });
+
+              window.addEventListener("resize", function () {
+                var wasClosed = !panel.classList.contains("open");
+                offset = closedOffset();
+
+                if (wasClosed && !spring.isRunning()) {
+                  spring.set(offset);
+                }
+              });
+
+              panel.classList.add("is-draggable");
+            }
+
+            /* Reduced motion: no springs, no throwing. The stylesheet's short
+               cross-fade takes over, which is the gentler equivalent — not an
+               absence of feedback. */
+            if (!prefersReducedMotion()) {
+              attachPanel(document.getElementById("smartsheetFaqPanel"));
+              attachPanel(document.getElementById("copilotPanel"));
+            }
           })();
         </script>
 </body>
