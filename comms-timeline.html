@@ -582,6 +582,280 @@
       background: rgba(252, 204, 66, 0.9);
     }
 </style>
+
+<style id="comms-apple-design">
+  /*
+    ============================================================
+    APPLE DESIGN LAYER
+    ============================================================
+    The same layer that sits at the bottom of portal.html's <head>,
+    trimmed to what this page actually has. Both pages share a bar, a
+    set of menus, and a type scale, so they share the tokens too — if
+    you change a value here, change it there.
+
+    Source: .claude/skills/apple-design/SKILL.md
+    Full explanation: docs/apple-design-pass.md
+  */
+
+  :root {
+    --ease-out: cubic-bezier(0.22, 1, 0.36, 1);   /* arriving */
+    --ease-in: cubic-bezier(0.64, 0, 0.78, 0);    /* leaving: its mirror */
+
+    --dur-press: 100ms;
+    --dur-fast: 180ms;
+    --dur-base: 260ms;
+
+    --material-light: rgba(255, 255, 255, 0.86);
+    --material-blur: blur(24px) saturate(180%);
+    --material-edge: inset 0 1px 0 rgba(255, 255, 255, 0.72);
+
+    --shadow-menu:
+      0 1px 2px rgba(12, 20, 69, 0.08),
+      0 8px 20px rgba(12, 20, 69, 0.12),
+      0 20px 44px rgba(12, 20, 69, 0.14);
+    --shadow-card:
+      0 2px 6px rgba(12, 20, 69, 0.08),
+      0 16px 40px rgba(12, 20, 69, 0.16);
+
+    --focus-ring: 0 0 0 3px rgba(12, 144, 226, 0.55);
+  }
+
+  /* ---------- 1. Response: the press lands on pointer-down ---------- */
+  .nav-item,
+  .nav-home,
+  .dropdown-toggle,
+  .dropdown-menu a,
+  .support-action-button,
+  .open-sheet-link,
+  .swgas-logo-link {
+    -webkit-tap-highlight-color: transparent;
+    transition:
+      background-color var(--dur-fast) var(--ease-out),
+      color var(--dur-fast) var(--ease-out),
+      box-shadow var(--dur-fast) var(--ease-out),
+      opacity var(--dur-fast) var(--ease-out),
+      transform var(--dur-press) var(--ease-out);
+  }
+
+  [data-pressed="true"] {
+    transform: scale(var(--press-scale, 0.96)) !important;
+  }
+
+  .dropdown-menu a,
+  .support-action-button {
+    --press-scale: 0.985;
+  }
+
+  .nav-item:focus-visible,
+  .nav-home:focus-visible,
+  .dropdown-toggle:focus-visible,
+  .dropdown-menu a:focus-visible,
+  .support-action-button:focus-visible,
+  .open-sheet-link:focus-visible,
+  .swgas-logo-link:focus-visible {
+    outline: none;
+    box-shadow: var(--focus-ring);
+  }
+
+  /* ---------- 2. Materials ---------- */
+  @supports ((backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px))) {
+    .dropdown-menu {
+      background: var(--material-light);
+      -webkit-backdrop-filter: var(--material-blur);
+      backdrop-filter: var(--material-blur);
+      box-shadow: var(--shadow-menu), var(--material-edge);
+    }
+  }
+
+  .dropdown-menu {
+    border-radius: 0 0 14px 14px;
+    padding: 8px 0;
+    overscroll-behavior: contain;
+    scrollbar-width: thin;
+    scrollbar-color: rgba(18, 30, 102, 0.28) transparent;
+  }
+
+  .dropdown-menu > a:not(.support-action-button) {
+    border-radius: 8px;
+    margin: 0 8px;
+    padding-left: 10px;
+    padding-right: 10px;
+  }
+
+  .dropdown-divider {
+    background: rgba(18, 30, 102, 0.10);
+  }
+
+  .setup-card {
+    border-radius: 18px;
+    box-shadow: var(--shadow-card), var(--material-edge);
+  }
+
+  /* ---------- 3. Spatial: menus grow out of their button ---------- */
+  .dropdown-menu {
+    display: block !important;
+    visibility: hidden;
+    opacity: 0;
+    pointer-events: none;
+    transform-origin: top left;
+    transform: translateY(-6px) scale(0.97);
+    filter: blur(3px);
+    transition:
+      opacity var(--dur-fast) var(--ease-in),
+      transform var(--dur-fast) var(--ease-in),
+      filter var(--dur-fast) var(--ease-in),
+      visibility 0s linear var(--dur-fast);
+  }
+
+  .dropdown:hover > .dropdown-menu,
+  .dropdown:focus-within > .dropdown-menu {
+    visibility: visible;
+    opacity: 1;
+    pointer-events: auto;
+    transform: translateY(0) scale(1);
+    filter: blur(0);
+    transition:
+      opacity var(--dur-base) var(--ease-out),
+      transform var(--dur-base) var(--ease-out),
+      filter var(--dur-base) var(--ease-out),
+      visibility 0s linear 0s;
+  }
+
+  .caret {
+    display: inline-block;
+    transition: transform var(--dur-base) var(--ease-out);
+  }
+
+  .dropdown:hover .caret,
+  .dropdown:focus-within .caret {
+    transform: rotate(180deg);
+  }
+
+  /*
+    Switching tabs used to swap one panel for another in a single frame.
+    A short cross-fade says the two views are the same sheet seen a
+    different way, which is exactly what they are. The panels also stay
+    laid out instead of being torn down and rebuilt, so coming back to a
+    tab is instant.
+  */
+  .view-panel {
+    display: block !important;
+    opacity: 0;
+    visibility: hidden;
+    pointer-events: none;
+    transition:
+      opacity var(--dur-base) var(--ease-in),
+      visibility 0s linear var(--dur-base);
+  }
+
+  .view-panel.active {
+    opacity: 1;
+    visibility: visible;
+    pointer-events: auto;
+    transition:
+      opacity var(--dur-base) var(--ease-out),
+      visibility 0s linear 0s;
+  }
+
+  .panel-loading {
+    transition: opacity var(--dur-base) var(--ease-in);
+  }
+
+  /* ---------- 4. Typography ---------- */
+  html,
+  body,
+  .dropdown-menu,
+  .setup-card,
+  input,
+  button {
+    font-family:
+      -apple-system, BlinkMacSystemFont, "SF Pro Text",
+      "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+    font-optical-sizing: auto;
+  }
+
+  body {
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+
+  /* Large text tightens; small text opens up; body sits at zero. */
+  .setup-card h2 {
+    letter-spacing: -0.021em;
+    line-height: 1.18;
+  }
+
+  .nav-item,
+  .dropdown-toggle,
+  .support-action-title,
+  .legend-title {
+    letter-spacing: -0.006em;
+  }
+
+  .setup-card p,
+  .setup-card ol {
+    letter-spacing: 0;
+  }
+
+  .dropdown-header,
+  .support-action-subtitle,
+  .legend-item,
+  .setup-card .setup-kicker {
+    letter-spacing: 0.03em;
+  }
+
+  ::selection {
+    background: rgba(12, 144, 226, 0.24);
+  }
+
+  /* ---------- 5. Accessibility ---------- */
+  @media (prefers-reduced-motion: reduce) {
+    *,
+    *::before,
+    *::after {
+      animation-duration: 0.01ms !important;
+      animation-iteration-count: 1 !important;
+      transition-duration: 0.01ms !important;
+      scroll-behavior: auto !important;
+    }
+
+    /* A cross-fade is not vestibular motion; without it things blink. */
+    .dropdown-menu,
+    .dropdown:hover > .dropdown-menu,
+    .dropdown:focus-within > .dropdown-menu,
+    .view-panel,
+    .view-panel.active {
+      transition-duration: 160ms !important;
+      transition-property: opacity, visibility !important;
+    }
+
+    .dropdown-menu,
+    [data-pressed="true"] {
+      transform: none !important;
+      filter: none !important;
+    }
+  }
+
+  @media (prefers-reduced-transparency: reduce) {
+    .dropdown-menu {
+      -webkit-backdrop-filter: none !important;
+      backdrop-filter: none !important;
+      background: #ffffff !important;
+    }
+  }
+
+  @media (prefers-contrast: more) {
+    .dropdown-menu,
+    .setup-card {
+      -webkit-backdrop-filter: none !important;
+      backdrop-filter: none !important;
+      background: #ffffff !important;
+      border: 1px solid #121e66 !important;
+    }
+
+    .dropdown-divider { background: #121e66 !important; }
+  }
+</style>
 </head>
 <body>
 
@@ -1064,6 +1338,97 @@
       }
 
       activateTab(window.location.hash.replace("#", "") || DEFAULT_TAB_ID, false);
+    })();
+  </script>
+
+  <script id="comms-apple-motion">
+    /*
+      Press feedback lands on pointer-DOWN, not on release — the same
+      handler portal.html uses, minus the side-panel spring this page has
+      no need for. See .claude/skills/apple-design/SKILL.md §1 and §10.
+    */
+    (function () {
+      "use strict";
+
+      var PRESSABLE = [
+        ".nav-item",
+        ".nav-home",
+        ".dropdown-toggle",
+        ".dropdown-menu a",
+        ".support-action-button",
+        ".open-sheet-link",
+        ".swgas-logo-link"
+      ].join(",");
+
+      /* Slack around the target, so a fingertip that drifts a couple of
+         pixels during a tap does not read as a cancel. */
+      var HYSTERESIS = 10;
+
+      var target = null;
+      var pointerId = null;
+      var bounds = null;
+
+      function paint(on) {
+        if (!target) {
+          return;
+        }
+
+        if (on) {
+          target.setAttribute("data-pressed", "true");
+        } else {
+          target.removeAttribute("data-pressed");
+        }
+      }
+
+      function release() {
+        paint(false);
+        target = null;
+        pointerId = null;
+        bounds = null;
+      }
+
+      document.addEventListener("pointerdown", function (event) {
+        if (typeof event.button === "number" && event.button !== 0) {
+          return;
+        }
+
+        if (!event.target || typeof event.target.closest !== "function") {
+          return;
+        }
+
+        var element = event.target.closest(PRESSABLE);
+
+        if (!element) {
+          return;
+        }
+
+        release();
+        target = element;
+        pointerId = event.pointerId;
+        bounds = element.getBoundingClientRect();
+        paint(true);
+      }, true);
+
+      /* Drag off the control and the press lifts; drag back and it returns. */
+      document.addEventListener("pointermove", function (event) {
+        if (!target || event.pointerId !== pointerId || !bounds) {
+          return;
+        }
+
+        paint(
+          event.clientX >= bounds.left - HYSTERESIS &&
+          event.clientX <= bounds.right + HYSTERESIS &&
+          event.clientY >= bounds.top - HYSTERESIS &&
+          event.clientY <= bounds.bottom + HYSTERESIS
+        );
+      }, true);
+
+      ["pointerup", "pointercancel", "dragstart", "contextmenu"].forEach(function (name) {
+        document.addEventListener(name, release, true);
+      });
+
+      window.addEventListener("scroll", release, true);
+      window.addEventListener("blur", release);
     })();
   </script>
 </body>
