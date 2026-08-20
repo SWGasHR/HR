@@ -1018,7 +1018,7 @@ window.HR_PORTAL_DATA = {
       projects: [
         { id: "short-term-projects-hrcm", label: "Short-Term Projects (HRCM)", embedSrc: "https://app.smartsheet.com/b/publish?EQBCT=b57a2524e6144de2a06b6fd3eb60faa7", visible: true },
         { id: "evp-rollout-plan", label: "EVP Rollout Plan", embedSrc: "https://app.smartsheet.com/b/publish?EQBCT=de1146e552624a2dbc19ab8821465d03", visible: true },
-        { id: "hr-change-management-project-template-1", label: "Project Template 1", embedSrc: "INSERT_HR_CHANGE_MANAGEMENT_PROJECT_TEMPLATE_1_EMBED_LINK_HERE", visible: false },
+        { id: "hr-summit-2026", label: "HR Summit 2026", embedSrc: "https://app.smartsheet.com/b/publish?EQBCT=7968fbae11d2432fb9c15885d84fb4d3", visible: true },
         { id: "hr-change-management-project-template-2", label: "Project Template 2", embedSrc: "INSERT_HR_CHANGE_MANAGEMENT_PROJECT_TEMPLATE_2_EMBED_LINK_HERE", visible: false },
         { id: "hr-change-management-project-template-3", label: "Project Template 3", embedSrc: "INSERT_HR_CHANGE_MANAGEMENT_PROJECT_TEMPLATE_3_EMBED_LINK_HERE", visible: false },
         { id: "hr-change-management-project-template-4", label: "Project Template 4", embedSrc: "INSERT_HR_CHANGE_MANAGEMENT_PROJECT_TEMPLATE_4_EMBED_LINK_HERE", visible: false }
