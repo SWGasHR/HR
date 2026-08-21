@@ -1438,13 +1438,23 @@
     /* --- RED WARNING BAR --- */
     /*
       The one thing on the page that must not be ignorable, so it is built like
-      the rest of the portal rather than like an alert box: a graded red rather
-      than one flat fill, a white keyline along the top edge the way the blue
-      bar has one, and layered shadow so it reads as sitting above the sheet
-      instead of painted onto it.
+      the rest of the portal rather than like an alert box.
+
+      The pipeline artwork runs through the red the same way it runs through
+      the navy of the blue bar, under a graded red wash that keeps it faint
+      and keeps white text at full contrast. That one detail is what stops
+      this reading as a generic browser alert and starts it reading as part
+      of the portal. A white keyline along the top edge and a cyan rule along
+      the bottom finish it exactly as the blue bar is finished.
     */
     .header-bar {
-      background: linear-gradient(180deg, #d3352f 0%, #b8261f 100%);
+      background-color: #b8261f;
+      background-image:
+        linear-gradient(180deg, rgba(201, 42, 35, 0.75) 0%, rgba(148, 22, 17, 0.86) 100%),
+        url("/HR/images/swgas-pipeline-tile.jpg");
+      background-position: left top, left 38%;
+      background-size: auto, 1520px auto;
+      background-repeat: repeat, repeat-x;
       color: white;
       display: flex;
       align-items: center;
@@ -1452,9 +1462,10 @@
       gap: 16px;
       padding: 11px 18px;
       box-shadow:
-        inset 0 1px 0 rgba(255, 255, 255, 0.20),
-        0 1px 2px rgba(74, 12, 8, 0.20),
-        0 6px 18px rgba(74, 12, 8, 0.20);
+        inset 0 1px 0 rgba(255, 255, 255, 0.26),
+        inset 0 -3px 0 #0c90e2,
+        0 1px 2px rgba(74, 12, 8, 0.22),
+        0 6px 18px rgba(74, 12, 8, 0.22);
       position: relative;
       z-index: 10;
       flex-shrink: 0;
@@ -1487,42 +1498,58 @@
       min-width: 0;
     }
 
-    /* The same disk the "Did you save?" dialog uses, so the warning and the
-       confirmation are visibly about the same act. */
+    /*
+      An arrow, not a disk. The sentence next to it says to look below and to
+      the left, at the Save icon in the sheet -- so the icon points down,
+      towards the thing it is talking about, instead of being a picture of a
+      floppy disk sitting still in a box. The chip is white rather than
+      translucent so the arrow reads at a glance against the artwork.
+    */
     .header-icon {
       flex: 0 0 auto;
-      width: 34px;
-      height: 34px;
+      width: 36px;
+      height: 36px;
       display: grid;
       place-items: center;
-      border-radius: 10px;
-      background: rgba(255, 255, 255, 0.18);
-      box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.30);
+      border-radius: 11px;
+      background: #ffffff;
+      box-shadow:
+        0 1px 2px rgba(74, 12, 8, 0.22),
+        0 4px 10px rgba(74, 12, 8, 0.20);
     }
 
     .header-icon svg {
-      width: 18px;
-      height: 18px;
-      fill: #ffffff;
+      width: 20px;
+      height: 20px;
       display: block;
+      fill: none;
+      stroke: #b8261f;
+      stroke-width: 2.6;
+      stroke-linecap: round;
+      stroke-linejoin: round;
     }
 
     /*
-      One nudge as the bar arrives, then it holds still. What was here before
-      was a two-second loop running for as long as the sheet was open -- motion
-      in the corner of the eye all day, which the eye learns to ignore and the
-      attention never gets back.
+      The bounce you liked, done properly: three hops that lose height as
+      they go, the way a dropped thing actually settles, and then it stops.
+      The old one was a two-second loop that ran for as long as the sheet was
+      open -- motion in the corner of the eye all day, which the eye learns to
+      ignore and the attention never gets back. This says "down there", once,
+      at the moment the bar arrives.
     */
-    .header-bar:not(.hidden) .header-icon {
-      animation: header-icon-nudge 820ms var(--ease-out, cubic-bezier(0.23, 1, 0.32, 1)) 240ms both;
+    .header-bar:not(.hidden) .header-icon svg {
+      animation: header-arrow-drop 1150ms var(--ease-out, cubic-bezier(0.23, 1, 0.32, 1)) 260ms both;
     }
 
-    @keyframes header-icon-nudge {
-      0% { transform: scale(1); }
-      20% { transform: scale(1.14); }
-      44% { transform: scale(0.97); }
-      64% { transform: scale(1.04); }
-      100% { transform: scale(1); }
+    @keyframes header-arrow-drop {
+      0% { transform: translateY(-7px); opacity: 0; }
+      14% { transform: translateY(4px); opacity: 1; }
+      30% { transform: translateY(-3.5px); }
+      46% { transform: translateY(3px); }
+      62% { transform: translateY(-1.5px); }
+      78% { transform: translateY(1.5px); }
+      90% { transform: translateY(-0.5px); }
+      100% { transform: translateY(0); }
     }
 
     .header-text {
@@ -2327,6 +2354,8 @@
 
     .tour-card {
       width: min(370px, calc(100vw - 24px));
+      max-height: calc(100vh - 24px);
+      overflow-y: auto;
       box-sizing: border-box;
       background: #ffffff;
       color: #22264b;
@@ -4178,7 +4207,7 @@
                its own sake; the bar itself still appears, it just appears. */
             .nav-scroll-button[data-press-bounce="true"],
             .header-bar:not(.hidden),
-            .header-bar:not(.hidden) .header-icon,
+            .header-bar:not(.hidden) .header-icon svg,
             .tour-arrow[data-landed="true"] svg {
               animation: none !important;
             }
@@ -4782,8 +4811,9 @@
   <div class="header-bar hidden" id="warningBar">
     <div class="header-left">
       <div class="header-icon" aria-hidden="true">
-        <svg viewBox="0 0 24 24">
-          <path d="M17 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V7l-4-4zM12 19c-1.7 0-3-1.3-3-3s1.3-3 3-3 3 1.3 3 3-1.3 3-3 3zm3-10H5V5h10v4z"/>
+        <svg viewBox="0 0 24 24" focusable="false">
+          <path d="M12 4v13"></path>
+          <path d="m6.4 11.6 5.6 5.6 5.6-5.6"></path>
         </svg>
       </div>
       <div class="header-text">
@@ -9249,9 +9279,19 @@
                 body: "Takes you back to this department's main dashboard from anywhere in the portal. If you ever feel lost, this is the way back."
               },
               {
-                selector: "#navScrollShell",
-                title: "The dashboard topics",
-                body: "Each link opens a different view of the department's work. When there are more topics than fit, arrows appear at either end to scroll through them."
+                selector: "[data-view-id=\"mainInitiatives\"]",
+                title: "Main Initiatives",
+                body: "The department's headline work for the year, on one dashboard \u2014 what is in flight, who owns it, and where each piece has got to."
+              },
+              {
+                selector: "[data-view-id=\"allDepartmentProjects\"]",
+                title: "All Projects View Only",
+                body: "Every project in the department on a single read-only board. Good for a status sweep; nothing here can be edited by accident."
+              },
+              {
+                selector: "#allHrPersonalTasksLink",
+                title: "All HR Personal Tasks",
+                body: "Your own task list across every HR sheet, gathered in one place. This one opens in a new tab, so the portal stays where it is."
               },
               {
                 selector: "#projectDropdownToggle",
@@ -9402,15 +9442,27 @@
               var arrowTop = ringTop + ringHeight + ARROW_GAP;
               place(arrow, centreX - 22, arrowTop);
 
-              /* The card hangs below the arrow, centred on the target but
-                 never past the edge of the window. */
+              /*
+                The card hangs below the arrow, centred on the target, and is
+                then pushed back inside the window on both axes. The vertical
+                clamp is what keeps this working in a short window -- a laptop
+                with the dev tools open, a half-height browser -- where the
+                natural spot for the card is below the fold.
+              */
               var cardWidth = card.offsetWidth;
+              var cardHeight = card.offsetHeight;
+
               var cardLeft = Math.min(
                 Math.max(centreX - cardWidth / 2, EDGE),
                 Math.max(window.innerWidth - cardWidth - EDGE, EDGE)
               );
 
-              place(card, cardLeft, arrowTop + 30 + CARD_GAP);
+              var cardTop = Math.min(
+                arrowTop + 30 + CARD_GAP,
+                Math.max(window.innerHeight - cardHeight - EDGE, EDGE)
+              );
+
+              place(card, cardLeft, cardTop);
             }
 
             /* Targets inside the scrolling topic strip may be off to one side.
@@ -9604,8 +9656,37 @@
               goTo(index + 1);
             });
 
-            /* Clicking the dimmed page is a reasonable way to say "enough". */
-            scrim.addEventListener("click", stop);
+            /*
+              While the tour is up, the page underneath is inert. The scrim
+              covers the whole window -- the bar included, which is why it is
+              transparent up there rather than dimmed -- so a click on the very
+              thing being pointed at lands here and stops. It does NOT end the
+              tour: clicking the highlighted item is the most natural thing in
+              the world to try, and having the tour vanish when you do is a
+              punishment for curiosity. Cancel and Escape are the ways out.
+            */
+            ["click", "mousedown", "mouseup", "dblclick", "contextmenu", "wheel", "touchstart"].forEach(
+              function (name) {
+                scrim.addEventListener(name, function (event) {
+                  event.preventDefault();
+                  event.stopPropagation();
+                }, { passive: false });
+              }
+            );
+
+            /*
+              Keyboard has to be sealed off too, or Tab walks straight out of
+              the card and into the bar behind it. Focus is pulled back to the
+              card the moment it leaves.
+            */
+            document.addEventListener("focusin", function (event) {
+              if (!running || card.contains(event.target)) {
+                return;
+              }
+
+              event.stopPropagation();
+              nextButton.focus();
+            }, true);
 
             document.addEventListener("keydown", function (event) {
               var introOpen = intro.classList.contains("is-open");
