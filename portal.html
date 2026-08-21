@@ -146,9 +146,16 @@
       transition: padding 0.22s ease;
     }
 
+    /*
+      No scrollbar-gutter here. The region only ever scrolls sideways
+      (overflow-y is hidden), but a stable gutter still reserves ~15px on the
+      right for a vertical scrollbar that can never appear -- and the browser
+      then reports scrollWidth - clientWidth 15px larger than the furthest
+      scrollLeft it will actually accept. That stranded the right arrow just
+      short of the end: it stayed enabled, and every click there did nothing.
+    */
     .nav-scroll-shell:not(.no-scroll) .nav-scroll-region {
       overflow-x: auto;
-      scrollbar-gutter: stable;
       padding: 0 46px;
     }
 
@@ -172,10 +179,21 @@
       background: rgba(255,255,255,0.7);
     }
 
+    /*
+      Centred with auto margins rather than translateY(-50%), so `transform`
+      belongs entirely to the press effect. While the positioning lived in the
+      transform, the press rule in the Apple layer (which sets `transform`
+      outright) dropped the button half its own height on every click and
+      snapped it back on release -- a 21px leap, read as a bounce. The 6px of
+      `bottom` shifts the centring box up, which lifts the button 3px clear of
+      the horizontal scrollbar exactly as before.
+    */
     .nav-scroll-button {
       position: absolute;
-      top: 50%;
-      transform: translateY(calc(-50% - 3px));
+      top: 0;
+      bottom: 6px;
+      margin-top: auto;
+      margin-bottom: auto;
       width: 32px;
       height: 32px;
       padding: 0;
@@ -190,6 +208,10 @@
       box-shadow: 0 4px 12px rgba(0,0,0,0.20);
       backdrop-filter: blur(5px);
       transition: background-color 0.2s ease, border-color 0.2s ease, opacity 0.2s ease, transform 0.2s ease;
+      /* The press is the only movement these get, and it stays shallower
+         than the shared default: on a 32px chip anything deeper reads as a
+         wobble rather than a button going down. */
+      --press-scale: 0.97;
     }
 
     .nav-scroll-button svg {
@@ -208,11 +230,6 @@
       background: rgba(255,255,255,0.30);
       border-color: rgba(255,255,255,0.70);
       outline: none;
-      transform: translateY(calc(-50% - 4px));
-    }
-
-    .nav-scroll-button:active {
-      transform: translateY(calc(-50% - 2px));
     }
 
     .nav-scroll-button-left {
@@ -254,6 +271,13 @@
     .nav-scroll-shell.nav-scroll-measuring::before,
     .nav-scroll-shell.nav-scroll-measuring::after {
       transition: none !important;
+    }
+
+    /* Measuring parks the scroll position and puts it back. With smooth
+       scrolling left on, that restore animates, so a resize while the nav was
+       scrolled slid it back to the start and then crawled forwards again. */
+    .nav-scroll-shell.nav-scroll-measuring .nav-scroll-region {
+      scroll-behavior: auto !important;
     }
 
     .nav-home {
@@ -3089,7 +3113,7 @@
             wide row that shrank as much as a small chip looks rubbery.
           */
           [data-pressed="true"] {
-            transform: scale(var(--press-scale, 0.96)) !important;
+            transform: var(--press-base, translate(0)) scale(var(--press-scale, 0.96)) !important;
           }
 
           .dropdown-menu a,
@@ -7916,12 +7940,63 @@
       return measureNavOverflowWithoutScrollControls();
     }
 
+    /*
+      scrollWidth - clientWidth is only an upper bound on how far the region
+      will really scroll: reserved scrollbar gutters and sub-pixel rounding can
+      both put a few pixels of it out of reach. Believing it left the right
+      arrow enabled at a position the region refuses to accept, so the last
+      click (or two) on it appeared to do nothing at all.
+
+      So the real limit is probed -- ask for an impossible scrollLeft and read
+      back what the browser allowed -- and kept until the layout it was
+      measured against changes. Probing needs a settled layout, so it happens
+      in updateNavScrollControls; everywhere else reads the cache.
+    */
+    let navMaxScrollLeftProbe = null;
+
+    function probeNavMaxScrollLeft() {
+      if (!navScrollRegion || !navScrollShell) {
+        return;
+      }
+
+      const previousScrollLeft = navScrollRegion.scrollLeft;
+
+      /* Suppresses smooth scrolling, so neither hop is ever painted. */
+      navScrollShell.classList.add("nav-scroll-measuring");
+      navScrollRegion.scrollLeft = navScrollRegion.scrollWidth;
+
+      const reachableMax = navScrollRegion.scrollLeft;
+
+      navScrollRegion.scrollLeft = previousScrollLeft;
+      navScrollShell.classList.remove("nav-scroll-measuring");
+
+      navMaxScrollLeftProbe = {
+        max: reachableMax,
+        scrollWidth: navScrollRegion.scrollWidth,
+        clientWidth: navScrollRegion.clientWidth
+      };
+    }
+
     function getNavMaxScrollLeft() {
       if (!navScrollRegion) {
         return 0;
       }
 
-      return Math.max(navScrollRegion.scrollWidth - navScrollRegion.clientWidth, 0);
+      const reportedMax = Math.max(navScrollRegion.scrollWidth - navScrollRegion.clientWidth, 0);
+      const probe = navMaxScrollLeftProbe;
+
+      /* A probe only speaks for the layout it was taken in. If the nav has
+         been resized or had items added since, fall back to the reported
+         figure until the next update re-probes. */
+      if (
+        probe &&
+        probe.scrollWidth === navScrollRegion.scrollWidth &&
+        probe.clientWidth === navScrollRegion.clientWidth
+      ) {
+        return Math.min(reportedMax, probe.max);
+      }
+
+      return reportedMax;
     }
 
     function updateNavArrowStates() {
@@ -7965,6 +8040,7 @@
 
       if (!hasOverflow) {
         navScrollRegion.scrollLeft = 0;
+        navMaxScrollLeftProbe = null;
 
         if (navScrollLeft) {
           navScrollLeft.disabled = true;
@@ -7979,6 +8055,7 @@
 
       /* Force the browser to apply the has-scroll padding before reading the scroll limits. */
       void navScrollRegion.offsetWidth;
+      probeNavMaxScrollLeft();
       updateNavArrowStates();
     }
 
@@ -8023,6 +8100,19 @@
 
       /* If the remaining movement is tiny, finish the trip to the end/start. */
       if (Math.abs(targetScrollLeft - currentScrollLeft) < 8) {
+        targetScrollLeft = direction > 0 ? maxScrollLeft : 0;
+      }
+
+      /*
+        Never leave a sliver behind either. A step that would come to rest a
+        few pixels short of an end goes the whole way instead, so the arrow
+        that then greys out really has run out of nav to show.
+      */
+      const remainingAfterStep = direction > 0
+        ? maxScrollLeft - targetScrollLeft
+        : targetScrollLeft;
+
+      if (remainingAfterStep < 24) {
         targetScrollLeft = direction > 0 ? maxScrollLeft : 0;
       }
 
