@@ -208,10 +208,9 @@
       box-shadow: 0 4px 12px rgba(0,0,0,0.20);
       backdrop-filter: blur(5px);
       transition: background-color 0.2s ease, border-color 0.2s ease, opacity 0.2s ease, transform 0.2s ease;
-      /* The press is the only movement these get, and it stays shallower
-         than the shared default: on a 32px chip anything deeper reads as a
-         wobble rather than a button going down. */
-      --press-scale: 0.97;
+      /* Goes down a little further than the shared default so the spring
+         back up (in the Apple layer below) has something to spring from. */
+      --press-scale: 0.94;
     }
 
     .nav-scroll-button svg {
@@ -1437,15 +1436,25 @@
     }
 
     /* --- RED WARNING BAR --- */
+    /*
+      The one thing on the page that must not be ignorable, so it is built like
+      the rest of the portal rather than like an alert box: a graded red rather
+      than one flat fill, a white keyline along the top edge the way the blue
+      bar has one, and layered shadow so it reads as sitting above the sheet
+      instead of painted onto it.
+    */
     .header-bar {
-      background-color: #d9534f;
+      background: linear-gradient(180deg, #d3352f 0%, #b8261f 100%);
       color: white;
       display: flex;
       align-items: center;
       justify-content: space-between;
       gap: 16px;
-      padding: 12px 20px;
-      box-shadow: 0 4px 6px rgba(0,0,0,0.15);
+      padding: 11px 18px;
+      box-shadow:
+        inset 0 1px 0 rgba(255, 255, 255, 0.20),
+        0 1px 2px rgba(74, 12, 8, 0.20),
+        0 6px 18px rgba(74, 12, 8, 0.20);
       position: relative;
       z-index: 10;
       flex-shrink: 0;
@@ -1457,23 +1466,63 @@
       display: none;
     }
 
+    /*
+      Plays once, when a project sheet opens. The bar used to simply blink into
+      existence at full size, which is the one thing guaranteed to read as a
+      page glitch rather than as a message.
+    */
+    .header-bar:not(.hidden) {
+      animation: header-bar-in 300ms var(--ease-out, cubic-bezier(0.23, 1, 0.32, 1)) both;
+    }
+
+    @keyframes header-bar-in {
+      from { opacity: 0; transform: translateY(-6px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
     .header-left {
       display: flex;
       align-items: center;
-      gap: 15px;
+      gap: 14px;
       min-width: 0;
     }
 
-    .arrow-down {
-      font-size: 24px;
-      animation: bounce 2s infinite;
-      flex-shrink: 0;
+    /* The same disk the "Did you save?" dialog uses, so the warning and the
+       confirmation are visibly about the same act. */
+    .header-icon {
+      flex: 0 0 auto;
+      width: 34px;
+      height: 34px;
+      display: grid;
+      place-items: center;
+      border-radius: 10px;
+      background: rgba(255, 255, 255, 0.18);
+      box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.30);
     }
 
-    @keyframes bounce {
-      0%, 20%, 50%, 80%, 100% { transform: translateY(0); }
-      40% { transform: translateY(5px); }
-      60% { transform: translateY(3px); }
+    .header-icon svg {
+      width: 18px;
+      height: 18px;
+      fill: #ffffff;
+      display: block;
+    }
+
+    /*
+      One nudge as the bar arrives, then it holds still. What was here before
+      was a two-second loop running for as long as the sheet was open -- motion
+      in the corner of the eye all day, which the eye learns to ignore and the
+      attention never gets back.
+    */
+    .header-bar:not(.hidden) .header-icon {
+      animation: header-icon-nudge 820ms var(--ease-out, cubic-bezier(0.23, 1, 0.32, 1)) 240ms both;
+    }
+
+    @keyframes header-icon-nudge {
+      0% { transform: scale(1); }
+      20% { transform: scale(1.14); }
+      44% { transform: scale(0.97); }
+      64% { transform: scale(1.04); }
+      100% { transform: scale(1); }
     }
 
     .header-text {
@@ -1484,35 +1533,50 @@
 
     .header-text strong {
       font-weight: 700;
+      letter-spacing: -0.005em;
     }
 
     .header-extra {
       display: inline;
+      color: rgba(255, 255, 255, 0.93);
     }
 
     .header-toggle {
-      background: rgba(255,255,255,0.18);
+      background: rgba(255,255,255,0.16);
       color: white;
-      border: 1px solid rgba(255,255,255,0.35);
-      border-radius: 6px;
-      width: 34px;
-      height: 34px;
+      border: 1px solid rgba(255,255,255,0.34);
+      border-radius: 8px;
+      width: 32px;
+      height: 32px;
+      padding: 0;
       cursor: pointer;
-      font-size: 16px;
-      font-weight: 700;
-      display: flex;
-      align-items: center;
-      justify-content: center;
+      display: grid;
+      place-items: center;
       flex-shrink: 0;
-      transition: background-color 0.2s ease, width 0.2s ease, height 0.2s ease, font-size 0.2s ease;
+      transition: background-color 0.2s ease, border-color 0.2s ease, width 0.2s ease, height 0.2s ease;
+    }
+
+    /* One chevron that turns, rather than two different glyphs swapped in.
+       The rotation shows which way the bar is about to go. */
+    .header-toggle svg {
+      width: 15px;
+      height: 15px;
+      display: block;
+      fill: none;
+      stroke: currentColor;
+      stroke-width: 2.6;
+      stroke-linecap: round;
+      stroke-linejoin: round;
+      transition: transform var(--dur-base, 260ms) var(--ease-out, cubic-bezier(0.23, 1, 0.32, 1));
     }
 
     .header-toggle:hover {
       background: rgba(255,255,255,0.28);
+      border-color: rgba(255,255,255,0.62);
     }
 
     .header-bar.collapsed {
-      padding: 2px 8px;
+      padding: 3px 8px;
       justify-content: flex-end;
       gap: 0;
     }
@@ -1522,11 +1586,15 @@
     }
 
     .header-bar.collapsed .header-toggle {
-      width: 22px;
-      height: 16px;
-      font-size: 11px;
-      border-radius: 4px;
-      padding: 0;
+      width: 27px;
+      height: 18px;
+      border-radius: 5px;
+    }
+
+    .header-bar.collapsed .header-toggle svg {
+      width: 12px;
+      height: 12px;
+      transform: rotate(180deg);
     }
 
     /* --- VIEW ONLY NOTE --- */
@@ -3116,6 +3184,32 @@
             transform: var(--press-base, translate(0)) scale(var(--press-scale, 0.96)) !important;
           }
 
+          /*
+            THE ARROWS KEEP A LITTLE BOUNCE
+            The press itself is the fast half -- it has to land on the frame
+            the finger goes down, so it stays a plain scale. The character is
+            in the release: the chip springs past its own size and settles
+            back. Overshoot is 4%, which on a 32px chip is a pixel and a bit --
+            enough to read as life, not enough to read as wobble. (An easing
+            curve cannot do this: a 6% scale change with even a strong
+            back-out curve overshoots by a quarter of a pixel, which is to say
+            not at all. The overshoot has to be stated outright.)
+
+            Springs settle rather than run to a deadline, so this is longer
+            than the 300ms an ordinary UI transition should keep to -- but the
+            part the user is waiting on, the press, has already happened.
+          */
+          @keyframes nav-arrow-press-release {
+            0% { transform: scale(var(--press-scale, 0.94)); }
+            34% { transform: scale(1.04); }
+            66% { transform: scale(0.988); }
+            100% { transform: scale(1); }
+          }
+
+          .nav-scroll-button[data-press-bounce="true"] {
+            animation: nav-arrow-press-release 340ms var(--ease-out) both;
+          }
+
           .dropdown-menu a,
           .dropdown-menu .support-action-button,
           .project-view-link,
@@ -3726,12 +3820,37 @@
               transform: none !important;
             }
 
+            /* The bounce and the warning bar's arrival are both movement for
+               its own sake; the bar itself still appears, it just appears. */
+            .nav-scroll-button[data-press-bounce="true"],
+            .header-bar:not(.hidden),
+            .header-bar:not(.hidden) .header-icon {
+              animation: none !important;
+            }
+
             .faq-panel {
               transform: none !important;
             }
 
             .skl::after {
               animation: none !important;
+            }
+          }
+
+          /*
+            A touch device fires :hover on tap and then keeps it, so a
+            decorative lift sticks to whatever was tapped last and sits there
+            looking selected. These are only the ornamental ones. The
+            dropdown's own :hover is how a menu opens on touch at all, and is
+            deliberately left alone.
+          */
+          @media (hover: none), (pointer: coarse) {
+            .nav-home:hover,
+            .faq-item:hover,
+            .nav-project-action:hover,
+            .nav-project-action:hover .nav-project-action-arrow,
+            .support-action-button:hover .support-action-chevron {
+              transform: none;
             }
           }
 
@@ -4274,7 +4393,11 @@
 
   <div class="header-bar hidden" id="warningBar">
     <div class="header-left">
-      <div class="arrow-down">⬇️</div>
+      <div class="header-icon" aria-hidden="true">
+        <svg viewBox="0 0 24 24">
+          <path d="M17 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V7l-4-4zM12 19c-1.7 0-3-1.3-3-3s1.3-3 3-3 3 1.3 3 3-1.3 3-3 3zm3-10H5V5h10v4z"/>
+        </svg>
+      </div>
       <div class="header-text">
         <strong>Don't lose your work!</strong>
         <span class="header-extra"> Click the Save icon just below the project title on the far left before leaving this sheet.</span>
@@ -4287,7 +4410,9 @@
             aria-expanded="true"
             aria-label="Collapse warning bar"
             onclick="toggleWarningBar()">
-      ▲
+      <svg viewBox="0 0 24 24" aria-hidden="true">
+        <polyline points="6 15 12 9 18 15"></polyline>
+      </svg>
     </button>
   </div>
 
@@ -4850,6 +4975,7 @@
     const authRefreshDismiss = document.getElementById("authRefreshDismiss");
 
     let projectModeActive = false;
+    let projectModeEnteredAt = 0;
     let pendingNavigationAction = null;
     let projectWarningCollapsedByUser = false;
     let navPopupDismissedRouteKey = null;
@@ -5702,13 +5828,33 @@
       }
     }
 
+    /* The chevron itself is rotated by CSS off the collapsed class, so this
+       only has to keep the accessible name honest. Writing textContent here
+       would delete the SVG the button is drawn with. */
+    /*
+      A sheet that has only just opened cannot have unsaved work in it, so
+      asking "Did you save?" there is pure friction: you open a project, see
+      it is the wrong one, and get interrogated on the way back out. Below
+      this threshold the guards stand down entirely -- no dialog, and no
+      browser reload prompt either. The clock restarts on every sheet, so
+      the protection is always in place for the sheet actually being worked
+      on.
+    */
+    const UNSAVED_PROMPT_GRACE_MS = 10000;
+
+    function projectMayHaveUnsavedWork() {
+      if (!projectModeActive) {
+        return false;
+      }
+
+      return Date.now() - projectModeEnteredAt >= UNSAVED_PROMPT_GRACE_MS;
+    }
+
     function updateWarningToggleButton(isCollapsed) {
       if (isCollapsed) {
-        warningToggle.textContent = "▼";
         warningToggle.setAttribute("aria-expanded", "false");
         warningToggle.setAttribute("aria-label", "Expand warning bar");
       } else {
-        warningToggle.textContent = "▲";
         warningToggle.setAttribute("aria-expanded", "true");
         warningToggle.setAttribute("aria-label", "Collapse warning bar");
       }
@@ -5716,6 +5862,7 @@
 
     function showWarningBar() {
       projectModeActive = true;
+      projectModeEnteredAt = Date.now();
       warningBar.classList.remove("hidden");
 
       if (projectWarningCollapsedByUser) {
@@ -5824,7 +5971,7 @@
     }
 
     function runWithSaveCheck(actionToRunAfterYes) {
-      if (projectModeActive) {
+      if (projectMayHaveUnsavedWork()) {
         showSaveModal(actionToRunAfterYes);
       } else {
         actionToRunAfterYes();
@@ -7389,7 +7536,7 @@
         return;
       }
 
-      if (projectModeActive) {
+      if (projectMayHaveUnsavedWork()) {
         const hashToRestore = currentRouteHash || routeHash(defaultRoute());
 
         suppressHashChange = true;
@@ -7804,7 +7951,7 @@
     });
 
     window.addEventListener("beforeunload", function(e) {
-      if (projectModeActive && !suppressUnsavedBeforeUnload) {
+      if (projectMayHaveUnsavedWork() && !suppressUnsavedBeforeUnload) {
         e.preventDefault();
         e.returnValue = "";
       }
@@ -8751,6 +8898,55 @@
                 event.clientY <= pressBounds.bottom + PRESS_HYSTERESIS;
 
               paintPress(inside);
+            }, true);
+
+            /*
+              Elements that spring back with a little bounce when let go.
+              Only on a real release, and only while the press is still
+              painted: dragging off a button is a cancel, and a cancel has
+              nothing to celebrate. Registered before releasePress below so it
+              still sees the press that is about to be cleared.
+            */
+            var BOUNCE_ON_RELEASE = ".nav-scroll-button";
+
+            function playReleaseBounce(element) {
+              if (!element || prefersReducedMotion()) {
+                return;
+              }
+
+              if (typeof element.matches !== "function" || !element.matches(BOUNCE_ON_RELEASE)) {
+                return;
+              }
+
+              element.removeAttribute("data-press-bounce");
+
+              /* Without the reflow, a second press while the first bounce is
+                 still running re-sets an attribute the element never lost,
+                 and nothing happens. */
+              void element.offsetWidth;
+              element.setAttribute("data-press-bounce", "true");
+            }
+
+            document.addEventListener("pointerup", function (event) {
+              if (typeof event.button === "number" && event.button !== 0) {
+                return;
+              }
+
+              if (pressTarget && pressTarget.hasAttribute("data-pressed")) {
+                playReleaseBounce(pressTarget);
+              }
+            }, true);
+
+            /* Hand the transform back to the stylesheet once it has settled,
+               so hover and the next press start from a clean slate. */
+            document.addEventListener("animationend", function (event) {
+              if (
+                event.animationName === "nav-arrow-press-release" &&
+                event.target &&
+                typeof event.target.removeAttribute === "function"
+              ) {
+                event.target.removeAttribute("data-press-bounce");
+              }
             }, true);
 
             ["pointerup", "pointercancel", "dragstart", "contextmenu"].forEach(function (name) {
