@@ -2202,6 +2202,351 @@
       background: #0d164e;
     }
 
+    /* ============================================================
+       GUIDED TOUR
+       Opens from Support. A title card first, then a ring, an arrow
+       and a card that travel together from one part of the blue bar
+       to the next. Everything here is fixed-position and sits above
+       the page, so nothing in the portal's own layout moves while
+       the tour runs.
+       ============================================================ */
+
+    /*
+      Blocks the page underneath so a stray click cannot navigate away
+      mid-tour. The bar itself is deliberately NOT dimmed -- it is the thing
+      being explained -- so the dim starts below it.
+    */
+    .tour-scrim {
+      position: fixed;
+      inset: 0;
+      z-index: 5100;
+      background: transparent;
+      opacity: 0;
+      visibility: hidden;
+      pointer-events: none;
+      transition: opacity var(--dur-fast, 180ms) var(--ease-in, ease),
+                  visibility 0s linear var(--dur-fast, 180ms);
+    }
+
+    .tour-scrim.is-open {
+      opacity: 1;
+      visibility: visible;
+      pointer-events: auto;
+      transition: opacity var(--dur-base, 260ms) var(--ease-out, ease),
+                  visibility 0s linear 0s;
+    }
+
+    .tour-scrim::before {
+      content: "";
+      position: absolute;
+      top: var(--tour-nav-height, 56px);
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: rgba(10, 14, 40, 0.44);
+    }
+
+    .tour-layer {
+      position: fixed;
+      inset: 0;
+      z-index: 5200;
+      pointer-events: none;
+      opacity: 0;
+      visibility: hidden;
+      transition: opacity var(--dur-fast, 180ms) var(--ease-in, ease),
+                  visibility 0s linear var(--dur-fast, 180ms);
+    }
+
+    .tour-layer.is-open {
+      opacity: 1;
+      visibility: visible;
+      transition: opacity var(--dur-base, 260ms) var(--ease-out, ease),
+                  visibility 0s linear 0s;
+    }
+
+    /*
+      Ring, arrow and card are all placed from the top-left corner and moved
+      with translate3d, so travelling between steps is a compositor job. The
+      ring's width and height do change -- a bordered, rounded ring cannot be
+      resized with a transform without distorting both the border and the
+      radius -- but it is one fixed element with nothing depending on its box,
+      so nothing else in the page re-lays out.
+    */
+    .tour-ring,
+    .tour-arrow,
+    .tour-card {
+      position: absolute;
+      top: 0;
+      left: 0;
+      will-change: transform;
+    }
+
+    .tour-ring {
+      border-radius: 12px;
+      box-shadow:
+        0 0 0 2px #fccc42,
+        0 0 0 6px rgba(252, 204, 66, 0.28),
+        0 8px 22px rgba(10, 14, 40, 0.28);
+      transition:
+        transform var(--dur-base, 260ms) var(--ease-inout, ease),
+        width var(--dur-base, 260ms) var(--ease-inout, ease),
+        height var(--dur-base, 260ms) var(--ease-inout, ease);
+    }
+
+    .tour-arrow {
+      width: 44px;
+      height: 30px;
+      color: #fccc42;
+      transition: transform var(--dur-base, 260ms) var(--ease-inout, ease);
+    }
+
+    .tour-arrow svg {
+      width: 44px;
+      height: 30px;
+      display: block;
+      fill: none;
+      stroke: currentColor;
+      stroke-width: 2.6;
+      stroke-linecap: round;
+      stroke-linejoin: round;
+      filter: drop-shadow(0 3px 6px rgba(10, 14, 40, 0.35));
+    }
+
+    /* A single nudge as the arrow lands on a new target -- it says "here",
+       once, instead of looping for as long as the step is open. */
+    .tour-arrow[data-landed="true"] svg {
+      animation: tour-arrow-land 620ms var(--ease-out, ease) both;
+    }
+
+    @keyframes tour-arrow-land {
+      0% { transform: translateY(7px); }
+      45% { transform: translateY(-3px); }
+      72% { transform: translateY(1.5px); }
+      100% { transform: translateY(0); }
+    }
+
+    .tour-card {
+      width: min(370px, calc(100vw - 24px));
+      box-sizing: border-box;
+      background: #ffffff;
+      color: #22264b;
+      border-radius: 16px;
+      padding: 16px 18px 14px 18px;
+      pointer-events: auto;
+      box-shadow:
+        inset 0 3px 0 #fccc42,
+        0 2px 6px rgba(12, 20, 69, 0.10),
+        0 18px 44px rgba(12, 20, 69, 0.26);
+      transition: transform var(--dur-base, 260ms) var(--ease-inout, ease);
+    }
+
+    /*
+      The copy crossfades at the midpoint of the move, so the card never
+      carries the previous step's words to the next target.
+    */
+    .tour-card-inner {
+      transition: opacity 120ms var(--ease-out, ease),
+                  filter 120ms var(--ease-out, ease);
+    }
+
+    .tour-card[data-swapping="true"] .tour-card-inner {
+      opacity: 0;
+      filter: blur(2px);
+    }
+
+    .tour-step-count {
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      color: #6a6f96;
+      margin-bottom: 6px;
+    }
+
+    .tour-card-title {
+      margin: 0 0 6px 0;
+      font-size: 17px;
+      font-weight: 700;
+      color: #121e66;
+      letter-spacing: -0.012em;
+    }
+
+    .tour-card-body {
+      margin: 0;
+      font-size: 14px;
+      line-height: 1.5;
+      color: #4a4f74;
+    }
+
+    .tour-card-actions {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+      margin-top: 15px;
+    }
+
+    .tour-card-actions-right {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .tour-button {
+      font: inherit;
+      font-size: 13.5px;
+      font-weight: 700;
+      border-radius: 9px;
+      padding: 8px 14px;
+      cursor: pointer;
+      border: 1px solid transparent;
+      white-space: nowrap;
+    }
+
+    .tour-button-primary {
+      background: #121e66;
+      color: #ffffff;
+      box-shadow: 0 4px 10px rgba(18, 30, 102, 0.20);
+    }
+
+    .tour-button-primary:hover {
+      background: #0d164e;
+    }
+
+    .tour-button-quiet {
+      background: #eef0f8;
+      color: #121e66;
+    }
+
+    .tour-button-quiet:hover {
+      background: #e2e5f2;
+    }
+
+    .tour-button-quiet:disabled {
+      opacity: 0.42;
+      cursor: default;
+    }
+
+    .tour-button-ghost {
+      background: transparent;
+      color: #6a6f96;
+      padding-left: 6px;
+      padding-right: 6px;
+    }
+
+    .tour-button-ghost:hover {
+      color: #121e66;
+      background: rgba(18, 30, 102, 0.06);
+    }
+
+    /* --- the title card the tour opens with --- */
+    .tour-intro-overlay {
+      position: fixed;
+      inset: 0;
+      z-index: 5300;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 24px;
+      box-sizing: border-box;
+      background: rgba(10, 14, 40, 0.46);
+      opacity: 0;
+      visibility: hidden;
+      pointer-events: none;
+      transition: opacity var(--dur-fast, 180ms) var(--ease-in, ease),
+                  visibility 0s linear var(--dur-fast, 180ms);
+    }
+
+    .tour-intro-overlay.is-open {
+      opacity: 1;
+      visibility: visible;
+      pointer-events: auto;
+      transition: opacity var(--dur-base, 260ms) var(--ease-out, ease),
+                  visibility 0s linear 0s;
+    }
+
+    .tour-intro-card {
+      width: min(500px, 100%);
+      background: #ffffff;
+      border-radius: 18px;
+      overflow: hidden;
+      box-shadow:
+        0 2px 6px rgba(12, 20, 69, 0.10),
+        0 20px 52px rgba(12, 20, 69, 0.30);
+      /* Not anchored to a trigger, so it scales from its own centre. */
+      transform-origin: center;
+      transform: scale(0.96) translateY(8px);
+      transition: transform var(--dur-base, 260ms) var(--ease-in, ease);
+    }
+
+    .tour-intro-overlay.is-open .tour-intro-card {
+      transform: scale(1) translateY(0);
+      transition: transform var(--dur-base, 260ms) var(--ease-out, ease);
+    }
+
+    /* The same navy-over-pipeline treatment the blue bar and the FAQ panel
+       header use, so the tour opens in the portal's own voice. */
+    .tour-intro-header {
+      background-color: #121e66;
+      background-image: url("/HR/images/swgas-pipeline-tile.jpg");
+      background-position: left 38%;
+      background-size: 1520px auto;
+      background-repeat: repeat-x;
+      box-shadow: inset 0 -4px 0 #fccc42;
+      color: #ffffff;
+      padding: 26px 26px 24px 26px;
+    }
+
+    .tour-intro-eyebrow {
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 0.14em;
+      text-transform: uppercase;
+      color: #fccc42;
+      margin-bottom: 8px;
+    }
+
+    .tour-intro-header h2 {
+      margin: 0;
+      font-size: 26px;
+      line-height: 1.15;
+      letter-spacing: -0.021em;
+      font-weight: 700;
+    }
+
+    .tour-intro-body {
+      padding: 20px 26px 4px 26px;
+    }
+
+    .tour-intro-body p {
+      margin: 0 0 12px 0;
+      font-size: 15px;
+      line-height: 1.55;
+      color: #4a4f74;
+    }
+
+    .tour-intro-actions {
+      display: flex;
+      align-items: center;
+      justify-content: flex-end;
+      gap: 8px;
+      padding: 12px 22px 20px 22px;
+    }
+
+    @media (max-width: 620px) {
+      .tour-intro-header {
+        padding: 20px 20px 18px 20px;
+      }
+
+      .tour-intro-header h2 {
+        font-size: 22px;
+      }
+
+      .tour-intro-body {
+        padding: 16px 20px 4px 20px;
+      }
+    }
+
 
     /* --- FINAL TOP-ACTION AND FAQ SEARCH REDESIGN --- */
     .nav-reminder-slot {
@@ -3162,6 +3507,7 @@
           .save-modal-button,
           .slow-embed-button,
           .header-toggle,
+          .tour-button,
           #authRefreshButton,
           #authRefreshDismiss {
             -webkit-tap-highlight-color: transparent;
@@ -3220,7 +3566,8 @@
           .nav-project-action,
           .auth-refresh-banner button,
           .save-modal-button,
-          .slow-embed-button {
+          .slow-embed-button,
+          .tour-button {
             --press-scale: 0.985;
           }
 
@@ -3254,6 +3601,7 @@
           .save-modal-button:focus-visible,
           .slow-embed-button:focus-visible,
           .header-toggle:focus-visible,
+          .tour-button:focus-visible,
           #authRefreshButton:focus-visible,
           #authRefreshDismiss:focus-visible {
             outline: none;
@@ -3801,7 +4149,13 @@
             .placeholder-message,
             .placeholder-message:not(.hidden),
             .faq-panel,
-            .faq-panel-backdrop {
+            .faq-panel-backdrop,
+            .tour-scrim,
+            .tour-scrim.is-open,
+            .tour-layer,
+            .tour-layer.is-open,
+            .tour-intro-overlay,
+            .tour-intro-overlay.is-open {
               transition-duration: 160ms !important;
               transition-property: opacity, visibility !important;
             }
@@ -3824,8 +4178,22 @@
                its own sake; the bar itself still appears, it just appears. */
             .nav-scroll-button[data-press-bounce="true"],
             .header-bar:not(.hidden),
-            .header-bar:not(.hidden) .header-icon {
+            .header-bar:not(.hidden) .header-icon,
+            .tour-arrow[data-landed="true"] svg {
               animation: none !important;
+            }
+
+            /* The tour still runs and still points at things -- the ring and
+               the card simply arrive at each target instead of travelling
+               there, and the title card stops scaling in. */
+            .tour-ring,
+            .tour-arrow,
+            .tour-card {
+              transition: none !important;
+            }
+
+            .tour-intro-card {
+              transform: none !important;
             }
 
             .faq-panel {
@@ -4094,7 +4462,7 @@
         <span class="nav-separator" aria-hidden="true">|</span>
 
         <div class="dropdown">
-          <div class="dropdown-toggle" tabindex="0">
+          <div class="dropdown-toggle" id="navigationDropdownToggle" tabindex="0">
             Navigation <span class="caret">▼</span>
           </div>
           <div class="dropdown-menu">
@@ -4139,7 +4507,7 @@
         <span class="nav-separator" aria-hidden="true">|</span>
 
         <div class="dropdown">
-          <div class="dropdown-toggle" tabindex="0">
+          <div class="dropdown-toggle" id="supportDropdownToggle" tabindex="0">
             Support <span class="caret">▼</span>
           </div>
           <div class="dropdown-menu">
@@ -4158,6 +4526,26 @@
             </a>
 
             <div class="dropdown-divider"></div>
+
+            <button id="supportTourButton"
+                    class="support-action-button support-tour-button"
+                    type="button">
+              <span class="support-action-icon" aria-hidden="true">
+                <svg viewBox="0 0 24 24" focusable="false">
+                  <circle cx="12" cy="12" r="9"></circle>
+                  <path d="m14.8 9.2-1.6 4-4 1.6 1.6-4z"></path>
+                </svg>
+              </span>
+              <span class="support-action-copy">
+                <span class="support-action-title">Guided tour</span>
+                <span class="support-action-subtitle">A quick walk through this portal</span>
+              </span>
+              <span class="support-action-chevron" aria-hidden="true">
+                <svg viewBox="0 0 24 24" focusable="false">
+                  <path d="m9 5 7 7-7 7"></path>
+                </svg>
+              </span>
+            </button>
 
             <button id="supportFaqButton"
                     class="support-action-button support-faq-button"
@@ -4533,6 +4921,71 @@
             Reload the page
           </button>
         </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- GUIDED TOUR: scrim, the travelling ring/arrow/card, and the title card -->
+  <div class="tour-scrim" id="tourScrim" aria-hidden="true"></div>
+
+  <div class="tour-layer" id="tourLayer">
+    <div class="tour-ring" id="tourRing" aria-hidden="true"></div>
+
+    <div class="tour-arrow" id="tourArrow" aria-hidden="true">
+      <svg viewBox="0 0 44 30" focusable="false">
+        <path d="M22 27V6"></path>
+        <path d="m13 15 9-9 9 9"></path>
+      </svg>
+    </div>
+
+    <div class="tour-card"
+         id="tourCard"
+         role="dialog"
+         aria-labelledby="tourCardTitle"
+         aria-describedby="tourCardBody">
+      <div class="tour-card-inner" id="tourCardInner">
+        <div class="tour-step-count" id="tourStepCount"></div>
+        <h3 class="tour-card-title" id="tourCardTitle"></h3>
+        <p class="tour-card-body" id="tourCardBody"></p>
+      </div>
+
+      <div class="tour-card-actions">
+        <button class="tour-button tour-button-ghost" id="tourCancel" type="button">Cancel</button>
+        <div class="tour-card-actions-right">
+          <button class="tour-button tour-button-quiet" id="tourPrev" type="button">Previous</button>
+          <button class="tour-button tour-button-primary" id="tourNext" type="button">Next</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="tour-intro-overlay"
+       id="tourIntro"
+       role="dialog"
+       aria-modal="true"
+       aria-labelledby="tourIntroTitle">
+    <div class="tour-intro-card">
+      <div class="tour-intro-header">
+        <div class="tour-intro-eyebrow">Guided tour</div>
+        <h2 id="tourIntroTitle">Welcome to the HR Portal</h2>
+      </div>
+
+      <div class="tour-intro-body">
+        <p>
+          This portal is the single place to reach the HR team&rsquo;s work in
+          Smartsheet &mdash; dashboards, project sheets, and the department
+          pages &mdash; without hunting for links or logging in twice.
+        </p>
+        <p>
+          The blue bar at the top is the whole navigation. This tour points at
+          each part of it in turn and explains what it does. It takes about a
+          minute, and you can stop at any point.
+        </p>
+      </div>
+
+      <div class="tour-intro-actions">
+        <button class="tour-button tour-button-ghost" id="tourIntroCancel" type="button">Not now</button>
+        <button class="tour-button tour-button-primary" id="tourIntroContinue" type="button">Continue</button>
       </div>
     </div>
   </div>
@@ -8764,6 +9217,455 @@
           })();
         </script>
 
+        <script id="portal-guided-tour">
+          /*
+            ============================================================
+            GUIDED TOUR
+            ============================================================
+            Opens from Support. A title card explains what the portal is
+            for; from there a ring, an arrow and a card travel together
+            along the blue bar, one part at a time.
+
+            Self-contained on purpose: it reads the DOM and nothing else,
+            so a failure in portal-config.js cannot take it down, and it
+            cannot take the portal down either.
+
+            Motion, in the terms of the animate skill: this is the
+            rare/first-time tier, so it is allowed to be expressive. The
+            purpose is explanation, and spatial consistency -- the ring
+            travels to the next target rather than blinking onto it, so
+            you can see where your attention is being moved to. Movement
+            across the screen uses the in-out curve; arrivals and exits
+            use the out curve; every value comes from the tokens the rest
+            of the page already uses.
+          */
+          (function () {
+            "use strict";
+
+            var STEPS = [
+              {
+                selector: ".nav-home",
+                title: "Home",
+                body: "Takes you back to this department's main dashboard from anywhere in the portal. If you ever feel lost, this is the way back."
+              },
+              {
+                selector: "#navScrollShell",
+                title: "The dashboard topics",
+                body: "Each link opens a different view of the department's work. When there are more topics than fit, arrows appear at either end to scroll through them."
+              },
+              {
+                selector: "#projectDropdownToggle",
+                title: "All Projects",
+                body: "Every project sheet you have access to, grouped and searchable. Opening one from here loads it right inside the portal, already signed in."
+              },
+              {
+                selector: "#navigationDropdownToggle",
+                title: "Navigation",
+                body: "Jumps to another HR department's portal, the Comms Timeline, the Raid Log, or the KPI dashboard. Each one keeps this same layout."
+              },
+              {
+                selector: "#supportDropdownToggle",
+                title: "Support",
+                body: "Where this tour lives, along with Smartsheet FAQs, the form for requesting a new project, and a way to ask for access to a sheet you cannot open."
+              },
+              {
+                selector: "#fullscreenToggleButton",
+                title: "Full Screen",
+                body: "Hides the browser's own chrome so the sheet you are working in gets the whole screen. Press it again, or hit Escape, to come back."
+              },
+              {
+                selector: "#departmentSharePointLink",
+                title: "The department logo",
+                body: "Shows which department's portal you are in, and opens that department's SharePoint site in a new tab."
+              }
+            ];
+
+            var intro = document.getElementById("tourIntro");
+            var scrim = document.getElementById("tourScrim");
+            var layer = document.getElementById("tourLayer");
+            var ring = document.getElementById("tourRing");
+            var arrow = document.getElementById("tourArrow");
+            var card = document.getElementById("tourCard");
+            var cardCount = document.getElementById("tourStepCount");
+            var cardTitle = document.getElementById("tourCardTitle");
+            var cardBody = document.getElementById("tourCardBody");
+            var openButton = document.getElementById("supportTourButton");
+
+            var introContinue = document.getElementById("tourIntroContinue");
+            var introCancel = document.getElementById("tourIntroCancel");
+            var nextButton = document.getElementById("tourNext");
+            var prevButton = document.getElementById("tourPrev");
+            var cancelButton = document.getElementById("tourCancel");
+
+            if (!intro || !scrim || !layer || !ring || !arrow || !card || !openButton) {
+              return;
+            }
+
+            var RING_PADDING = 6;
+            var EDGE_MIN = 3;
+            var ARROW_GAP = 4;
+            var CARD_GAP = 10;
+            var EDGE = 12;
+
+            var steps = [];
+            var index = -1;
+            var running = false;
+            var swapTimer = null;
+            var landTimer = null;
+            var returnFocusTo = null;
+
+            var reduceMotionQuery =
+              window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)");
+
+            function prefersReducedMotion() {
+              return !!(reduceMotionQuery && reduceMotionQuery.matches);
+            }
+
+            /* A step whose target is missing or hidden at this window size is
+               dropped rather than pointed at, so the numbering always matches
+               what is actually on screen. */
+            function isUsable(element) {
+              if (!element) {
+                return false;
+              }
+
+              var rect = element.getBoundingClientRect();
+
+              if (rect.width < 4 || rect.height < 4) {
+                return false;
+              }
+
+              var styles = window.getComputedStyle(element);
+
+              return styles.visibility !== "hidden" && styles.display !== "none";
+            }
+
+            function collectSteps() {
+              return STEPS.filter(function (step) {
+                return isUsable(document.querySelector(step.selector));
+              });
+            }
+
+            function currentTarget() {
+              if (index < 0 || index >= steps.length) {
+                return null;
+              }
+
+              return document.querySelector(steps[index].selector);
+            }
+
+            function place(element, x, y) {
+              element.style.transform = "translate3d(" + Math.round(x) + "px, " + Math.round(y) + "px, 0)";
+            }
+
+            function position() {
+              var target = currentTarget();
+
+              if (!target) {
+                return;
+              }
+
+              var rect = target.getBoundingClientRect();
+              var ringLeft = rect.left - RING_PADDING;
+              var ringTop = rect.top - RING_PADDING;
+              var ringWidth = rect.width + RING_PADDING * 2;
+              var ringHeight = rect.height + RING_PADDING * 2;
+
+              /*
+                The bar sits flush against the top of the window, so padding
+                the ring around anything in it pushes its upper edge off
+                screen and the ring reads as a bracket instead of a ring.
+                Pull the clipped edges back in and take the difference off the
+                size, so the other three edges stay exactly where they were.
+              */
+              if (ringTop < EDGE_MIN) {
+                ringHeight -= EDGE_MIN - ringTop;
+                ringTop = EDGE_MIN;
+              }
+
+              if (ringLeft < EDGE_MIN) {
+                ringWidth -= EDGE_MIN - ringLeft;
+                ringLeft = EDGE_MIN;
+              }
+
+              var overflowRight = ringLeft + ringWidth - (window.innerWidth - EDGE_MIN);
+
+              if (overflowRight > 0) {
+                ringWidth -= overflowRight;
+              }
+
+              ring.style.width = Math.round(ringWidth) + "px";
+              ring.style.height = Math.round(ringHeight) + "px";
+              place(ring, ringLeft, ringTop);
+
+              var centreX = rect.left + rect.width / 2;
+              var arrowTop = ringTop + ringHeight + ARROW_GAP;
+              place(arrow, centreX - 22, arrowTop);
+
+              /* The card hangs below the arrow, centred on the target but
+                 never past the edge of the window. */
+              var cardWidth = card.offsetWidth;
+              var cardLeft = Math.min(
+                Math.max(centreX - cardWidth / 2, EDGE),
+                Math.max(window.innerWidth - cardWidth - EDGE, EDGE)
+              );
+
+              place(card, cardLeft, arrowTop + 30 + CARD_GAP);
+            }
+
+            /* Targets inside the scrolling topic strip may be off to one side.
+               Bring them into view first, then measure. */
+            function revealTarget(callback) {
+              var target = currentTarget();
+              var region = document.getElementById("navScrollRegion");
+
+              if (!target || !region || !region.contains(target)) {
+                callback();
+                return;
+              }
+
+              var rect = target.getBoundingClientRect();
+              var bounds = region.getBoundingClientRect();
+
+              if (rect.left >= bounds.left + 46 && rect.right <= bounds.right - 46) {
+                callback();
+                return;
+              }
+
+              target.scrollIntoView({
+                behavior: prefersReducedMotion() ? "auto" : "smooth",
+                inline: "center",
+                block: "nearest"
+              });
+
+              window.setTimeout(callback, prefersReducedMotion() ? 0 : 320);
+            }
+
+            function writeStep() {
+              var step = steps[index];
+
+              if (!step) {
+                return;
+              }
+
+              cardCount.textContent = "Step " + (index + 1) + " of " + steps.length;
+              cardTitle.textContent = step.title;
+              cardBody.textContent = step.body;
+
+              prevButton.disabled = index === 0;
+              nextButton.textContent = index === steps.length - 1 ? "Done" : "Next";
+            }
+
+            function land() {
+              if (prefersReducedMotion()) {
+                return;
+              }
+
+              window.clearTimeout(landTimer);
+              arrow.removeAttribute("data-landed");
+
+              /* Restart the nudge rather than re-setting an attribute the
+                 element never lost. */
+              void arrow.offsetWidth;
+              arrow.setAttribute("data-landed", "true");
+
+              landTimer = window.setTimeout(function () {
+                arrow.removeAttribute("data-landed");
+              }, 700);
+            }
+
+            function goTo(nextIndex, immediate) {
+              if (nextIndex < 0 || nextIndex >= steps.length) {
+                return;
+              }
+
+              var isFirst = index < 0;
+              index = nextIndex;
+
+              revealTarget(function () {
+                if (isFirst || immediate === true || prefersReducedMotion()) {
+                  writeStep();
+                  position();
+                  land();
+                  nextButton.focus();
+                  return;
+                }
+
+                /* Move and swap the copy at the midpoint, so the card never
+                   carries the last step's words to the next target. */
+                card.setAttribute("data-swapping", "true");
+                position();
+
+                window.clearTimeout(swapTimer);
+                swapTimer = window.setTimeout(function () {
+                  writeStep();
+                  card.removeAttribute("data-swapping");
+                  land();
+                }, 130);
+
+                nextButton.focus();
+              });
+            }
+
+            function openIntro() {
+              returnFocusTo = document.activeElement;
+              intro.classList.add("is-open");
+
+              window.requestAnimationFrame(function () {
+                introContinue.focus();
+              });
+            }
+
+            function closeIntro() {
+              intro.classList.remove("is-open");
+            }
+
+            function startSteps() {
+              steps = collectSteps();
+
+              if (!steps.length) {
+                closeIntro();
+                return;
+              }
+
+              var nav = document.querySelector(".top-nav");
+
+              if (nav) {
+                scrim.style.setProperty(
+                  "--tour-nav-height",
+                  Math.round(nav.getBoundingClientRect().bottom) + "px"
+                );
+              }
+
+              running = true;
+              index = -1;
+              closeIntro();
+              scrim.classList.add("is-open");
+              layer.classList.add("is-open");
+              goTo(0, true);
+            }
+
+            function stop() {
+              running = false;
+              index = -1;
+              window.clearTimeout(swapTimer);
+              window.clearTimeout(landTimer);
+              layer.classList.remove("is-open");
+              scrim.classList.remove("is-open");
+              card.removeAttribute("data-swapping");
+              arrow.removeAttribute("data-landed");
+              closeIntro();
+              restoreFocus();
+            }
+
+            /*
+              The tour is started from inside the Support menu, and that menu
+              opens on focus -- so handing focus back to the button that
+              started it would pop the menu open again the moment the tour
+              ends. Home is the honest place to land: it is always present,
+              it is the first thing the tour explains, and focusing a link
+              does not open or navigate anything.
+            */
+            function restoreFocus() {
+              var target = returnFocusTo;
+
+              if (
+                !target ||
+                !document.contains(target) ||
+                (typeof target.closest === "function" && target.closest(".dropdown-menu"))
+              ) {
+                target = document.querySelector(".nav-home");
+              }
+
+              if (target && typeof target.focus === "function") {
+                target.focus();
+              }
+
+              returnFocusTo = null;
+            }
+
+            openButton.addEventListener("click", function () {
+              /* The menu this button lives in closes on click, which is what
+                 we want -- the tour is about to cover the bar anyway. */
+              openIntro();
+            });
+
+            introContinue.addEventListener("click", startSteps);
+            introCancel.addEventListener("click", stop);
+            cancelButton.addEventListener("click", stop);
+            prevButton.addEventListener("click", function () { goTo(index - 1); });
+
+            nextButton.addEventListener("click", function () {
+              if (index >= steps.length - 1) {
+                stop();
+                return;
+              }
+
+              goTo(index + 1);
+            });
+
+            /* Clicking the dimmed page is a reasonable way to say "enough". */
+            scrim.addEventListener("click", stop);
+
+            document.addEventListener("keydown", function (event) {
+              var introOpen = intro.classList.contains("is-open");
+
+              if (!running && !introOpen) {
+                return;
+              }
+
+              if (event.key === "Escape") {
+                event.preventDefault();
+                stop();
+                return;
+              }
+
+              if (!running) {
+                return;
+              }
+
+              if (event.key === "ArrowRight") {
+                event.preventDefault();
+                goTo(index + 1);
+              } else if (event.key === "ArrowLeft") {
+                event.preventDefault();
+                goTo(index - 1);
+              }
+            });
+
+            /* The bar reflows on resize and the topic strip can be scrolled
+               under the ring, so the ring follows rather than drifting off. */
+            function reposition() {
+              if (!running) {
+                return;
+              }
+
+              if (!isUsable(currentTarget())) {
+                var rebuilt = collectSteps();
+
+                if (!rebuilt.length) {
+                  stop();
+                  return;
+                }
+
+                steps = rebuilt;
+                index = Math.min(index, steps.length - 1);
+                writeStep();
+              }
+
+              position();
+            }
+
+            window.addEventListener("resize", reposition);
+
+            var scrollRegion = document.getElementById("navScrollRegion");
+
+            if (scrollRegion) {
+              scrollRegion.addEventListener("scroll", reposition);
+            }
+          })();
+        </script>
+
         <script id="portal-apple-motion">
           /*
             ============================================================
@@ -8828,6 +9730,7 @@
               ".save-modal-button",
               ".slow-embed-button",
               ".header-toggle",
+              ".tour-button",
               "#authRefreshButton",
               "#authRefreshDismiss"
             ].join(",");
