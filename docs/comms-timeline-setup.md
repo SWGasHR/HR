@@ -73,8 +73,10 @@ In the HR Comms Calendar sheet:
 2. **Form** — menu **Forms → Create Form**. Keep: Communication / Deliverable,
    Initiative / Project, Send Date, Audience, Owner, Channel, plus Notes.
    Set hidden defaults on the form: `Status = Draft`, `Source = Manual`.
-   Copy the form link.
-3. **Publish** — **File → Publish**:
+   Check who can submit the form in its access settings before you copy the link.
+3. **Publish** — Open **File → Publish**. Check the audience for each view
+   before turning it on. Links added to this repository are public. If a
+   view cannot be limited to its intended audience, leave it unpublished.
    - Turn on **Read Only – Full** → this is the **calendar** link (it opens in
      the sheet's saved view, which is now Calendar; viewers can also flip to
      grid).
@@ -231,8 +233,9 @@ day. Two cheap safeguards:
 - **Why one sheet instead of a calendar and a separate list?** The calendar
   and list tabs are just two published views of the same rows. There is
   nothing to keep in sync, ever.
-- **Who can see the tabs?** Published Smartsheet links are viewable by anyone
-  with the link (read-only). The form only lets people *add* rows; editing
-  still requires being shared on the sheet.
+- **Who can view or submit?** Smartsheet controls who can open each
+  published view and who can submit the form. Check each resource's access
+  settings, including any reports you add later. The portal displays the
+  links. Opening a tab grants no additional permissions.
 - **Changing dropdown choices later** (new channel, new audience) is a normal
   Smartsheet column edit — no portal change needed.
