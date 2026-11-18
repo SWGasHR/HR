@@ -8,9 +8,8 @@
   fresh on every page load, so a saved edit is live immediately, with
   no version number to bump.
 
-  This file holds the portal's layout and behavior. Only when you edit
-  THIS file do you need to bump the ?v= number in index.html AND
-  404.html so browsers pick up the change.
+  This file holds the portal's layout and behavior. On each visit the
+  loader checks for changes to both this file and portal-config.js.
 
   HOW PORTAL SWITCHING WORKS:
   • index.html (the root) and 404.html both load this portal: they fetch
@@ -52,13 +51,12 @@
     • To add a project:  search for   HOW TO ADD A PROJECT
     • To add an FAQ:      search for   HOW TO ADD AN FAQ
 
-  Just save — content edits go live on the next page load with no
-  version bump. Only edits to THIS file (portal.html) need the ?v=
-  bump in index.html and 404.html.
+  Once GitHub Pages deploys a change, reopening the portal loads the update.
 -->
-<html lang="en">
+<html lang="en" data-hr-portal-shell>
 <head>
   <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>(Department Name) Project Portal</title>
   <link rel="icon" type="image/png" href="/HR/department.png">
   <link rel="preconnect" href="https://workapps.smartsheet.com">
@@ -2243,6 +2241,24 @@
       mid-tour. The bar itself is deliberately NOT dimmed -- it is the thing
       being explained -- so the dim starts below it.
     */
+    .tour-dialog {
+      position: fixed;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+      max-width: none;
+      max-height: none;
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      border: 0;
+      background: transparent;
+    }
+
+    .tour-dialog::backdrop {
+      background: transparent;
+    }
+
     .tour-scrim {
       position: fixed;
       inset: 0;
@@ -2266,7 +2282,7 @@
     .tour-scrim::before {
       content: "";
       position: absolute;
-      top: var(--tour-nav-height, 56px);
+      top: var(--portal-nav-height, 56px);
       left: 0;
       right: 0;
       bottom: 0;
@@ -2496,9 +2512,10 @@
 
     .tour-intro-card {
       width: min(500px, 100%);
+      max-height: 100%;
       background: #ffffff;
       border-radius: 18px;
-      overflow: hidden;
+      overflow-y: auto;
       box-shadow:
         0 2px 6px rgba(12, 20, 69, 0.10),
         0 20px 52px rgba(12, 20, 69, 0.30);
@@ -3421,6 +3438,46 @@
           }
         </style>
 
+        <style id="portal-phone-navigation">
+          @media (max-width: 899px) {
+            /* Open menus sit above the reminder that floats below the bar. */
+            .dropdown-menu { z-index: 1451; }
+          }
+
+          @media (max-width: 600px) {
+            :root { --portal-nav-height: 104px; }
+
+            .top-nav {
+              display: grid;
+              grid-template-columns: auto auto minmax(0, 1fr);
+              grid-template-rows: 56px 48px;
+              gap: 0 6px;
+              height: var(--portal-nav-height);
+            }
+
+            .nav-home { grid-area: 1 / 1; }
+            .nav-fullscreen-button { grid-area: 1 / 2; }
+            .swgas-logo-link { grid-area: 1 / 3; justify-self: end; }
+            .nav-scroll-shell { grid-area: 2 / 1 / 3 / -1; }
+
+            .faq-panel,
+            .faq-panel-backdrop { top: var(--portal-nav-height); }
+
+            .dropdown-menu {
+              box-sizing: border-box;
+              min-width: min(280px, calc(100vw - 20px));
+              max-width: calc(100vw - 20px);
+              max-height: calc(100vh - var(--portal-nav-height) - 10px);
+              max-height: calc(100dvh - var(--portal-nav-height) - 10px);
+            }
+
+            #navReminderSlot,
+            .top-nav.reminder-visible #navReminderSlot {
+              top: calc(var(--portal-nav-height) + 4px) !important;
+            }
+          }
+        </style>
+
         <style id="portal-apple-design">
           /*
             ============================================================
@@ -4334,12 +4391,9 @@
     <div class="hr-recovery-card">
       <h1>This portal didn't load correctly</h1>
       <p>
-        If you just edited <strong>portal-config.js</strong> (projects,
-        links, or FAQs), your most recent change very likely has a small
-        typo &mdash; usually a missing comma or a missing
-        <strong>"</strong> quote on the line you added.
+        Reload the page to try again. If the problem continues, send the
+        page address to the HR portal owner.
       </p>
-      <p>On GitHub, undo that one change (or fix the typo) and save again.</p>
       <button type="button" onclick="window.location.reload();">Reload this page</button>
     </div>
   </div>
@@ -4714,7 +4768,7 @@
        target="_blank"
        rel="noopener noreferrer"
        title="Department SharePoint">
-      <img id="departmentLogo" src="images/swgas-benefits.png" alt="Department logo" class="swgas-logo" onerror="this.onerror=null;this.src='/HR/department.png';">
+      <img id="departmentLogo" src="/HR/department.png" alt="Department logo" class="swgas-logo" onerror="this.onerror=null;this.src='/HR/department.png';">
     </a>
   </div>
 
@@ -4956,9 +5010,10 @@
   </div>
 
   <!-- GUIDED TOUR: scrim, the travelling ring/arrow/card, and the title card -->
+  <dialog class="tour-dialog" id="tourDialog" aria-labelledby="tourIntroTitle">
   <div class="tour-scrim" id="tourScrim" aria-hidden="true"></div>
 
-  <div class="tour-layer" id="tourLayer">
+  <div class="tour-layer" id="tourLayer" inert>
     <div class="tour-ring" id="tourRing" aria-hidden="true"></div>
 
     <div class="tour-arrow" id="tourArrow" aria-hidden="true">
@@ -4968,12 +5023,8 @@
       </svg>
     </div>
 
-    <div class="tour-card"
-         id="tourCard"
-         role="dialog"
-         aria-labelledby="tourCardTitle"
-         aria-describedby="tourCardBody">
-      <div class="tour-card-inner" id="tourCardInner">
+    <div class="tour-card" id="tourCard">
+      <div class="tour-card-inner" id="tourCardInner" aria-live="polite" aria-atomic="true">
         <div class="tour-step-count" id="tourStepCount"></div>
         <h3 class="tour-card-title" id="tourCardTitle"></h3>
         <p class="tour-card-body" id="tourCardBody"></p>
@@ -4989,11 +5040,7 @@
     </div>
   </div>
 
-  <div class="tour-intro-overlay"
-       id="tourIntro"
-       role="dialog"
-       aria-modal="true"
-       aria-labelledby="tourIntroTitle">
+  <div class="tour-intro-overlay" id="tourIntro">
     <div class="tour-intro-card">
       <div class="tour-intro-header">
         <div class="tour-intro-eyebrow">Guided tour</div>
@@ -5020,6 +5067,8 @@
     </div>
   </div>
 
+  </dialog>
+
   <div class="save-modal-overlay hidden"
        id="saveModal"
        role="dialog"
@@ -5036,7 +5085,7 @@
       <h2 id="saveModalTitle">Did you save?</h2>
 
       <p id="saveModalDescription">
-        Please confirm that you saved your work before leaving this project.
+        Save your changes in Smartsheet before you continue.
       </p>
 
       <div class="save-modal-actions">
@@ -5052,12 +5101,6 @@
   </div>
 
   <script>
-    /* If this whole script fails to run because of a typo somewhere below
-       (most often a missing comma or a missing " quote in a project or FAQ),
-       this line never executes, the recovery watchdog above notices, and a
-       friendly message appears instead of a blank page. */
-    window.__hrPortalBooted = true;
-
     /* ==========================================================
        PORTAL CONTENT — lives in portal-config.js
 
@@ -5459,6 +5502,7 @@
 
     let projectModeActive = false;
     let projectModeEnteredAt = 0;
+    let projectFrameWasFocused = false;
     let pendingNavigationAction = null;
     let projectWarningCollapsedByUser = false;
     let navPopupDismissedRouteKey = null;
@@ -5668,6 +5712,9 @@
       iframeRegistry[key] = iframeRecord;
 
       frame.addEventListener("load", function() {
+        if (iframeRegistry[key] !== iframeRecord) {
+          return;
+        }
         iframeRecord.isLoaded = true;
 
         if (currentViewKey === key) {
@@ -5703,6 +5750,7 @@
 
       preloadStarted = true;
 
+      const departmentFrames = iframeRegistry;
       const activeKey = activeRoute ? routeKey(activeRoute) : "";
       const activeIframeRecord = activeKey ? iframeRegistry[activeKey] : null;
       const routesToPreload = getAllEmbeddableRoutes().filter(function(route) {
@@ -5720,7 +5768,7 @@
       let activeViewFallbackTimer = null;
 
       function preloadNextRoute() {
-        if (routeIndex >= routesToPreload.length) {
+        if (departmentFrames !== iframeRegistry || routeIndex >= routesToPreload.length) {
           return;
         }
 
@@ -5755,6 +5803,9 @@
 
     function notePossibleIframeInteraction() {
       lastIframeInteractionAt = Date.now();
+      if (projectModeActive) {
+        projectFrameWasFocused = true;
+      }
     }
 
     function clearPossibleSmartsheetAuthReturn() {
@@ -5858,6 +5909,11 @@
       clearPossibleSmartsheetAuthReturn();
       hideAuthRefreshBanner();
 
+      if (projectModeActive) {
+        projectFrameWasFocused = false;
+        projectModeEnteredAt = Date.now();
+      }
+
       Object.keys(iframeRegistry).forEach(function(registryKey) {
         const record = iframeRegistry[registryKey];
 
@@ -5888,11 +5944,8 @@
           showLoadingMessage();
         }
 
-        record.frame.src = "about:blank";
-
-        setTimeout(function() {
-          record.frame.src = embedData.embedSrc;
-        }, 75);
+        // A blank intermediate page would fire load before Smartsheet is ready.
+        record.frame.src = embedData.embedSrc;
       });
     }
 
@@ -5903,7 +5956,11 @@
         return defaultRoute();
       }
 
-      hashValue = decodeURIComponent(hashValue.replace(/^#/, ""));
+      try {
+        hashValue = decodeURIComponent(hashValue.slice(1));
+      } catch {
+        return null;
+      }
 
       if (!hashValue) {
         return defaultRoute();
@@ -6311,18 +6368,8 @@
       }
     }
 
-    /* The chevron itself is rotated by CSS off the collapsed class, so this
-       only has to keep the accessible name honest. Writing textContent here
-       would delete the SVG the button is drawn with. */
-    /*
-      A sheet that has only just opened cannot have unsaved work in it, so
-      asking "Did you save?" there is pure friction: you open a project, see
-      it is the wrong one, and get interrogated on the way back out. Below
-      this threshold the guards stand down entirely -- no dialog, and no
-      browser reload prompt either. The clock restarts on every sheet, so
-      the protection is always in place for the sheet actually being worked
-      on.
-    */
+    /* Skip the reminder for a quick look at a sheet. Once the frame receives
+       focus, edits are possible even during the opening grace period. */
     const UNSAVED_PROMPT_GRACE_MS = 10000;
 
     function projectMayHaveUnsavedWork() {
@@ -6330,7 +6377,7 @@
         return false;
       }
 
-      return Date.now() - projectModeEnteredAt >= UNSAVED_PROMPT_GRACE_MS;
+      return projectFrameWasFocused || Date.now() - projectModeEnteredAt >= UNSAVED_PROMPT_GRACE_MS;
     }
 
     function updateWarningToggleButton(isCollapsed) {
@@ -6346,6 +6393,7 @@
     function showWarningBar() {
       projectModeActive = true;
       projectModeEnteredAt = Date.now();
+      projectFrameWasFocused = false;
       warningBar.classList.remove("hidden");
 
       if (projectWarningCollapsedByUser) {
@@ -7018,10 +7066,7 @@
       }
 
       /* Preserve intuitive partial-word matching such as "succ" or "notif". */
-      if (
-        queryToken.length >= 3 &&
-        (candidateToken.includes(queryToken) || queryToken.includes(candidateToken))
-      ) {
+      if (queryToken.length >= 3 && candidateToken.includes(queryToken)) {
         return true;
       }
 
@@ -7742,6 +7787,7 @@
       currentRouteHash = "#home";
 
       /* Rebuild chrome + project list, then load the new department's Home. */
+      validatePortalConfiguration();
       applyConfigToNavigation();
       renderProjectLinks();
       loadInitialRoute();
@@ -8285,7 +8331,7 @@
 
     if (authRefreshButton) {
       authRefreshButton.addEventListener("click", function() {
-        refreshSmartsheetIframes();
+        runWithSaveCheck(refreshSmartsheetIframes);
       });
     }
 
@@ -8320,11 +8366,13 @@
     }
 
     window.addEventListener("blur", function() {
-      const activeElement = document.activeElement;
-
-      if (activeElement && activeElement.classList && activeElement.classList.contains("content-frame")) {
-        notePossibleIframeInteraction();
-      }
+      // Browsers can finish moving focus into the iframe after window blur.
+      setTimeout(function() {
+        const activeRecord = iframeRegistry[currentViewKey];
+        if (activeRecord && document.activeElement === activeRecord.frame) {
+          notePossibleIframeInteraction();
+        }
+      }, 0);
     }, true);
 
     document.addEventListener("visibilitychange", function() {
@@ -9165,6 +9213,8 @@
     renderSmartsheetFaqs();
     loadInitialRoute();
     updateNavScrollControlsSoon();
+    // The recovery watchdog must also catch failures during initialization.
+    window.__hrPortalBooted = true;
   </script>
 
 
@@ -9280,12 +9330,10 @@
               },
               {
                 selector: "[data-view-id=\"mainInitiatives\"]",
-                title: "Main Initiatives",
                 body: "The department's headline work for the year, on one dashboard \u2014 what is in flight, who owns it, and where each piece has got to."
               },
               {
                 selector: "[data-view-id=\"allDepartmentProjects\"]",
-                title: "All Projects View Only",
                 body: "Every project in the department on a single read-only board. Good for a status sweep; nothing here can be edited by accident."
               },
               {
@@ -9320,6 +9368,7 @@
               }
             ];
 
+            var dialog = document.getElementById("tourDialog");
             var intro = document.getElementById("tourIntro");
             var scrim = document.getElementById("tourScrim");
             var layer = document.getElementById("tourLayer");
@@ -9337,7 +9386,7 @@
             var prevButton = document.getElementById("tourPrev");
             var cancelButton = document.getElementById("tourCancel");
 
-            if (!intro || !scrim || !layer || !ring || !arrow || !card || !openButton) {
+            if (!dialog || !intro || !scrim || !layer || !ring || !arrow || !card || !openButton) {
               return;
             }
 
@@ -9350,6 +9399,7 @@
             var steps = [];
             var index = -1;
             var running = false;
+            var revealTimer = null;
             var swapTimer = null;
             var landTimer = null;
             var returnFocusTo = null;
@@ -9490,7 +9540,7 @@
                 block: "nearest"
               });
 
-              window.setTimeout(callback, prefersReducedMotion() ? 0 : 320);
+              revealTimer = window.setTimeout(callback, prefersReducedMotion() ? 0 : 320);
             }
 
             function writeStep() {
@@ -9501,7 +9551,7 @@
               }
 
               cardCount.textContent = "Step " + (index + 1) + " of " + steps.length;
-              cardTitle.textContent = step.title;
+              cardTitle.textContent = step.title || currentTarget().textContent.trim();
               cardBody.textContent = step.body;
 
               prevButton.disabled = index === 0;
@@ -9532,11 +9582,14 @@
               }
 
               var isFirst = index < 0;
+              window.clearTimeout(revealTimer);
+              window.clearTimeout(swapTimer);
               index = nextIndex;
 
               revealTarget(function () {
                 if (isFirst || immediate === true || prefersReducedMotion()) {
                   writeStep();
+                  card.removeAttribute("data-swapping");
                   position();
                   land();
                   nextButton.focus();
@@ -9548,10 +9601,10 @@
                 card.setAttribute("data-swapping", "true");
                 position();
 
-                window.clearTimeout(swapTimer);
                 swapTimer = window.setTimeout(function () {
                   writeStep();
                   card.removeAttribute("data-swapping");
+                  position();
                   land();
                 }, 130);
 
@@ -9561,14 +9614,15 @@
 
             function openIntro() {
               returnFocusTo = document.activeElement;
+              dialog.setAttribute("aria-labelledby", "tourIntroTitle");
+              intro.inert = false;
               intro.classList.add("is-open");
-
-              window.requestAnimationFrame(function () {
-                introContinue.focus();
-              });
+              dialog.showModal();
+              introContinue.focus();
             }
 
             function closeIntro() {
+              intro.inert = true;
               intro.classList.remove("is-open");
             }
 
@@ -9576,22 +9630,15 @@
               steps = collectSteps();
 
               if (!steps.length) {
-                closeIntro();
+                stop();
                 return;
-              }
-
-              var nav = document.querySelector(".top-nav");
-
-              if (nav) {
-                scrim.style.setProperty(
-                  "--tour-nav-height",
-                  Math.round(nav.getBoundingClientRect().bottom) + "px"
-                );
               }
 
               running = true;
               index = -1;
               closeIntro();
+              dialog.setAttribute("aria-labelledby", "tourCardTitle");
+              layer.inert = false;
               scrim.classList.add("is-open");
               layer.classList.add("is-open");
               goTo(0, true);
@@ -9600,13 +9647,16 @@
             function stop() {
               running = false;
               index = -1;
+              window.clearTimeout(revealTimer);
               window.clearTimeout(swapTimer);
               window.clearTimeout(landTimer);
+              layer.inert = true;
               layer.classList.remove("is-open");
               scrim.classList.remove("is-open");
               card.removeAttribute("data-swapping");
               arrow.removeAttribute("data-landed");
               closeIntro();
+              dialog.close();
               restoreFocus();
             }
 
@@ -9674,30 +9724,22 @@
               }
             );
 
-            /*
-              Keyboard has to be sealed off too, or Tab walks straight out of
-              the card and into the bar behind it. Focus is pulled back to the
-              card the moment it leaves.
-            */
-            document.addEventListener("focusin", function (event) {
-              if (!running || card.contains(event.target)) {
-                return;
-              }
+            dialog.addEventListener("cancel", function (event) {
+              event.preventDefault();
+              stop();
+            });
 
-              event.stopPropagation();
-              nextButton.focus();
-            }, true);
-
-            document.addEventListener("keydown", function (event) {
-              var introOpen = intro.classList.contains("is-open");
-
-              if (!running && !introOpen) {
-                return;
-              }
-
-              if (event.key === "Escape") {
-                event.preventDefault();
-                stop();
+            dialog.addEventListener("keydown", function (event) {
+              if (event.key === "Tab") {
+                var first = running ? cancelButton : introCancel;
+                var last = running ? nextButton : introContinue;
+                if (event.shiftKey && document.activeElement === first) {
+                  event.preventDefault();
+                  last.focus();
+                } else if (!event.shiftKey && document.activeElement === last) {
+                  event.preventDefault();
+                  first.focus();
+                }
                 return;
               }
 

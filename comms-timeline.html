@@ -530,14 +530,14 @@
       font-weight: 600;
     }
 
-    .setup-error {
-      margin-top: 14px;
-      padding: 10px 12px;
-      border-radius: 8px;
-      background: #fdeef0;
-      color: #8c2333;
-      font-size: 13px;
-      line-height: 1.5;
+    .setup-card button {
+      padding: 8px 14px;
+      border: 0;
+      border-radius: 6px;
+      background: #121E66;
+      color: white;
+      font: inherit;
+      cursor: pointer;
     }
 
     /* ============================================================
@@ -1026,7 +1026,7 @@
             "<ol>" +
             "<li>Open the <strong>HR Comms Calendar</strong> sheet in Smartsheet.</li>" +
             "<li>Switch the sheet to <strong>Calendar View</strong> (on the Send Date column) and save.</li>" +
-            "<li>Go to <strong>File &rarr; Publish</strong> and turn on <strong>Read Only &ndash; Full</strong>.</li>" +
+            "<li>In <strong>File &rarr; Publish</strong>, confirm that access is limited to the intended audience before turning on <strong>Read Only &ndash; Full</strong>.</li>" +
             "<li>Copy that link into <code>commsTimeline.calendarEmbedUrl</code> in <code>portal-config.js</code>.</li>" +
             "</ol>"
         },
@@ -1039,7 +1039,7 @@
           setupHtml:
             "<ol>" +
             "<li>Open the <strong>HR Comms Calendar</strong> sheet in Smartsheet.</li>" +
-            "<li>Go to <strong>File &rarr; Publish</strong> and turn on <strong>Read Only &ndash; HTML</strong> (the lightweight grid link).</li>" +
+            "<li>In <strong>File &rarr; Publish</strong>, confirm that access is limited to the intended audience before turning on <strong>Read Only &ndash; HTML</strong> (the lightweight grid link).</li>" +
             "<li>Copy that link into <code>commsTimeline.listEmbedUrl</code> in <code>portal-config.js</code>.</li>" +
             "</ol>"
         },
@@ -1054,7 +1054,7 @@
             "<li>Open the <strong>HR Comms Calendar</strong> sheet in Smartsheet.</li>" +
             "<li>Choose <strong>Forms &rarr; Create Form</strong> and keep the fields people should fill in " +
             "(Communication, Initiative, Send Date, Audience, Owner, Channel, Status).</li>" +
-            "<li>Copy the form link into <code>commsTimeline.addFormUrl</code> in <code>portal-config.js</code>.</li>" +
+            "<li>Confirm who can submit the form, then copy its link into <code>commsTimeline.addFormUrl</code> in <code>portal-config.js</code>.</li>" +
             "</ol>"
         }
       ];
@@ -1063,7 +1063,7 @@
               fetched fresh every time, so a saved edit is live on the
               next page load). ---- */
       let commsConfig = {};
-      let configError = "";
+      let configUnavailable = false;
 
       try {
         const response = await fetch(CONFIG_URL, { cache: "no-cache" });
@@ -1078,7 +1078,7 @@
         commsConfig = window.HR_PORTAL_DATA.commsTimeline || {};
       } catch (error) {
         console.error(error);
-        configError = String(error);
+        configUnavailable = true;
       }
 
       /* Keep the Support links in step with the portal's shared settings
@@ -1184,7 +1184,7 @@
               visit to a tab and kept alive afterwards, so switching
               between the calendar and the list stays instant. ---- */
       const viewArea = document.getElementById("viewArea");
-      const panels = {};
+      const panels = Object.create(null);
 
       ALL_TABS.forEach(function (tab) {
         const panel = document.createElement("div");
@@ -1200,17 +1200,15 @@
       document.querySelectorAll(".top-nav .dropdown").forEach(function (dropdown) {
         const menu = dropdown.querySelector(".dropdown-menu");
         function positionMenu() {
-          menu.style.visibility = "hidden";
-          menu.style.display = "block";
-          const menuWidth = menu.offsetWidth;
-          menu.style.display = "";
-          menu.style.visibility = "";
-          const toggleLeft = dropdown.getBoundingClientRect().left;
-          const maxLeft = window.innerWidth - menuWidth - 8;
-          menu.style.left = Math.max(8, Math.min(toggleLeft, maxLeft)) + "px";
+          const bounds = dropdown.getBoundingClientRect();
+          const maxLeft = window.innerWidth - menu.offsetWidth - 8;
+          menu.style.top = bounds.bottom + "px";
+          menu.style.left = Math.max(8, Math.min(bounds.left, maxLeft)) + "px";
         }
         dropdown.addEventListener("mouseenter", positionMenu);
         dropdown.addEventListener("focusin", positionMenu);
+        dropdown.closest(".tab-row").addEventListener("scroll", positionMenu);
+        window.addEventListener("resize", positionMenu);
       });
 
       function buildSetupCard(tab) {
@@ -1220,7 +1218,20 @@
         const card = document.createElement("div");
         card.className = "setup-card";
 
-        let html =
+        wrap.appendChild(card);
+        if (configUnavailable) {
+          card.innerHTML =
+            "<h2>Timeline links couldn't load</h2>" +
+            "<p>Reload the timeline to try again. If the issue continues, use the Support menu.</p>";
+          const retry = document.createElement("button");
+          retry.type = "button";
+          retry.textContent = "Reload timeline";
+          retry.addEventListener("click", function () { window.location.reload(); });
+          card.appendChild(retry);
+          return wrap;
+        }
+
+        card.innerHTML =
           '<span class="setup-kicker">One-time setup</span>' +
           "<h2>" + tab.setupTitle + "</h2>" +
           "<p>This tab shows a live Smartsheet view, but its link has not been added to " +
@@ -1229,16 +1240,6 @@
           '<p>Full walkthrough (sheet columns, publishing, and the Power Automate flow): ' +
           '<a href="' + SETUP_GUIDE_URL + '" target="_blank" rel="noopener noreferrer">Comms Timeline setup guide</a>.</p>';
 
-        if (configError) {
-          html +=
-            '<div class="setup-error"><strong>Heads up:</strong> the portal content file did not load, ' +
-            "so saved links could not be read. Detail: " +
-            configError.replace(/</g, "&lt;") +
-            "</div>";
-        }
-
-        card.innerHTML = html;
-        wrap.appendChild(card);
         return wrap;
       }
 
@@ -1292,7 +1293,7 @@
       const tabButtons = Array.prototype.slice.call(document.querySelectorAll(".tab-row .nav-item"));
       const homeButton = document.getElementById("homeButton");
 
-      function activateTab(tabId, updateHash) {
+      function activateTab(tabId) {
         if (!panels[tabId]) {
           tabId = DEFAULT_TAB_ID;
         }
@@ -1313,20 +1314,18 @@
 
         /* The status key describes the calendar and list, not the form. */
         legendBar.classList.toggle("hidden", !legendHasEntries || tabId === "add");
-
-        if (updateHash) {
-          history.replaceState(null, "", "#" + tabId);
-        }
       }
 
       tabButtons.forEach(function (button) {
         button.addEventListener("click", function () {
-          activateTab(button.getAttribute("data-tab"), true);
+          if (!button.classList.contains("active")) {
+            window.location.hash = button.getAttribute("data-tab");
+          }
         });
       });
 
       window.addEventListener("hashchange", function () {
-        activateTab(window.location.hash.replace("#", ""), false);
+        activateTab(window.location.hash.slice(1));
       });
 
       /* Optional "Open in Smartsheet" link for editors. */
@@ -1337,7 +1336,7 @@
         openSheetLink.classList.remove("hidden");
       }
 
-      activateTab(window.location.hash.replace("#", "") || DEFAULT_TAB_ID, false);
+      activateTab(window.location.hash.slice(1));
     })();
   </script>
 

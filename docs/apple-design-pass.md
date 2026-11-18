@@ -30,9 +30,8 @@ they refine what was already there rather than rewriting it:
 the JavaScript fails to run entirely, the CSS transitions it replaces are
 still in place and every menu and panel keeps working.
 
-Because `portal.html` changed, the `?v=` number in **both** `index.html` and
-`404.html` was bumped to `20260820-1`, per the rule at the top of
-`portal.html`. Content edits in `portal-config.js` still need no bump.
+The portal checks for updates to `portal.html` and `portal-config.js` each time
+it opens. Both the homepage and department links pick up deployed changes.
 
 ---
 

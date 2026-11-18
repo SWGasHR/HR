@@ -117,20 +117,21 @@ the listed options, and click **OK**.
 5. Click **Settings** (top of the builder) → under "After submission" set the
    confirmation message, e.g. *"Thanks! Your comm is on the HR Comms
    Timeline."*
-6. Click **Save**, then **Share Form** → **Copy** the URL. This is your
-   **`addFormUrl`**.
+6. Check the form's access settings for who can submit. Once the settings
+   match the intended audience, click **Save**, then **Share Form** →
+   **Copy**. This is your **`addFormUrl`**.
 
 ### B3. Publish the two read-only links
 
-1. Top menu → **File** → **Publish**.
-2. Toggle **Read Only – Full** to ON.
-   - In its options, leave "Anyone with the link" (or your org-only option if
-     offered — org-only is safer and fine for embedding on the portal).
-   - Click the **copy icon** next to the link. This is your
-     **`calendarEmbedUrl`** (it opens in the saved Calendar View; viewers can
-     also flip to grid).
-3. Toggle **Read Only – HTML** to ON and copy that link too. This is your
-   **`listEmbedUrl`** (a fast, plain read-only grid).
+1. Open **File → Publish** and check the available audience settings for
+   both views. The links will appear in this public repository. If a view
+   cannot be limited to its intended audience, leave it unpublished.
+2. Choose the intended audience for **Read Only – Full**, enable it, and
+   copy the link. This is your **`calendarEmbedUrl`**. It opens in the
+   saved Calendar View, and viewers can also switch to the grid.
+3. Check the audience for **Read Only – HTML** separately. Enable it and
+   copy the link for **`listEmbedUrl`**, the plain read-only grid. Make
+   the same audience check for each report you add later.
 4. Close the dialog. Also copy the sheet's normal URL from the browser
    address bar — that's the optional **`openSheetUrl`**.
 

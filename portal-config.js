@@ -772,7 +772,7 @@ window.HR_PORTAL_DATA = {
       id: "request-access",
       question: "How do I get access to edit a project?",
       visible: true,
-      answerHtml: "<p>If a project opens as read-only, use the <strong>Request Access</strong> button (top-right) to email the portal owner for editing access.</p>",
+      answerHtml: "<p>Open the project, then choose <strong>Request Access</strong> from the <strong>Support</strong> menu. Your email app opens a message to the portal owner with the project link already filled in. Add any details and send it.</p>",
       video: false,
       videoFileName: "",
       repeat: false
@@ -786,10 +786,11 @@ window.HR_PORTAL_DATA = {
       videoFileName: "",
       repeat: false
     },
+    // Set visible to true when the answer or its video is ready.
     {
       id: "row-section-topic-task",
       question: "How do I make a row into a Section, Topic, and Task?",
-      visible: true,
+      visible: false,
       answerHtml: "",
       video: false,
       videoFileName: "row-section-topic-task.mp4",
@@ -798,7 +799,7 @@ window.HR_PORTAL_DATA = {
     {
       id: "add-row",
       question: "How do I add a row?",
-      visible: true,
+      visible: false,
       answerHtml: "",
       video: false,
       videoFileName: "add-row.mp4",
@@ -807,7 +808,7 @@ window.HR_PORTAL_DATA = {
     {
       id: "delete-row",
       question: "How do I delete a row?",
-      visible: true,
+      visible: false,
       answerHtml: "",
       video: false,
       videoFileName: "delete-row.mp4",
@@ -816,7 +817,7 @@ window.HR_PORTAL_DATA = {
     {
       id: "people-column-notifications",
       question: "What are the notifications that get sent out as I add users to the People and Individual Contributor Columns?",
-      visible: true,
+      visible: false,
       answerHtml: "",
       video: false,
       videoFileName: "people-column-notifications.mp4",
@@ -825,7 +826,7 @@ window.HR_PORTAL_DATA = {
     {
       id: "use-filters",
       question: "How do I use filters?",
-      visible: true,
+      visible: false,
       answerHtml: "",
       video: false,
       videoFileName: "use-filters.mp4",
@@ -834,7 +835,7 @@ window.HR_PORTAL_DATA = {
     {
       id: "use-copilot-project-plan",
       question: "How do I use Copilot to help make my project plan?",
-      visible: true,
+      visible: false,
       answerHtml: "",
       video: false,
       videoFileName: "use-copilot-project-plan.mp4",

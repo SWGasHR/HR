@@ -29,32 +29,21 @@
 </head>
 <body>
   <div class="portal-error" id="portalError" role="alert">
-    The portal could not be opened. Please refresh the page.
+    <div>
+      <p>The HR Project Portal couldn’t load. Check your connection and try again.</p>
+      <button type="button" onclick="window.location.reload()">Reload portal</button>
+    </div>
   </div>
+  <noscript>Turn on JavaScript in your browser to open the HR Project Portal.</noscript>
 
   <script>
     /*
       LOADER for the HR Project Portal.
 
-      This file — and its identical twin 404.html — fetches the portal in
-      two pieces and renders them in place:
-
-        • portal-config.js — THE CONTENT (departments, Smartsheet links,
-          projects, FAQs). This is the file you edit day to day. It is
-          fetched fresh on every page load, so a saved edit is live
-          immediately — NO version bump needed.
-
-        • portal.html — the shell (layout and behavior). This file is
-          cached between version bumps so revisiting and switching
-          departments stays fast.
-
-      Clean URLs keep working on GitHub Pages because GitHub serves
-      404.html for any path that is not a real file, and this loader
-      renders the portal there too.
-
-      ONLY WHEN YOU EDIT portal.html (rare, structural changes): bump the
-      ?v= number in PORTAL_URL below — in BOTH index.html and 404.html —
-      so every browser fetches the fresh copy on the next load.
+      Keep index.html and 404.html identical. GitHub Pages serves 404.html
+      for clean department links. Both entry points check the portal shell
+      and its configuration for updates each time the portal opens. The
+      browser can reuse either response when its copy is still current.
     */
     (async function () {
       "use strict";
@@ -67,15 +56,12 @@
         return;
       }
 
-      const PORTAL_URL = "/HR/portal.html?v=20260820-1";
+      const PORTAL_URL = "/HR/portal.html";
       const CONFIG_URL = "/HR/portal-config.js";
 
       try {
         const [portalResponse, configResponse] = await Promise.all([
-          fetch(PORTAL_URL),
-          /* "no-cache" means: always check with the server whether
-             portal-config.js changed, so content edits show up on the
-             very next load (unchanged copies still answer quickly). */
+          fetch(PORTAL_URL, { cache: "no-cache" }),
           fetch(CONFIG_URL, { cache: "no-cache" })
         ]);
 
@@ -87,14 +73,14 @@
 
         // Basic sanity check that we received the real portal and not, for
         // example, an error page returned with a 200 status.
-        if (!html.includes("__hrPortalBooted") || !html.includes("</html>")) {
+        if (!/<html\s[^>]*\bdata-hr-portal-shell\b[^>]*>/i.test(html)) {
           throw new Error("The portal content did not look valid.");
         }
 
         /* Run the content file first so window.HR_PORTAL_DATA exists by
            the time the portal boots. A typo in portal-config.js is
            recorded instead of thrown, so the portal can still render its
-           friendly "fix your last edit" recovery message. */
+           recovery message. */
         try {
           if (!configResponse.ok) {
             throw new Error("portal-config.js could not be loaded (" + configResponse.status + ").");
